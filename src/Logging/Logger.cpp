@@ -129,11 +129,11 @@ Util::Logger::Write(const string& message, bool indent, ostream& (*color)(ostrea
     }
     else
     {
-		colorostream out(cerr);
-		if (0 != color)
-		{
-			out.tostd() << color;
-		}
+        colorostream out(cerr);
+        if (0 != color)
+        {
+            out.tostd() << color;
+        }
         out.tostd() << s << endl;
     }
 }
