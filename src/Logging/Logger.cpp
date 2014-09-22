@@ -9,11 +9,9 @@
 #include <Util/Time.h>
 #include <Concurrency/Mutex.h>
 #include <Concurrency/MutexPtrLock.h>
-#include <Util/StringConverter.h>
+#include <Unicoder/StringConverter.h>
 #include <Logging/Logger.h>
 #include <Util/StringUtil.h>
-//#include <Util/Shutdown.h>
-//#include <Util/Once.h>
 
 using namespace std;
 using namespace Util;
@@ -53,10 +51,6 @@ Util::Logger::Logger(const string& prefix, const string& file)
 
     if (!file.empty())
     {
-        //
-        // The given file string is execpted to be encoded as UTF8 by
-        // the caller, so no need to convert it here.
-        //
         m_file = file;
         m_out.open(file, fstream::out | fstream::app);
         if (!m_out.is_open())
@@ -280,26 +274,6 @@ static LoggerPtr sLogger = 0;
 static LogHandler* sLogHandler = &DefaultLogHandler;
 //static int sLogSilencerCount = 0;
 
-//static Util::Mutex* sLogSilencerCountMutex = NULL;
-//UTIL_DECLARE_ONCE(logSilencerCountInit);
-//
-//void DeleteLogSilencerCount()
-//{
-//	delete sLogSilencerCountMutex;
-//	sLogSilencerCountMutex = NULL;
-//}
-//
-//void InitLogSilencerCount()
-//{
-//	sLogSilencerCountMutex = new Util::Mutex;
-//	OnShutdown(&DeleteLogSilencerCount);
-//}
-//
-//void InitLogSilencerCountOnce()
-//{
-//	OnceInit(&logSilencerCountInit, &InitLogSilencerCount);
-//}
-
 LogMessage& LogMessage::operator<<(const string& value)
 {
 	m_message += value;
@@ -343,19 +317,7 @@ LogMessage::~LogMessage() {}
 
 void LogMessage::Finish()
 {
-	//bool suppress = false;
-
-	//if (m_level != LOGLEVEL_FATAL)
-	//{
-	//	InitLogSilencerCountOnce();
-	//	Util::MutexPtrLock<Util::Mutex> lock(sLogSilencerCountMutex);
-	//	suppress = sLogSilencerCount > 0;
-	//}
-
-	//if (!suppress) 
-	{
-		sLogHandler(m_level, m_filename, m_line, m_message, sLogger);
-	}
+	sLogHandler(m_level, m_filename, m_line, m_message, sLogger);
 
 	if (m_level == LOGLEVEL_FATAL) 
 	{
@@ -397,19 +359,5 @@ LogHandler* SetLogHandler(LogHandler* newfunc)
 	}
 	return old;
 }
-
-//LogSilencer::LogSilencer()
-//{
-//	internal::InitLogSilencerCountOnce();
-//	Util::MutexPtrLock<Util::Mutex> lock(internal::sLogSilencerCountMutex);
-//	++internal::sLogSilencerCount;
-//};
-//
-//LogSilencer::~LogSilencer()
-//{
-//	internal::InitLogSilencerCountOnce();
-//	Util::MutexPtrLock<Util::Mutex> lock(internal::sLogSilencerCountMutex);
-//	--internal::sLogSilencerCount;
-//};
 
 }

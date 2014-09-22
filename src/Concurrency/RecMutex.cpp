@@ -168,8 +168,8 @@ void Util::RecMutex::unlock(LockState& state) const
 // 恢复到Unlock(LockState& state)之前的状态
 void Util::RecMutex::lock(LockState& state) const
 {
-	EnterCriticalSection(&m_mutex);		// 恢复锁状态
-	m_count = state.m_count;				// 恢复循环加锁的次数
+	EnterCriticalSection(&m_mutex);		
+	m_count = state.m_count;				
 }
 #		endif
 

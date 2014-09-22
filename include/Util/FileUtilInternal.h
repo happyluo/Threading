@@ -12,7 +12,7 @@
 
 #include <Util/Config.h>
 #include <Util/Shared.h>
-#include <Util/StringConverter.h>
+#include <Unicoder/StringConverter.h>
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -112,22 +112,6 @@ UTIL_API std::string fload(FILE* file);
 UTIL_API void redirection(const std::string& filename, 
 						  const Util::StringConverterPtr& converter, 
 						  FILE* oldfile = stdout/*stderr*/);
-
-// Defines the stderr capturer:
-//   CaptureStdout     - starts capturing stdout.
-//   GetCapturedStdout - stops capturing stdout and returns the captured string.
-//   CaptureStderr     - starts capturing stderr.
-//   GetCapturedStderr - stops capturing stderr and returns the captured string.
-//
-UTIL_API void CaptureStdout();
-UTIL_API std::string GetCapturedStdout();
-UTIL_API void CaptureStderr();
-UTIL_API std::string GetCapturedStderr();
-
-UTIL_API std::string modulepath(const std::string& modulename = std::string());
-
-class ifstream;
-UTIL_API ifstream& getmultiline(ifstream& in, std::string& line);
 
 UTIL_API std::vector<std::vector<std::string> > LoadCSVFile(const std::string& csvfile, const std::string& separator);
 

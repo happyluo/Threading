@@ -22,11 +22,7 @@ namespace Util
 ///	在监控器内挂起自己；不管是哪一种情况，原来的线程都会被唤醒，继续在监控器内执行。这样的行为
 ///	可以扩展到任意数目的线程，所以在监控器中可以有好几个线程挂起。
 
-/// The monitors have Mesa semantics, so called because they were first implemented by the Mesa programming language. 
-/// With Mesa semantics, the signalling thread continues to run and another thread gets to run only once the signalling (发信号) thread 
-/// suspends itself or leaves the monitor.
 /// 按照 Mesa 语义，发出信号的线程会继续运行，	只有当发出信号的线程挂起自身(Wait)、或离开监控器(解锁)时，另外的线程才能得以运行。
-/// 
 /// 注意，发出通知(Notify)并不会致使另外的线程立即运行。只有当发出通知的线程调用Wait()、或Unlock()解除监控器的加锁时，
 /// 另外的线程才会得以运行(Mesa 语义)。
 /// 
@@ -80,11 +76,8 @@ private:
 
 	mutable Cond	m_cond;
 
-	// The m_notifynum flag keeps track of the number of pending notification calls. 
 	//	> [-1]: indicates a broadcast;
 	//	> [ n](a positive number): indicates <n> calls to notify(). 
-	// The m_notifynum flag is reset upon initial acquisition of the monitor lock 
-	// (either through a call to lock(), or a return from wait()).
 	mutable int		m_notifynum;
 
 	M				m_mutex;
@@ -92,17 +85,6 @@ private:
 };
 
 }
-
-//
-// Since this monitor implements the Mesa monitor semantics calls to
-// notify() or notifyAll() are delayed until the monitor is
-// unlocked. This can happen either due to a call to unlock(), or a
-// call to wait(). The _nnotify flag keeps track of the number of
-// pending notification calls. -1 indicates a broadcast, a positive
-// number indicates <n> calls to notify(). The _nnotify flag is reset
-// upon initial acquisition of the monitor lock (either through a call
-// to lock(), or a return from wait().
-//
 
 template <typename M>
 inline Util::Monitor<M>::Monitor() : m_notifynum(0)

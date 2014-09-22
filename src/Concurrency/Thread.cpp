@@ -96,15 +96,6 @@ Util::Thread::Start(size_t, int)
 		throw ThreadStartedException(__FILE__, __LINE__);
 	}
 
-	//
-	// It's necessary to increment the reference count since
-	// pthread_create won't necessarily call the thread function until
-	// later. If the user does (new MyThread)->Start() then the thread
-	// object could be deleted before the thread object takes
-	// ownership. It's also necessary to increment the reference count
-	// prior to calling pthread_create since the thread itself calls
-	// DecRef().
-	//
 	IncRef();
 	m_thread.reset(new thread(StartHook, this));
 
@@ -152,26 +143,15 @@ Util::Thread::~Thread(void)
 static unsigned int
 WINAPI StartHook(void* arg)
 {
-	// Ensure that the thread doesn't go away until run() has
-	// completed.
-	//
 	Util::ThreadPtr thread; // 若不使用此智能指针，在后续执行rawThread->DecRef(); 会导致线程对象被删除，使执行Run()时程序异常
 
 	try
 	{
 		Util::Thread* rawThread = static_cast<Util::Thread*>(arg);
 
-		//
-		// Ensure that the thread doesn't go away until run() has
-		// completed.
-		//
 		thread = rawThread;
 
 #ifdef _WIN32
-		//
-		// Initialize the random number generator in each thread on
-		// Windows (the rand() seed is thread specific).
-		//
 		unsigned int seed = static_cast<unsigned int>(Util::Time::Now().ToMicroSeconds());
 		srand(seed ^ thread->GetThreadControl().Id());
 #endif
@@ -289,9 +269,6 @@ static void* StartHook(void* arg)
 
 		thread = rawThread;
 
-		//
-		// See the comment in Util::Thread::Start() for details.
-		//
 		rawThread->DecRef();
 		thread->Run();
 	}
@@ -323,9 +300,6 @@ Util::ThreadControl Util::Thread::Start(size_t stack_size, int priority)
 
 Util::ThreadControl  Util::Thread::Start(size_t stack_size, bool realtime_scheduling, int priority)
 {
-    //
-    // Keep this alive for the duration of start
-    //
 	Util::ThreadPtr keepMe = this;
 
 	Util::Mutex::LockGuard sync(m_statemutex);

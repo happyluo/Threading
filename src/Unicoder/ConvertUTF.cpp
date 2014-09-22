@@ -48,7 +48,7 @@
 ------------------------------------------------------------------------ */
 
 
-#include <ConvertUTF.h>
+#include <Unicoder/ConvertUTF.h>
 
 #ifdef CVTUTF_DEBUG
 #include <stdio.h>

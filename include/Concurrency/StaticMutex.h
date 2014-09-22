@@ -27,9 +27,6 @@
 namespace Util
 {
 
-//
-// Forward declaration for friend.
-//
 class Cond;
 
 //
@@ -38,7 +35,6 @@ class Cond;
 // initialized statically using STATIC_MUTEX_INITIALIZER.
 //
 
-//
 class CONCURRENCY_API StaticMutex
 {
 public:

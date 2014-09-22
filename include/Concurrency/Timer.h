@@ -35,7 +35,6 @@ typedef SharedPtr<TimerTask> TimerTaskPtr;
 
 //////////////////////////////////////////////////////////////////////////
 /// class  TimerTaskCompare
-///
 class TimerTaskCompare : public std::binary_function<TimerTaskPtr, TimerTaskPtr, bool>
 {
 public:
@@ -48,7 +47,6 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 /// struct ScheduledTask
-///
 struct ScheduleTask
 {
 	/// 待执行的任务
@@ -67,34 +65,19 @@ struct ScheduleTask
 };
 
 
-//////////////////////////////////////////////////////////////////////////
-/// class Timer
-///
-///
-/// Timer 类包含一个主线程，用来实现多个任务之间的单次(once-only) 或重复(repeated) 调度执行。
-/// 一个Timer 每次允许只允许其任务队列中的一个任务执行，若希望多个任务同时并发执行需要使用多个Timer实例。
-/// Timer 中给定的时间间隔指的是连续两次执行之间的等待时间(the interval specifies the wait time between successive executions.)
-///
 class CONCURRENCY_API Timer : virtual public Shared, virtual private Thread
 {
 public:
 
-	// 构造Timer, 并开启其自身的执行线程(来实现任务调度)
 	Timer();
 
-	//  构造Timer, 并以指定的优先级开启其自身的执行线程(来实现任务调度)
 	Timer(int priority);
 
-	// 在析构函数中调用Destroy() 是不起作用的，因为当以智能指针方式构造Timer 对象时，构造函数会开启一个后台任务调度线程，
-	// 该线程会使Timer 对象的计数值加 1 ，在调度任务列表中无任务时，调度线程会一直处于Wait 阻塞状态，此时
-	// Timer 指针对象的计数值的恒大与0，导致析构函数不会被调用，对象无法析构
 	virtual ~Timer();
 
 	// 销毁Timer对象，如果调用者是Timer自身的线程则分离(detach)执行线程；
 	// 如果调用者是其他线程，则Join Timer的执行线程，直至其结束
 	// 当Timer 不再需要时，需要用户手动调用此接口销毁Timer 对象。
-	//	Note that you must call destroy on a Timer instance before allowing it to 
-	//	go out of scope; failing to do so causes undefined behavior.
 	void Destroy();
 
 	// 在给定的等待时间(waittime)之后开始执行调度执行 task  对应的任务

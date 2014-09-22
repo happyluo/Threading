@@ -12,7 +12,7 @@
 //#include <Util/FileUtil.h>
 #include <Logging/Logger.h>
 #include <Logging/LoggerUtil.h>
-#include <Util/ArgVector.h>
+//#include <Util/ArgVector.h>
 #include <Util/InitData.h>
 
 using namespace std;
@@ -328,8 +328,7 @@ Util::Properties::Load(const std::string& file)
 
         string line;
         bool firstLine = true;
-        //while (getline(in, line))
-		while (getmultiline(in, line))
+        while (getline(in, line))
         {
             //
             // Skip UTF8 BOM if present.

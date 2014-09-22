@@ -14,12 +14,6 @@
 namespace Util
 {
 
-//
-// This is temporary and very partial placeholder for std::unique_ptr,
-// which is not yet widely available.
-//
-
-
 template<typename T>
 class UniquePtr
 {

@@ -22,12 +22,6 @@
 namespace Util
 {
 
-namespace Ex
-{
-	UTIL_API void ThrowMemoryLimitException(const char*, int, size_t, size_t);
-	UTIL_API void ThrowMarshalException(const char*, int, const std::string&);
-}
-
 /// 异常类基类
 class UTIL_API Exception : public std::exception
 {
@@ -214,23 +208,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-/// OptionalNotSetException
-class UTIL_API OptionalNotSetException : public Exception
-{
-public:
-    
-    OptionalNotSetException(const char*, int);
-    virtual ~OptionalNotSetException() throw();
-    virtual std::string Name() const;
-    virtual OptionalNotSetException* Clone() const;
-    virtual void Throw() const;
-
-private:
-
-    static const char* ms_pcName;
-};
-
-//////////////////////////////////////////////////////////////////////////
 /// InitializationException
 class UTIL_API InitializationException : public Exception
 {
@@ -269,107 +246,6 @@ public:
 private:
 
 	static const char *ms_pcName;
-};
-
-//////////////////////////////////////////////////////////////////////////
-/// class MarshalException
-class MarshalException : public Exception
-{
-public:
-
-	MarshalException(const char*, int);
-	MarshalException(const char*, int, const ::std::string&);
-	virtual ~MarshalException() throw();
-
-	virtual ::std::string Name() const;
-	virtual void Print(::std::ostream&) const;
-	virtual Exception* Clone() const;
-	virtual void Throw() const;
-
-protected:
-
-	std::string m_reason;
-
-	static const char *ms_pcName;
-};
-
-//////////////////////////////////////////////////////////////////////////
-///  class UnmarshalOutOfBoundsException
-class UnmarshalOutOfBoundsException : public MarshalException
-{
-public:
-
-	UnmarshalOutOfBoundsException(const char*, int);
-	UnmarshalOutOfBoundsException(const char*, int, const ::std::string&);
-	virtual ~UnmarshalOutOfBoundsException() throw();
-
-	virtual ::std::string Name() const;
-	virtual void Print(::std::ostream&) const;
-	virtual Exception* Clone() const;
-	virtual void Throw() const;
-
-private:
-
-	static const char *ms_pcName;
-};
-
-//////////////////////////////////////////////////////////////////////////
-///  class MemoryLimitException
-class MemoryLimitException : public MarshalException
-{
-public:
-
-	MemoryLimitException(const char*, int);
-	MemoryLimitException(const char*, int, const ::std::string&);
-	virtual ~MemoryLimitException() throw();
-
-	virtual ::std::string Name() const;
-	virtual void Print(::std::ostream&) const;
-	virtual Exception* Clone() const;
-	virtual void Throw() const;
-
-private:
-
-	static const char *ms_pcName;
-};
-
-//////////////////////////////////////////////////////////////////////////
-///  class TrackableCallbackListClearedException
-class TrackableCallbackListClearedException : public Exception
-{
-public:
-
-	TrackableCallbackListClearedException(const char*, int);
-	virtual ~TrackableCallbackListClearedException() throw();
-
-	virtual ::std::string Name() const;
-	virtual Exception* Clone() const;
-	virtual void Throw() const;
-
-private:
-
-	static const char *ms_pcName;
-};
-
-//////////////////////////////////////////////////////////////////////////
-/// RegexException
-class UTIL_API RegexException : public Exception
-{
-public:
-
-	RegexException(const char* file, int line);
-	RegexException(const char* file, int line, const std::string& reason);
-	virtual std::string Name() const;
-	virtual void Print(std::ostream& out) const;
-	virtual RegexException* Clone() const;
-	virtual void Throw() const;
-
-	const std::string& Reason() const;
-
-private:
-	std::string m_reason;
-
-	static const char* ms_pcName;    
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -78,8 +78,6 @@ Util::ThreadPool::ThreadPool(const std::string& properties_file,
 	m_stacksize(0), 
 	m_poolname(poolname)
 {
-	//m_properties = CreateProperties(new IconvStringConverter<char>("GB2312"));
-	//m_properties = CreateProperties(new WindowsStringConverter("GB2312"));
 	m_properties = CreateProperties(0);
 	m_properties->Load(properties_file);
 	
@@ -96,11 +94,6 @@ Util::ThreadPool::ThreadPool(const std::string& properties_file,
 #endif
 	//int nProcessors = std::thread::hardware_concurrency(); 
 
-	//
-	// We use just one thread as the default. This is the fastest
-	// possible setting, still allows one level of nesting, and
-	// doesn't require to make the servants thread safe.
-	//
 	int size = m_properties->GetPropertyAsIntWithDefault(m_poolname + ".Size", 1);
 	if (size < 1)
 	{
@@ -312,7 +305,6 @@ void Util::ThreadPool::SubmitTask(const TaskPtr& task)
 	}
 }
 
-/// 任务提交函数
 Util::TaskPtr Util::ThreadPool::SubmitTask(void (*fun)(void *), void *param)
 {
 	TaskPtr task(new CallbackTask(fun, param));

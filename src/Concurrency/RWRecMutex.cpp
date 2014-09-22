@@ -19,8 +19,6 @@ Util::RWRecMutex::~RWRecMutex(void)
 {
 }
 
-// 注意：当此函数返回时，其并未对任何数据加锁，只是在检测到当前是写者有效(m_count < 0，锁被写者占用)
-// 或是有writer 和upgrader在等待获取锁时，使读者reader 线程阻塞
 void Util::RWRecMutex::ReadLock() const
 {
 	Util::Mutex::LockGuard sync(m_mutex);
@@ -40,8 +38,6 @@ bool Util::RWRecMutex::TryReadLock() const
 {
 	Util::Mutex::LockGuard sync(m_mutex);
 
-	// Would block if a writer holds the lock or if writers or an upgrader
-	// are waiting to get the lock.
 	if (m_count < 0 || m_waitingWriterNum != 0)
 	{
 		return false;
@@ -87,8 +83,6 @@ void Util::RWRecMutex::WriteLock() const
 		return;
 	}
 
-	// Wait for the lock to become available and increment the number
-	// of waiting writers.
 	while (0 != m_count)
 	{
 		++m_waitingWriterNum;
@@ -199,11 +193,7 @@ void Util::RWRecMutex::Unlock() const
 			--m_count;
 		}
 
-		// Writers are waiting (writerWaiting) if m_waitingWriterNum > 0.  In that
-		// case, it's OK to let another writer into the region once there
-		// are no more readers (m_count == 0). 
 		writerWaiting = (0 == m_count && m_waitingWriterNum > 0);
-		//Otherwise, no writers are waiting but readers may be waiting (readerWaiting).
 		readerWaiting = (0 == m_waitingWriterNum);
 	} // Unlock mutex.
 
@@ -225,7 +215,6 @@ void Util::RWRecMutex::Unlock() const
 }
 
 // 调用此函数之前，必须先持有其读锁(not hold a read lock)
-// ReadLock or successful TryReadLock / TimedReadLock or Downgrade called on writer thread.
 void Util::RWRecMutex::Upgrade() const
 {
 	Util::Mutex::LockGuard sync(m_mutex);

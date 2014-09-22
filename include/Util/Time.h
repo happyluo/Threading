@@ -13,8 +13,6 @@
 
 #ifndef _WIN32
 #   include <sys/time.h>
-//#else
-//#	include <winsock2.h>
 #endif
 
 namespace Util
@@ -32,11 +30,9 @@ public:
     // operator do the right thing.
     
 	enum Clock { Realtime, Monotonic };
-	//static Time GetCurrentTime() throw();
 	static Time Now(Clock = Realtime);
 
 	static Time TimeOfToday(size_t, size_t=0, size_t=0);
-	//static Time HourOfDay(size_t hour);
 	static Time Hours(size_t);
 	static Time Minutes(size_t);
 	static Time Seconds(Int64);

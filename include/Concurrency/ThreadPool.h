@@ -135,7 +135,6 @@ public:
 		m_param = NULL;
 	}
 
-	/// 任务实现函数
 	virtual void Run()
 	{
 		return m_fun(m_param);

@@ -23,7 +23,6 @@
 #include <Concurrency/RWRecMutex.h>
 #include <Concurrency/RecMutex.h>
 #include <Concurrency/StaticMutex.h>
-#include <Concurrency/Singleton.h>
 #include <Concurrency/SpinMutex.h>
 #include <Concurrency/Thread.h>
 #include <Concurrency/ThreadControl.h>

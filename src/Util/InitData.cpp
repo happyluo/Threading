@@ -6,10 +6,6 @@
 //
 // **********************************************************************
 
-//
-// We disable deprecation warning here, to allow clean compilation of
-// of deprecated methods from StreamI.h.
-//
 #ifdef _MSC_VER
 #   pragma warning( disable : 4996 )
 #endif
@@ -19,12 +15,6 @@
 #include <Util/Exception.h>
 #include <Util/DisableWarnings.h>
 #include <Util/ArgVector.h>
-//#include <Util/Properties.h>
-//#include <Logging/Logger.h>
-//#include <Util/GC.h>
-//#include <Util/CommunicatorI.h>
-//#include <Util/StreamI.h>
-//#include <Util/Instance.h>
 #include <Concurrency/Mutex.h>
 #include <Concurrency/MutexPtrLock.h>
 #if defined(ICONV_ON_WINDOWS)
@@ -46,22 +36,6 @@
 using namespace std;
 using namespace Util;
 using namespace UtilInternal;
-
-//namespace UtilInternal
-//{
-//
-//extern Util::SharedPtr<UtilInternal::GC> theCollector;
-//
-//}
-//
-//void
-//Util::CollectGarbage()
-//{
-//    if (theCollector)
-//    {
-//        theCollector->CollectGarbage();
-//    }
-//}
 
 //////////////////////////////////////////////////////////////////////////
 /// Args & StringSeq convert.
@@ -102,11 +76,6 @@ Util::ArgsToStringSeq(int argc, wchar_t* argv[], const StringConverterPtr& conve
 void
 Util::StringSeqToArgs(const StringSeq& args, int& argc, char* argv[])
 {
-	//
-	// Shift all elements in argv which are present in args to the
-	// beginning of argv. We record the original value of argc so
-	// that we can know later if we've shifted the array.
-	//
 	const int argcOrig = argc;
 	int i = 0;
 	while (i < argc)
@@ -125,11 +94,6 @@ Util::StringSeqToArgs(const StringSeq& args, int& argc, char* argv[])
 		}
 	}
 
-	//
-	// Make sure that argv[argc] == 0, the ISO C++ standard requires this.
-	// We can only do this if we've shifted the array, otherwise argv[argc]
-	// may point to an invalid address.
-	//
 	if (argv && argcOrig != argc)
 	{
 		argv[argc] = 0;
@@ -166,25 +130,23 @@ static Util::LoggerPtr sProcessLogger;
 
 namespace
 {
+class Init
+{
+public:
 
-	class Init
+	Init()
 	{
-	public:
+		sProcessLoggerMutex = new Util::Mutex;
+	}
 
-		Init()
-		{
-			sProcessLoggerMutex = new Util::Mutex;
-		}
+	~Init()
+	{
+		delete sProcessLoggerMutex;
+		sProcessLoggerMutex = 0;
+	}
+};
 
-		~Init()
-		{
-			delete sProcessLoggerMutex;
-			sProcessLoggerMutex = 0;
-		}
-	};
-
-	Init init;
-
+Init init;
 }
 
 LoggerPtr
@@ -257,25 +219,6 @@ Util::CheckVersion(Int version)
 
 std::string Util::ToStringVersion(Int version)
 {
-	//
-	// Get current 'DLL' version
-	//
-	//int majorVersion = (INT_VERSION / 10000);
-	//int minorVersion = (INT_VERSION / 100) - majorVersion * 100;
-	//ostringstream os;
-	//os << majorVersion * 10 + minorVersion;
-
-	//int patchVersion = INT_VERSION % 100;
-	//if (patchVersion > 50)
-	//{
-	//    os << 'b';
-	//    if (patchVersion >= 52)
-	//    {
-	//        os << (patchVersion - 50);
-	//    }
-	//}
-	//string version = os.str();
-
 	int majorVersion = (version / 10000);
 	int minorVersion = (version / 100) - majorVersion * 100;
 	ostringstream os;
@@ -308,7 +251,6 @@ Util::InitData::InitData(const std::string& configFile, const std::string& inter
 		m_properties->Load(configFile);
 	}
 
-	//m_properties->GetPropertyWithDefault("Util.InternalCode", "GBK");
 	std::string code = "" != internalCode ? internalCode : m_properties->GetProperty("Util.InternalCode");
 	
 	m_stringConverter = "" == code ?
@@ -317,12 +259,6 @@ Util::InitData::InitData(const std::string& configFile, const std::string& inter
 #else
 		new IconvStringConverter<char>() : new IconvStringConverter<char>(code.c_str());
 #endif
-//	m_stringConverter = "" == code ? 0 :
-//#if defined(_WIN32) && !defined(ICONV_ON_WINDOWS)
-//		new WindowsStringConverter(code);
-//#else
-//		new IconvStringConverter<char>(code.c_str());
-//#endif
 
 #if defined(_WIN32) && !defined(ICONV_ON_WINDOWS)
 	m_wstringConverter = new UnicodeWstringConverter();
@@ -375,7 +311,6 @@ Util::InitData::InitData(const InitData& initData) :
 	, m_logger(initData.m_logger)
 	, m_stringConverter(initData.m_stringConverter)
 	, m_wstringConverter(initData.m_wstringConverter)
-	//, m_threadHook(initData.m_threadHook)
 {
 	if (!m_properties)
 	{
@@ -385,7 +320,6 @@ Util::InitData::InitData(const InitData& initData) :
 	if (0 == m_stringConverter)
 	{
 		string internalCode = m_properties->GetProperty("Util.InternalCode");
-		//m_properties->GetPropertyWithDefault("Util.InternalCode", "GBK");
 
 		m_stringConverter = "" == internalCode ?
 #if defined(_WIN32) && !defined(ICONV_ON_WINDOWS)
@@ -393,12 +327,6 @@ Util::InitData::InitData(const InitData& initData) :
 #else
 			new IconvStringConverter<char>() : new IconvStringConverter<char>(internalCode.c_str());
 #endif
-//		m_stringConverter = "" == internalCode ? 0 :
-//#if defined(_WIN32) && !defined(ICONV_ON_WINDOWS)
-//			new WindowsStringConverter(internalCode);
-//#else
-//			new IconvStringConverter<char>(internalCode.c_str());
-//#endif
 	}
 
 	if (0 == m_wstringConverter)
@@ -456,26 +384,17 @@ Util::InitData::InitData(const InitData& initData) :
 void
 Util::InitData::SetStringConverter(const Util::StringConverterPtr& stringConverter)
 {
-	//
-	// No locking, as it can only be called during plug-in loading
-	//
 	m_stringConverter = stringConverter;
 }
 
 void
 Util::InitData::SetWstringConverter(const Util::WstringConverterPtr& wstringConverter)
 {
-	//
-	// No locking, as it can only be called during plug-in loading
-	//
 	m_wstringConverter = wstringConverter;
 }
 
 void
 Util::InitData::SetLogger(const Util::LoggerPtr& logger)
 {
-	//
-	// No locking, as it can only be called during plug-in loading
-	//
 	m_logger = logger;
 }

@@ -36,21 +36,12 @@ public:
 	bool operator !=(const Thread&) const;
 	bool operator <(const Thread&) const;
 
-	//
-	// Check whether a thread is still alive.
-	//
 	bool IsAlive() const;
 
-	//
-	// Get the thread name
-	//
 	const std::string& Name() const;
 
 	static unsigned HardwareConcurrency() UTIL_NOEXCEPT;
 
-	//
-	// 内部使用函数，勿调用
-	//
 	void _done();
 
 protected:

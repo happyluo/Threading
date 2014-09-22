@@ -257,7 +257,6 @@ void colorostreamT<Elem>::ColoredPrintf(Color color, const char* fmt, ...)
 		ShouldUseColor(Posix::IsATTY(Posix::FileNo(stdout)) != 0, m_strcolorflag);
 	const bool use_color = in_color_mode && (color != COLOR_DEFAULT);
 #endif  // OS_WINDOWS_MOBILE || OS_SYMBIAN || OS_ZOS
-	// The '!= 0' comparison is necessary to satisfy MSVC 7.1.
 
 	if (!use_color)
 	{
@@ -298,10 +297,6 @@ void colorostreamT<Elem>::PrintColorEncoded(const char* str)
 
 	Color color = COLOR_DEFAULT;  // The current color.
 
-	// Conceptually, we split the string into segments divided by escape
-	// sequences.  Then we print one segment at a time.  At the end of
-	// each iteration, the str pointer advances to the beginning of the
-	// next segment.
 	for (;;)
 	{
 		const char* p = strchr(str, '@');
@@ -474,7 +469,7 @@ inline std::basic_ostream<Elem, std::char_traits<Elem> >& bgyellow(std::basic_os
 /// foreground color
 inline std::ostream& fgwhite(std::ostream &out)
 {
-	HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);			//获取标准输出句柄
+	HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);			
 	SetConsoleTextAttribute(hStdout, 
 							FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);	//R,G,B混合就为白色
 	return out;

@@ -41,10 +41,10 @@ public:
 
 	void Acquire() const
 	{
-		//if (m_acquired)
-		//{
-		//	throw ThreadLockedException(__FILE__, __LINE__);
-		//}
+		if (m_acquired)
+		{
+			throw ThreadLockedException(__FILE__, __LINE__);
+		}
 
 		if (m_mutex)
 		{
@@ -55,10 +55,10 @@ public:
 
 	void TryAcquire() const
 	{
-		//if (m_acquired)
-		//{
-		//	throw ThreadLockedException(__FILE__, __LINE__);
-		//}
+		if (m_acquired)
+		{
+			throw ThreadLockedException(__FILE__, __LINE__);
+		}
 
 		if (m_mutex)
 		{

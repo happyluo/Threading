@@ -33,21 +33,12 @@ namespace
 
 static double frequency = -1.0;
 
-//
-// Initialize the frequency
-//
 class InitializeFrequency
 {
 public:
 
     InitializeFrequency()
     {
-        //
-        // Get the frequency of performance counters. We also make a call to
-        // QueryPerformanceCounter to ensure it works. If it fails or if the
-        // call to QueryPerformanceFrequency fails, the frequency will remain
-        // set to -1.0 and ftime will be used instead.
-        //
         Int64 v;
         if (QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&v)))		// 获取高精确度性能计数器的值
         {
@@ -122,12 +113,6 @@ Util::Time::Time(int year, int month, int day, int hour, int min, int sec, int D
 
 	m_microsec = static_cast<Int64>(time) * UTIL_INT64(1000000);
 }
-
-//Time 
-//Util::Time::GetCurrentTime() throw()
-//{
-//	return (Time(::_time64(NULL) * UTIL_INT64(1000000)));
-//}
 
 Time
 Util::Time::Now(Clock clock)
@@ -226,27 +211,6 @@ Time::TimeOfToday(size_t hour, size_t minute, size_t second)
 
 	return Seconds(mktime(t));
 }
-
-//Time
-//Util::Time::HourOfDay(size_t hour)
-//{
-//	Time base(Now(Realtime) + Hours(24) * ((int)hour / 24));
-//	time_t time = static_cast<long>(base.ToMicroSeconds() / 1000000);
-//
-//	struct tm* t;
-//#ifdef _WIN32
-//	t = localtime(&time);
-//#else
-//	struct tm tr;
-//	localtime_r(&time, &tr);
-//	t = &tr;
-//#endif
-//	t->tm_hour = hour % 24;
-//	t->tm_min = 0;
-//	t->tm_sec = 0;
-//
-//	return Seconds(mktime(t));
-//}
 
 Time
 Util::Time::Hours(size_t t)

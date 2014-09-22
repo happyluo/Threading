@@ -43,16 +43,6 @@ public:
 
 	void Unlock() const;
 
-	//
-	// Returns true if the mutex will unlock when calling unlock()
-	// (false otherwise). For non-recursive mutexes, this will always
-	// return true. 
-	// This function is used by the Monitor implementation to know whether 
-	// the Mutex has been locked for the first time, or unlocked for the 
-	// last time (that is another thread is able to acquire the mutex).
-	//
-	// Pre-condition: the mutex must be locked.
-	//
 	bool WillUnlock() const;
 
 #ifdef LANG_CPP11

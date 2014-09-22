@@ -12,7 +12,7 @@
 #include <Util/Config.h>
 #include <Logging/Logger.h>
 #include <Util/Properties.h>
-#include <Util/StringConverter.h>
+#include <Unicoder/StringConverter.h>
 
 
 namespace Util
@@ -32,12 +32,6 @@ UTIL_API StringSeq ArgsToStringSeq(int, wchar_t*[], const StringConverterPtr&);
 
 #endif
 
-//
-// This function assumes that the string sequence only contains
-// elements of the argument vector. The function shifts the
-// the argument vector elements so that the vector matches the
-// contents of the sequence.
-//
 UTIL_API void StringSeqToArgs(const StringSeq&, int&, char*[]);
 
 //////////////////////////////////////////////////////////////////////////
@@ -59,9 +53,6 @@ UTIL_API void CheckVersion(Int version = INT_VERSION);
 
 UTIL_API std::string ToStringVersion(Int version = INT_VERSION);
 
-//
-// Communicator initialization info
-//
 struct UTIL_API InitData
 {
 	InitData(const std::string& configFile = "", const std::string& internalCode = "");

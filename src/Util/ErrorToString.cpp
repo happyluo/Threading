@@ -7,7 +7,7 @@
 // **********************************************************************
 
 #include <Util/ErrorToString.h>
-#include <Util/Unicode.h>
+#include <Unicoder/Unicode.h>
 
 UTIL_BEGIN
 

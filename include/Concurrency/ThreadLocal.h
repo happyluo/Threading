@@ -17,10 +17,6 @@ CONCURRENCY_BEGIN
 
 // Helpers for ThreadLocal.
 
-// pthread_key_create() requires DeleteThreadLocalValue() to have
-// C-linkage.  Therefore it cannot be templatized to access
-// ThreadLocal<T>.  Hence the need for class
-// ThreadLocalValueHolderBase.
 class ThreadLocalValueHolderBase 
 {
 public:
@@ -37,24 +33,6 @@ extern "C" inline void DeleteThreadLocalValue(void* value_holder)
 }
 
 
-// Implements thread-local storage on pthreads-based systems.
-//
-//   // Thread 1
-//   ThreadLocal<int> tl(100);  // 100 is the default value for each thread.
-//
-//   // Thread 2
-//   tl.Set(150);  // Changes the value for thread 2 only.
-//   test(150 == tl.Get());
-//
-//   // Thread 1
-//   EXPECT_EQ(100, tl.Get());  // In thread 1, tl has the original value.
-//   tl.Set(200);
-//   test(200 == tl.Get());
-//
-// The template type argument T must have a public copy constructor.
-// In addition, the default ThreadLocal constructor requires T to have
-// a public default constructor.
-//
 // An object managed for a thread by a ThreadLocal instance is deleted
 // when the thread exits.  Or, if the ThreadLocal instance dies in
 // that thread, when the ThreadLocal dies.  It's the user's
@@ -89,11 +67,11 @@ public:
 
 		// Releases resources associated with the key.  This will *not*
 		// delete managed objects for other threads.
-		CHECK_SUCCESS(0 != TlsFree(m_key));
-		//if (0 == TlsFree(m_key))
-		//{
-		//	assert(0);
-		//}
+		//CHECK_SUCCESS(0 != TlsFree(m_key));
+		if (0 == TlsFree(m_key))
+		{
+			assert(0);
+		}
 #elif HAS_PTHREAD
 		void* val = pthread_getspecific(m_key);
 		if (0 != val)
@@ -104,11 +82,11 @@ public:
 
 		// Releases resources associated with the key.  This will *not*
 		// delete managed objects for other threads.
-		CHECK_POSIX_SUCCESS(pthread_key_delete(m_key));
-		//if (0 != pthread_key_delete(m_key))
-		//{
-		//	assert(0);
-		//}
+		//CHECK_POSIX_SUCCESS(pthread_key_delete(m_key));
+		if (0 != pthread_key_delete(m_key))
+		{
+			assert(0);
+		}
 #endif
 	}
 
@@ -222,50 +200,6 @@ private:
 #endif
 		return new_holder->Pointer();
 	}
-
-//#if HAS_PTHREAD
-//
-//	static pthread_key_t CreateKey()
-//	{
-//		pthread_key_t key;
-//		// When a thread exits, DeleteThreadLocalValue() will be called on
-//		// the object managed for that thread.
-//#ifdef __SUNPRO_CC
-//		int rs = pthread_key_create(&key, reinterpret_cast<PthreadKeyDestructor>(&DeleteThreadLocalValue));
-//#else
-//		//CHECK_POSIX_SUCCESS(
-//		//	pthread_key_create(&key, &DeleteThreadLocalValue));
-//		int rs = pthread_key_create(&key, &DeleteThreadLocalValue);
-//#endif
-//
-//		if (0 != rs)
-//		{
-//			throw Util::ThreadSyscallException(__FILE__, __LINE__, rs);
-//		}
-//
-//		return key;
-//	}
-//
-//	T* GetOrCreateValue() const 
-//	{
-//		ThreadLocalValueHolderBase* const holder =
-//			static_cast<ThreadLocalValueHolderBase*>(pthread_getspecific(m_key));
-//		if (NULL != holder) 
-//		{
-	//			return UtilInternal::CheckedDowncastToActualType<ValueHolder>(holder)->Pointer();
-//		}
-//
-//		ValueHolder* const new_holder = new ValueHolder(m_default);
-//		ThreadLocalValueHolderBase* const holder_base = new_holder;
-//		//CHECK_POSIX_SUCCESS(pthread_setspecific(m_key, holder_base));
-//		int rs = pthread_setspecific(m_key, holder_base);
-//		if (0 != rs)
-//		{
-//			throw Util::ThreadSyscallException(__FILE__, __LINE__, rs);
-//		}
-//		return new_holder->Pointer();
-//	}
-//#endif
 
 #ifdef _WIN32
 	DWORD m_key;

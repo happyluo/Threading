@@ -32,7 +32,7 @@
 #ifndef UTIL_CONVERT_UTF_H
 #define UTIL_CONVERT_UTF_H
 
-#include <Util/Unicode.h>
+#include <Unicoder/Unicode.h>
 
 
 /* ---------------------------------------------------------------------

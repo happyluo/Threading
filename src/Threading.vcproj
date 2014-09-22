@@ -246,10 +246,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\include\Concurrency\Singleton.h"
-					>
-				</File>
-				<File
 					RelativePath="..\include\Concurrency\SpinMutex.h"
 					>
 				</File>
@@ -330,10 +326,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\include\Util\IconvStringConverter.h"
-					>
-				</File>
-				<File
 					RelativePath="..\include\Util\InitData.h"
 					>
 				</File>
@@ -370,10 +362,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\include\Util\StringConverter.h"
-					>
-				</File>
-				<File
 					RelativePath="..\include\Util\StringUtil.h"
 					>
 				</File>
@@ -383,10 +371,6 @@
 				</File>
 				<File
 					RelativePath="..\include\Util\TypeTraits.h"
-					>
-				</File>
-				<File
-					RelativePath="..\include\Util\Unicode.h"
 					>
 				</File>
 				<File
@@ -407,6 +391,26 @@
 				</File>
 				<File
 					RelativePath="..\include\Logging\LoggerUtil.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Unicoder"
+				>
+				<File
+					RelativePath="..\include\Unicoder\ConvertUTF.h"
+					>
+				</File>
+				<File
+					RelativePath="..\include\Unicoder\IconvStringConverter.h"
+					>
+				</File>
+				<File
+					RelativePath="..\include\Unicoder\StringConverter.h"
+					>
+				</File>
+				<File
+					RelativePath="..\include\Unicoder\Unicode.h"
 					>
 				</File>
 			</Filter>
@@ -488,14 +492,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Util\ConvertUTF.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\Util\ConvertUTF.h"
-					>
-				</File>
-				<File
 					RelativePath=".\Util\ErrorToString.cpp"
 					>
 				</File>
@@ -520,19 +516,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Util\StringConverter.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\Util\StringUtil.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\Util\Time.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\Util\Unicode.cpp"
 					>
 				</File>
 			</Filter>
@@ -545,6 +533,22 @@
 				</File>
 				<File
 					RelativePath=".\Logging\LoggerUtil.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Unicoder"
+				>
+				<File
+					RelativePath=".\Unicoder\ConvertUTF.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Unicoder\StringConverter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Unicoder\Unicode.cpp"
 					>
 				</File>
 			</Filter>

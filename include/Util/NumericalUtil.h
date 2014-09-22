@@ -42,10 +42,6 @@ public:
 
 		size_t bitsperword = sizeof (T) * 8;
 
-		//return T(1 << (bitsperword - 1)) < 0
-		//	? (static_cast<T>(1) << (bitsperword - 1)) - 1	//(T)1 << (bitsperword - 2) | ((T)1 << (bitsperword - 2)) - 1
-		//	: T(1) << (bitsperword - 1) | (T(1) << (bitsperword - 1)) - 1;
-
 		return static_cast<T>(1 << (bitsperword - 1)) < 0
 			? ~(static_cast<T>(1) << (bitsperword - 1))
 			: ~static_cast<T>(0);
@@ -135,7 +131,7 @@ inline bool IsNaN(double value)
 }
 
 //
-// greatest common divisor(最大公约数)
+// greatest common divisor
 //
 static int GCD(int lhs, int rhs)
 {
@@ -153,7 +149,7 @@ static int GCD(int lhs, int rhs)
 	return rhs;
 }
 
-// greatest common divisor(最大公约数)
+// greatest common divisor
 static int ISOGCD(int lhs, int rhs)
 {	
 	if (lhs == 0) return rhs;
@@ -179,25 +175,6 @@ static int ISOGCD(int lhs, int rhs)
 template<typename T, size_t bitsperword = sizeof(T) * 8>
 class LookupTable
 {
-
-//#define USING_BYTE
-//#define USING_INT
-//#define USING_INT64
-//
-//#ifdef USING_BYTE
-//	std::vector<Byte>	m_table;
-//#	define MASK		0X07
-//#	define SHIFT	3
-//#elif defined USING_INT
-//	std::vector<Int>		m_table;
-//#	define MASK		0X1F
-//#	define SHIFT	5
-//#elif defined USING_INT64
-//	std::vector<Int64>	m_table;
-//#	define MASK		0X3F
-//#	define SHIFT	6
-//#endif
-
 public:
 	LookupTable(size_t table_size) : 
 		m_mask(bitsperword - 1)
@@ -230,12 +207,6 @@ public:
 	}
 
 private:
-	//enum
-	//{	// parameters for packing bits into words
-	//	Bitsperword = (int)(CHAR_BIT * sizeof (T)),				// bits in each word
-	//	Words = (int)(ULLONG_MAX - 1) / Bitsperword,			// NB: number of words - 1
-	//};	
-
 	std::vector<T>	m_table;
 	const size_t m_mask;
 	size_t m_shift;

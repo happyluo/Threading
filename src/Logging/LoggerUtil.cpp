@@ -60,73 +60,6 @@ Util::operator <<(Util::LoggerOutputBase& out, const std::exception& ex)
     return out;
 }
 
-//#ifndef LANG_CPP11
-//
-//Util::Print::Print(const LoggerPtr& logger) :
-//	m_logger(logger)
-//{
-//}
-//
-//Util::Print::~Print()
-//{
-//	Flush();
-//}
-//
-//void
-//Util::Print::Flush()
-//{
-//	string s = Strstream().str();
-//	if(!s.empty())
-//	{
-//		m_logger->Print(s);
-//	}
-//	Strstream().str("");
-//}
-//
-//Util::Warning::Warning(const LoggerPtr& logger) :
-//	m_logger(logger)
-//{
-//}
-//
-//Util::Warning::~Warning()
-//{
-//	Flush();
-//}
-//
-//void
-//Util::Warning::Flush()
-//{
-//	string s = Strstream().str();
-//	if(!s.empty())
-//	{
-//		m_logger->Warning(s);
-//	}
-//	Strstream().str("");
-//}
-//
-//Util::Error::Error(const LoggerPtr& logger) :
-//	m_logger(logger)
-//{
-//}
-//
-//Util::Error::~Error()
-//{
-//	Flush();
-//}
-//
-//void
-//Util::Error::Flush()
-//{
-//	string s = Strstream().str();
-//	if(!s.empty())
-//	{
-//		m_logger->Error(s);
-//	}
-//	Strstream().str("");
-//}
-//
-//#endif
-
 Util::Trace::Trace(const LoggerPtr& logger, const string& category) :
     m_logger(logger),
     m_category(category)
@@ -145,15 +78,6 @@ Util::Trace::Flush()
     if (!s.empty())
     {
 		m_logger->Trace(m_category, s);
-
-		//if (m_logger)
-		//{
-		//	m_logger->Trace(m_category, s);
-		//}
-		//else
-		//{
-		//	Logger("", "").Trace(m_category, s);
-		//}
     }
     Strstream().str("");
 }

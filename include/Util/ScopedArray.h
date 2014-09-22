@@ -13,18 +13,10 @@
 
 namespace Util
 {
-//  This is an implementation designed to match the anticipated future TR2
-//  implementation of the ScopedPtr class, and its closely-related brethren,
-//  ScopedArray.
 
 template <class T> class ScopedPtr;
 template <class T> class ScopedArray;
 
-// A ScopedPtr<T> is like a T*, except that the destructor of ScopedPtr<T>
-// automatically deletes the pointer it holds (if any).
-// That is, ScopedPtr<T> owns the T object that it points to.
-// Like a T*, a ScopedPtr<T> may hold either NULL or a pointer to a T object.
-//
 // The size of a ScopedPtr is small:
 // sizeof(ScopedPtr<T>) == sizeof(T*)
 template <class T>

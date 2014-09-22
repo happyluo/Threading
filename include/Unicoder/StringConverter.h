@@ -13,7 +13,7 @@
 #include <Util/Exception.h>
 #include <Util/Shared.h>
 #include <Util/SharedPtr.h>
-#include <Util/Unicode.h>
+#include <Unicoder/Unicode.h>
 
 #include <string>
 

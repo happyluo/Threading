@@ -40,21 +40,6 @@
 #	include <Concurrency/Mutex.h>
 #endif
 
-//
-// Base classes for reference counted types. The IceUtil::Handle
-// template can be used for smart pointers to types derived from these
-// bases.
-//
-// Util::SimpleShared
-// =====================
-//
-// A non thread-safe base class for reference-counted types.
-//
-// Util::Shared
-// ===============
-//
-// A thread-safe base class for reference-counted types.
-//
 namespace Util
 {
 // class SimpleShared
@@ -62,25 +47,20 @@ namespace Util
 class UTIL_API SimpleShared
 {
 public:
-	///默认构造函数
 	SimpleShared();
-	///拷贝构造函数
 	SimpleShared(const SimpleShared&);
 	
-	///析构函数
 	virtual ~SimpleShared()
 	{
 		m_ref = 0;
 		m_noDelete = false;
 	}
 	
-	///复制操作
 	SimpleShared& operator=(const SimpleShared&)
 	{
 		return *this;
 	}
 	
-	///增加引用计数
 	void IncRef()
 	{
 		assert(m_ref >= 0);
@@ -90,7 +70,6 @@ public:
 		}
 	}
 	
-	///减小引用计数，如果引用计数减小到0，则释放被管理的指针所对应的内存
 	void DecRef()
 	{
 		assert(m_ref > 0);
@@ -104,13 +83,11 @@ public:
 		}
 	}
 	
-	///获取指针当前被引用的次数
 	int GetRef() const
 	{
 		return m_ref;
 	}
 	
-	///设置是否允许释放被管理的指针所对应的内存
 	void SetNoDelete(bool b)
 	{
 		m_noDelete = b;
@@ -129,36 +106,27 @@ private:
 class UTIL_API Shared
 {
 public:
-	///默认构造函数
 	Shared();
-	///拷贝构造函数
 	Shared(const Shared&);
 	
-	///析构函数
 	virtual ~Shared()
 	{
 		m_ref = 0;
 		m_noDelete = false;
 	}
 	
-	///赋值操作符
 	Shared& operator =(const Shared&)
 	{
 		return *this;
 	}
 	
-	///增加引用计数
 	virtual void IncRef();
-	///减小引用计数，如果引用计数减小到0，则释放被管理的指针所对应的内存
     virtual void DecRef();
-	///获取指针当前被引用的次数
     virtual int GetRef() const;
-	///设置是否允许释放被管理的指针所对应的内存
     virtual void SetNoDelete(bool);
 	
 protected:
 #if defined(_WIN32)
-	///引用计数
     LONG	m_ref;		
 #elif defined(HAS_ATOMIC_FUNCTIONS) || defined(HAS_GCC_BUILTINS)
     volatile int m_ref;
@@ -167,7 +135,6 @@ protected:
 	long	m_ref;
 	Util::Mutex	m_mutex;	
 #endif
-	///释放使能标识
     bool m_noDelete;	
 };
 

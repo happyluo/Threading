@@ -345,19 +345,6 @@ UTIL_API LoggerPtr SetLogger(LoggerPtr newlogger);
 typedef void LogHandler(LogSeverity level, const char* filename, int line,
 						const std::string& message, LoggerPtr logger);
 
-// The library sometimes writes warning and error messages to stderr.  
-// These messages are primarily useful for developers, but may
-// also help end users figure out a problem.  If you would prefer that
-// these messages be sent somewhere other than stderr, call SetLogHandler()
-// to set your own handler.  This returns the old handler.  Set the handler
-// to NULL to ignore log messages (but see also LogSilencer, below).
-//
-// Obviously, SetLogHandler is not thread-safe.  You should only call it
-// at initialization time, and probably not from library code.  If you
-// simply want to suppress log messages temporarily (e.g. because you
-// have some code that tends to trigger them frequently and you know
-// the warnings are not important to you), use the LogSilencer class
-// below.
 UTIL_API LogHandler* SetLogHandler(LogHandler* newfunc);
 
 }

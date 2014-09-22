@@ -6,10 +6,6 @@
 //
 // **********************************************************************
 
-//
-// We disable deprecation warning here, to allow clean compilation of
-// of deprecated methods.
-//
 #ifdef _MSC_VER
 #   pragma warning( disable : 4996 )
 #endif
@@ -24,16 +20,6 @@
 using namespace std;
 
 static CRITICAL_SECTION sCriticalSection;
-
-//
-// Although apparently not documented by Microsoft, static objects are
-// initialized before DllMain/DLL_PROCESS_ATTACH and finalized after
-// DllMain/DLL_PROCESS_DETACH ... However, note that after the DLL is
-// detached the allocated StaticMutexes may still be accessed. See
-// http://blogs.msdn.com/larryosterman/archive/2004/06/10/152794.aspx
-// for some details. This means that there is no convenient place to
-// cleanup the globally allocated static mutexes.
-//
 
 namespace Util
 {
@@ -57,8 +43,7 @@ Init::Init()
 void Util::StaticMutex::Initialize() const
 {
     //
-    // Yes, a double-check locking. It should be safe since we use memory barriers
-    // (through InterlockedCompareExchangePointer) in both reader and writer threads
+    // Double-check locking. 
     //
     EnterCriticalSection(&sCriticalSection);
 
@@ -83,10 +68,6 @@ void Util::StaticMutex::Initialize() const
 bool 
 Util::StaticMutex::Initialized() const
 {
-    //
-    // Read mutex and then inserts a memory barrier to ensure we can't 
-    // see tmp != 0 before we see the initialized object
-    //
     void* tmp = m_mutex;
     return InterlockedCompareExchangePointer(reinterpret_cast<void**>(&tmp), 0, 0) != 0;
 }

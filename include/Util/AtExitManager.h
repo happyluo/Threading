@@ -19,20 +19,6 @@
 namespace Util
 {
 
-// This class provides a facility similar to the CRT atexit(), except that
-// we control when the callbacks are executed. Under Windows for a DLL they
-// happen at a really bad time and under the loader lock. This facility is
-// mostly used by Util::Singleton.
-//
-// The usage is simple. Early in the main() or WinMain() scope create an
-// AtExitManager object on the stack:
-// int main(...) {
-//    Util::AtExitManager exit_manager;
-//
-// }
-// When the exit_manager object goes out of scope, all the registered
-// callbacks and singleton destructors will be called.
-
 class UTIL_API AtExitManager
 {
 protected:

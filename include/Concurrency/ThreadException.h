@@ -30,7 +30,6 @@ public:
 
 private:
 
-	///异常的名称
 	static const char *ms_pcName;
 };
 
@@ -48,7 +47,6 @@ public:
 
 private:
 
-	///异常的名称
 	static const char *ms_pcName;
 };
 
@@ -66,7 +64,6 @@ public:
 
 private:
 
-	///异常的名称
 	static const char *ms_pcName;
 };
 
@@ -84,7 +81,6 @@ public:
 
 private:
 
-	///异常的名称
 	static const char *ms_pcName;
 };
 
@@ -102,7 +98,6 @@ public:
 
 private:
 
-	///异常的名称
 	static const char *ms_pcName;
 };
 
@@ -123,7 +118,6 @@ public:
 private:
 
 	Time						m_uSec;
-	///异常的名称
 	static const char *ms_pcName;
 };
 
@@ -141,7 +135,6 @@ public:
 
 private:
 
-	///异常的名称
 	static const char *ms_pcName;
 };
 
@@ -159,7 +152,6 @@ public:
 
 private:
 
-	///异常的名称
 	static const char *ms_pcName;
 };
 

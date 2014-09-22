@@ -11,22 +11,13 @@
 
 #include <Concurrency/Mutex.h>
 //#include <Util/Properties.h>
-#include <Util/StringConverter.h>
+#include <Unicoder/StringConverter.h>
 
 #include <set>
 #include <map>
 
 namespace Util
 {
-
-/**
- *
- * A simple collection of properties, represented as a dictionary of
- * key/value pairs. Both key and value are strings.
- *
- * @see Properties#getPropertiesForPrefix
- *
- **/
 typedef std::map<std::string, std::string> PropertyDict;
 
 class Properties;

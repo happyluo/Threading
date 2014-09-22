@@ -28,7 +28,6 @@ Timer::Timer(int priority) : Thread("Util timer thread"), m_destroyed(false)
 
 Timer::~Timer()
 {
-	// 可能无效，当以智能指针方式创建Timer对象是，析构函数不会被执行
 	Destroy();		
 }
 
@@ -56,8 +55,6 @@ void Timer::Destroy()
 	}
 }
 
-// 在给定的等待时间(waittime)之后开始执行调度执行 task  对应的任务
-// task 只调度一次
 void Timer::Schedule(const TimerTaskPtr& task, const Time& delaytime)
 {
 	Monitor<Util::Mutex>::LockGuard sync(m_monitor);
@@ -81,15 +78,12 @@ void Timer::Schedule(const TimerTaskPtr& task, const Time& delaytime)
 
 	m_scheduleTasks.insert(ScheduleTask(task, scheduleTime/*, Time()*/));
 
-	// 调度任务列表(m_scheduleTasks)为空 或 挂起的任务尚在等待状态
 	if (m_taskWakeUpTime == Time() || scheduleTime < m_taskWakeUpTime)
 	{
 		m_monitor.Notify();
 	}
 }
 
-// 在每次执行之间等待waittime 后开始执行调度执行 task  对应的任务
-// task 被重复调度
 void Timer::ScheduleRepeated(const TimerTaskPtr& task, const Time& delaytime, const Time& basetime)
 {
 	Monitor<Util::Mutex>::LockGuard sync(m_monitor);
@@ -126,9 +120,6 @@ void Timer::ScheduleRepeated(const TimerTaskPtr& task, const Time& delaytime, co
 	}
 }
 
-// 取消给定任务。如果任务未被执行或是被循环执行的任务，则返回true；
-// 如果此函数被重复调用，或任务已经执行(单次任务once-only)，或是指定了不会被调度到的任务，则返回 false
-// 如果待取消的任务正在执行，则函数立即返回，并允许任务执行完毕。
 bool Timer::Cancel(const TimerTaskPtr& task)
 {
 	Monitor<Util::Mutex>::LockGuard sync(m_monitor);
@@ -162,8 +153,6 @@ void Timer::Run()
 			Monitor<Util::Mutex>::LockGuard sync(m_monitor);
 			if (!m_destroyed)
 			{
-				// If the task we just ran is a repeated task, schedule it
-				// again for executation if it wasn't canceled.
 				if (Time() != scheduleTask.m_delay)
 				{
 					std::map<TimerTaskPtr, Time, TimerTaskCompare>::iterator iter =
@@ -266,7 +255,7 @@ bool Timer::doSchedule(ScheduleTask& scheduleTask)
 		//    因为m_scheduleTasks中的任务是按照调度时间排序的，每次调度都会选时间最小的任务执行
 		try
 		{
-			m_monitor.TimedWait(firstTask.m_scheduledtime - now);		//执行下次调度
+			m_monitor.TimedWait(firstTask.m_scheduledtime - now);	
 		}
 		catch (const InvalidTimeoutException&)
 		{
@@ -276,7 +265,7 @@ bool Timer::doSchedule(ScheduleTask& scheduleTask)
 				try
 				{
 					m_monitor.TimedWait(timeout);
-					break;	//执行下次调度
+					break;	
 				}
 				catch (const InvalidTimeoutException&)
 				{
