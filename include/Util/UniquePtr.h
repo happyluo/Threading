@@ -75,10 +75,10 @@ public:
         return m_ptr;
     }
 
-	operator bool() const
-	{
-		return m_ptr ? true : false;
-	}
+    operator bool() const
+    {
+        return m_ptr ? true : false;
+    }
 
     void Swap(UniquePtr& a)
     {

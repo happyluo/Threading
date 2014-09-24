@@ -7,6 +7,15 @@
 //
 // **********************************************************************
 
+// **********************************************************************
+//
+// Copyright (c) 2010-2014 Bernard Luo. All rights reserved.
+//
+// <Email: luo (dot) xiaowei (at) hotmail (dot) com>
+//
+// **********************************************************************
+
+
 #ifndef UTIL_ICONV_STRING_CONVERTER
 #define UTIL_ICONV_STRING_CONVERTER
 
@@ -92,32 +101,32 @@ template<typename charT>
 IconvStringConverter<charT>::IconvStringConverter(const char* internalCode) :
     m_internalCode(internalCode)
 {
-	try
-	{
-		Close(CreateDescriptors());
-	}
-	catch(const Util::StringConversionException& sce)
-	{
-		throw Util::InitializationException(__FILE__, __LINE__, sce.m_reason);
-	}
+    try
+    {
+        Close(CreateDescriptors());
+    }
+    catch(const Util::StringConversionException& sce)
+    {
+        throw Util::InitializationException(__FILE__, __LINE__, sce.m_reason);
+    }
 
 #ifdef _WIN32
-	m_key = TlsAlloc();
-	if (m_key == TLS_OUT_OF_INDEXES)
-	{
-		throw Util::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
-	}
+    m_key = TlsAlloc();
+    if (m_key == TLS_OUT_OF_INDEXES)
+    {
+        throw Util::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
+    }
 #else
-#	ifdef __SUNPRO_CC
-	int rs = pthread_key_create(&m_key, reinterpret_cast<PthreadKeyDestructor>(&CleanupKey));
-#	else
-	int rs = pthread_key_create(&m_key, &CleanupKey);
-#	endif
+#    ifdef __SUNPRO_CC
+    int rs = pthread_key_create(&m_key, reinterpret_cast<PthreadKeyDestructor>(&CleanupKey));
+#    else
+    int rs = pthread_key_create(&m_key, &CleanupKey);
+#    endif
 
-	if (rs != 0)
-	{
-		throw Util::ThreadSyscallException(__FILE__, __LINE__, rs);
-	}
+    if (rs != 0)
+    {
+        throw Util::ThreadSyscallException(__FILE__, __LINE__, rs);
+    }
 #endif
 }
 

@@ -28,8 +28,8 @@ template <unsigned> struct static_assert_check
 };
 
 #define static_assert(expr, msg) \
-	typedef static_assert_check<sizeof(static_assert_test<(expr)>)> \
-	CONCAT(__t, __LINE__)
+    typedef static_assert_check<sizeof(static_assert_test<(expr)>)> \
+    CONCAT(__t, __LINE__)
 
 #endif
 
@@ -44,7 +44,7 @@ struct StaticAssert;
 template <> 
 struct StaticAssert<true> 
 {
-	enum { VALUE = 1 };
+    enum { VALUE = 1 };
 };
 
 // 当expression为false时，sizeof(StaticAssert<false>) 没有实现(不能实例化)，为不完整类，编译器报错！
@@ -61,8 +61,8 @@ struct StaticAssertTest
 };
 
 #define STATIC_ASSERT(expression) \
-	typedef Util::StaticAssertTest<sizeof(Util::StaticAssert<(static_cast<bool>(expression))>)> \
-	static_assert_typedef
+    typedef Util::StaticAssertTest<sizeof(Util::StaticAssert<(static_cast<bool>(expression))>)> \
+    static_assert_typedef
 
 #endif
 
@@ -95,8 +95,8 @@ struct CompileAssert {
 };
 
 #define COMPILE_ASSERT(expr, msg) \
-	typedef Util::CompileAssert<(static_cast<bool>(expr)) > \
-	msg[static_cast<bool>(expr) ? 1 : -1] ATTRIBUTE_UNUSED
+    typedef Util::CompileAssert<(static_cast<bool>(expr)) > \
+    msg[static_cast<bool>(expr) ? 1 : -1] ATTRIBUTE_UNUSED
 
 // Implementation details of COMPILE_ASSERT:
 //
@@ -113,8 +113,8 @@ struct CompileAssert {
 //   following code with the simple definition:
 //
 //     int foo;
-//     COMPILE_ASSERT(foo, msg);	// not supposed to compile as foo is
-//									// not a compile-time constant.
+//     COMPILE_ASSERT(foo, msg);    // not supposed to compile as foo is
+//                                    // not a compile-time constant.
 //
 // - By using the type CompileAssert<(bool(expr))>, we ensures that
 //   expr is a compile-time constant.  (Template arguments must be

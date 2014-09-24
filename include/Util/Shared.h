@@ -37,7 +37,7 @@
 // Nothing to include
 #else
 // Use a simple mutex
-#	include <Concurrency/Mutex.h>
+#    include <Concurrency/Mutex.h>
 #endif
 
 namespace Util
@@ -47,58 +47,56 @@ namespace Util
 class UTIL_API SimpleShared
 {
 public:
-	SimpleShared();
-	SimpleShared(const SimpleShared&);
-	
-	virtual ~SimpleShared()
-	{
-		m_ref = 0;
-		m_noDelete = false;
-	}
-	
-	SimpleShared& operator=(const SimpleShared&)
-	{
-		return *this;
-	}
-	
-	void IncRef()
-	{
-		assert(m_ref >= 0);
-		if (m_ref >= 0)
-		{
-			++m_ref;
-		}
-	}
-	
-	void DecRef()
-	{
-		assert(m_ref > 0);
-		if (m_ref > 0 && --m_ref == 0)
-		{
-			if (!m_noDelete)
-			{
-				m_noDelete = true;
-				delete this;
-			}
-		}
-	}
-	
-	int GetRef() const
-	{
-		return m_ref;
-	}
-	
-	void SetNoDelete(bool b)
-	{
-		m_noDelete = b;
-	}
-	
+    SimpleShared();
+    SimpleShared(const SimpleShared&);
+    
+    virtual ~SimpleShared()
+    {
+        m_ref = 0;
+        m_noDelete = false;
+    }
+    
+    SimpleShared& operator=(const SimpleShared&)
+    {
+        return *this;
+    }
+    
+    void IncRef()
+    {
+        assert(m_ref >= 0);
+        if (m_ref >= 0)
+        {
+            ++m_ref;
+        }
+    }
+    
+    void DecRef()
+    {
+        assert(m_ref > 0);
+        if (m_ref > 0 && --m_ref == 0)
+        {
+            if (!m_noDelete)
+            {
+                m_noDelete = true;
+                delete this;
+            }
+        }
+    }
+    
+    int GetRef() const
+    {
+        return m_ref;
+    }
+    
+    void SetNoDelete(bool b)
+    {
+        m_noDelete = b;
+    }
+    
 private:
-	
-	///引用计数
-	int m_ref;			
-	///释放使能标识
-	bool m_noDelete;		
+    
+    int m_ref;            
+    bool m_noDelete;        
 };
 
 // class Shared
@@ -106,36 +104,36 @@ private:
 class UTIL_API Shared
 {
 public:
-	Shared();
-	Shared(const Shared&);
-	
-	virtual ~Shared()
-	{
-		m_ref = 0;
-		m_noDelete = false;
-	}
-	
-	Shared& operator =(const Shared&)
-	{
-		return *this;
-	}
-	
-	virtual void IncRef();
+    Shared();
+    Shared(const Shared&);
+    
+    virtual ~Shared()
+    {
+        m_ref = 0;
+        m_noDelete = false;
+    }
+    
+    Shared& operator =(const Shared&)
+    {
+        return *this;
+    }
+    
+    virtual void IncRef();
     virtual void DecRef();
     virtual int GetRef() const;
     virtual void SetNoDelete(bool);
-	
+    
 protected:
 #if defined(_WIN32)
-    LONG	m_ref;		
+    LONG    m_ref;        
 #elif defined(HAS_ATOMIC_FUNCTIONS) || defined(HAS_GCC_BUILTINS)
     volatile int m_ref;
 
 #else
-	long	m_ref;
-	Util::Mutex	m_mutex;	
+    long    m_ref;
+    Util::Mutex    m_mutex;    
 #endif
-    bool m_noDelete;	
+    bool m_noDelete;    
 };
 
 }

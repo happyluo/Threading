@@ -24,75 +24,75 @@ namespace Util
 //
 class CONCURRENCY_API Mutex : public Base::noncopyable
 {
-	friend class Cond;
+    friend class Cond;
 
 public:
-	//
-	// Lock & TryLock typedefs.
-	//
-	typedef LockT<Mutex> LockGuard;			
-	typedef TryLockT<Mutex> TryLockGuard;
+    //
+    // Lock & TryLock typedefs.
+    //
+    typedef LockT<Mutex> LockGuard;            
+    typedef TryLockT<Mutex> TryLockGuard;
 
-	Mutex(void);
-	Mutex(MutexProtocol);
-	~Mutex(void);
+    Mutex(void);
+    Mutex(MutexProtocol);
+    ~Mutex(void);
 
-	void Lock()	const;
+    void Lock()    const;
 
-	bool TryLock() const;
+    bool TryLock() const;
 
-	void Unlock() const;
+    void Unlock() const;
 
-	bool WillUnlock() const;
+    bool WillUnlock() const;
 
 #ifdef LANG_CPP11
-	operator const std::mutex&() const
-	{
-		return m_mutex;
-	}
+    operator const std::mutex&() const
+    {
+        return m_mutex;
+    }
 #endif
 
 private:
 
-	void init(MutexProtocol);
+    void init(MutexProtocol);
 
-	// noncopyable
-	//Mutex(const Mutex&);
-	//void operator=(const Mutex&);
+    // noncopyable
+    //Mutex(const Mutex&);
+    //void operator=(const Mutex&);
 
-	//
-	// LockState and the lock/unlock variations are for use by the
-	// Condition variable implementation.
-	//
+    //
+    // LockState and the lock/unlock variations are for use by the
+    // Condition variable implementation.
+    //
 #ifdef LANG_CPP11
-	struct LockState
-	{
-		std::mutex* m_pmutex;
-	};
+    struct LockState
+    {
+        std::mutex* m_pmutex;
+    };
 #elif defined(_WIN32)
-	struct LockState
-	{
+    struct LockState
+    {
 #   ifdef HAS_WIN32_CONDVAR
-		CRITICAL_SECTION* m_pmutex;
+        CRITICAL_SECTION* m_pmutex;
 #   endif 
-	};
+    };
 #else
-	struct LockState
-	{
-		pthread_mutex_t* m_pmutex;
-	};
+    struct LockState
+    {
+        pthread_mutex_t* m_pmutex;
+    };
 #endif
 
-	void unlock(LockState&) const;
-	void lock(LockState&) const;
+    void unlock(LockState&) const;
+    void lock(LockState&) const;
 
 #ifdef LANG_CPP11
-	typedef std::mutex mutex_type;
-	mutable std::mutex m_mutex;
+    typedef std::mutex mutex_type;
+    mutable std::mutex m_mutex;
 #elif defined(_WIN32)
-	mutable CRITICAL_SECTION m_mutex;
+    mutable CRITICAL_SECTION m_mutex;
 #else
-	mutable pthread_mutex_t m_mutex;
+    mutable pthread_mutex_t m_mutex;
 #endif
 };
 
@@ -102,15 +102,15 @@ private:
 //
 inline Mutex::Mutex()
 {
-	init(PrioNone);
+    init(PrioNone);
 }
 
 inline Mutex::Mutex(MutexProtocol protocol)
 {
 #ifdef _WIN32
-	init(PrioNone);
+    init(PrioNone);
 #else
-	init(protocol);
+    init(protocol);
 #endif
 }
 

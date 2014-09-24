@@ -19,7 +19,7 @@
 class ProtocolMessage;
 namespace proto2
 {
-	class Message;
+    class Message;
 }
 
 
@@ -29,7 +29,7 @@ UTILINTERNAL_BEGIN
 // "unreachable code".
 inline bool IsTrue(bool condition) 
 {
-	return condition; 
+    return condition; 
 }
 
 namespace traits_helper
@@ -37,7 +37,7 @@ namespace traits_helper
 typedef char yes_type;
 struct no_type
 {
-	char padding[8];
+    char padding[8];
 };
 } // namespace traits_helper
 
@@ -49,13 +49,13 @@ struct no_type
 template<typename T>
 struct IsContainer
 {
-	template<typename C>
-	static traits_helper::yes_type test(typename C::iterator*);
+    template<typename C>
+    static traits_helper::yes_type test(typename C::iterator*);
 
-	template<typename C>
-	static traits_helper::no_type test(...);
+    template<typename C>
+    static traits_helper::no_type test(...);
 
-	static const bool value = sizeof(test<T>(0)) == sizeof(traits_helper::yes_type);
+    static const bool value = sizeof(test<T>(0)) == sizeof(traits_helper::yes_type);
 };
 
 //
@@ -66,13 +66,13 @@ struct IsContainer
 template<typename T>
 struct IsMap
 {
-	template<typename C>
-	static traits_helper::yes_type test(typename C::mapped_type*);
+    template<typename C>
+    static traits_helper::yes_type test(typename C::mapped_type*);
 
-	template<typename C>
-	static traits_helper::no_type test(...);
+    template<typename C>
+    static traits_helper::no_type test(...);
 
-	static const bool value = IsContainer<T>::value && sizeof(test<T>(0)) == sizeof(traits_helper::yes_type);
+    static const bool value = IsContainer<T>::value && sizeof(test<T>(0)) == sizeof(traits_helper::yes_type);
 };
 
 //
@@ -125,52 +125,30 @@ struct TypeTrait<void>
 
 
 //
-//	Compile-time determination of base-class relationship in C++
-//	(adapted to match the syntax of boost's traits_helper library).
-//
-//	Use this to provide a template specialization for a set of types.
-//	For instance,
-//
-//	template < class T, bool derives_from_something = Util::IsBaseAndDerived<Something, T>::value >
-//	class TheTemplate
-//	{
-//		//Standard implementation.
-//	}
-//
-//	//Specialization for T that derive from Something (derives_from_something is true)
-//	template <class T>
-//	class TheTemplate<T, true>
-//	{
-//		T thing;
-//		thing.method_that_is_in_something();
-//	}
-//
-
-//
 // Is `Derived' derive from `Base'
 //
 template <class Base, class Derived>
-struct IsBaseAndDerived		// is_base_and_derived
+struct IsBaseAndDerived        // is_base_and_derived
 {
-	static traits_helper::yes_type test(typename TypeTrait<Base>::pointer);
+    static traits_helper::yes_type test(typename TypeTrait<Base>::pointer);
 
-	static traits_helper::no_type test(...);
+    static traits_helper::no_type test(...);
 
-	STATIC_CONSTANT(bool, value = 
-		sizeof(test(reinterpret_cast<typename TypeTrait<Derived>::pointer>(0))) == sizeof(traits_helper::yes_type));
+    STATIC_CONSTANT(bool, value = 
+        sizeof(test(reinterpret_cast<typename TypeTrait<Derived>::pointer>(0))) == sizeof(traits_helper::yes_type));
 };
 #if !defined(NO_INCLASS_MEMBER_INITIALIZATION)
-	template<class Base, class Derived> const bool IsBaseAndDerived<Base, Derived>::value;
+    template<class Base, class Derived> const bool IsBaseAndDerived<Base, Derived>::value;
 #endif
 
 template <class Base>
 struct IsBaseAndDerived<Base, Base>
 {
-	STATIC_CONSTANT(bool, value = true);
+    STATIC_CONSTANT(bool, value = true);
 };
 
 #if !defined(NO_INCLASS_MEMBER_INITIALIZATION)
-	template<class Base> const bool IsBaseAndDerived<Base, Base>::value;
+    template<class Base> const bool IsBaseAndDerived<Base, Base>::value;
 #endif
 
 //
@@ -181,15 +159,15 @@ namespace traits_helper
 template<bool bool_value> 
 struct bool_constant
 {
-	STATIC_CONSTANT(bool, value = bool_value);
-	//STATIC_CONSTANT(int, ivalue = bool_value ? 1 : 0);
-	typedef bool_constant<bool_value> type;
-	typedef bool value_type;
-	operator bool() const { return this->value; }
+    STATIC_CONSTANT(bool, value = bool_value);
+    //STATIC_CONSTANT(int, ivalue = bool_value ? 1 : 0);
+    typedef bool_constant<bool_value> type;
+    typedef bool value_type;
+    operator bool() const { return this->value; }
 };
 
 #if !defined(NO_INCLASS_MEMBER_INITIALIZATION)
-	template<bool bool_value> const bool bool_constant<bool_value>::value;
+    template<bool bool_value> const bool bool_constant<bool_value>::value;
 #endif
 
 }
@@ -206,19 +184,19 @@ struct IsPointer<T*> : public true_type {};
 
 template <typename Iterator>
 struct IteratorTraits {
-	typedef typename Iterator::value_type value_type;
+    typedef typename Iterator::value_type value_type;
 };
 
 template <typename T>
 struct IteratorTraits<T*> 
 {
-	typedef T value_type;
+    typedef T value_type;
 };
 
 template <typename T>
 struct IteratorTraits<const T*>
 {
-	typedef T value_type;
+    typedef T value_type;
 };
 
 
@@ -233,7 +211,7 @@ struct RemoveReference<T&> { typedef T type; };  // NOLINT
 // A handy wrapper around RemoveReference that works when the argument
 // T depends on template parameters.
 #define REMOVE_REFERENCE(T) \
-	typename Util::RemoveReference<T>::type
+    typename Util::RemoveReference<T>::type
 
 // Removes const from a type if it is a const type, otherwise leaves
 // it unchanged.  This is the same as tr1::remove_const, which is not
@@ -249,7 +227,7 @@ struct RemoveConst<const T> { typedef T type; };  // NOLINT
 template <typename T, size_t N>
 struct RemoveConst<const T[N]>
 {
-	typedef typename RemoveConst<T>::type type[N];
+    typedef typename RemoveConst<T>::type type[N];
 };
 
 #if defined(_MSC_VER) && _MSC_VER < 1400
@@ -259,18 +237,18 @@ struct RemoveConst<const T[N]>
 template <typename T, size_t N>
 struct RemoveConst<T[N]>
 {
-	typedef typename RemoveConst<T>::type type[N];
+    typedef typename RemoveConst<T>::type type[N];
 };
 #endif
 
 // A handy wrapper around RemoveConst that works when the argument
 // T depends on template parameters.
 #define REMOVE_CONST(T) \
-	typename Util::RemoveConst<T>::type
+    typename Util::RemoveConst<T>::type
 
 // Turns const U&, U&, const U, and U all into U.
 #define REMOVE_REFERENCE_AND_CONST(T) \
-	REMOVE_CONST(REMOVE_REFERENCE(T))
+    REMOVE_CONST(REMOVE_REFERENCE(T))
 
 // Adds reference to a type if it is not a reference type,
 // otherwise leaves it unchanged.  This is the same as
@@ -283,7 +261,7 @@ struct AddReference<T&> { typedef T& type; };  // NOLINT
 // A handy wrapper around AddReference that works when the argument T
 // depends on template parameters.
 #define ADD_REFERENCE(T) \
-	typename Util::AddReference<T>::type
+    typename Util::AddReference<T>::type
 
 // Adds a reference to const on top of T as necessary.  For example,
 // it transforms
@@ -295,7 +273,7 @@ struct AddReference<T&> { typedef T& type; };  // NOLINT
 //
 // The argument T must depend on some template parameters.
 #define REFERENCE_TO_CONST(T) \
-	ADD_REFERENCE(const REMOVE_REFERENCE(T))
+    ADD_REFERENCE(const REMOVE_REFERENCE(T))
 
 // ImplicitlyConvertible<From, To>::value is a compile-time bool
 // constant that's true iff type From can be implicitly converted to
@@ -304,48 +282,48 @@ template <typename From, typename To>
 class ImplicitlyConvertible 
 {
 private:
-	// We need the following helper functions only for their types.
-	// They have no implementations.
+    // We need the following helper functions only for their types.
+    // They have no implementations.
 
-	// MakeFrom() is an expression whose type is From.  We cannot simply
-	// use From(), as the type From may not have a public default
-	// constructor.
-	static typename AddReference<From>::type MakeFrom();
+    // MakeFrom() is an expression whose type is From.  We cannot simply
+    // use From(), as the type From may not have a public default
+    // constructor.
+    static typename AddReference<From>::type MakeFrom();
 
-	// These two functions are overloaded.  Given an expression
-	// Helper(x), the compiler will pick the first version if x can be
-	// implicitly converted to type To; otherwise it will pick the
-	// second version.
-	//
-	// The first version returns a value of size 1, and the second
-	// version returns a value of size 2.  Therefore, by checking the
-	// size of Helper(x), which can be done at compile time, we can tell
-	// which version of Helper() is used, and hence whether x can be
-	// implicitly converted to type To.
-	static char Helper(To);
-	static char (&Helper(...))[2];  // NOLINT
+    // These two functions are overloaded.  Given an expression
+    // Helper(x), the compiler will pick the first version if x can be
+    // implicitly converted to type To; otherwise it will pick the
+    // second version.
+    //
+    // The first version returns a value of size 1, and the second
+    // version returns a value of size 2.  Therefore, by checking the
+    // size of Helper(x), which can be done at compile time, we can tell
+    // which version of Helper() is used, and hence whether x can be
+    // implicitly converted to type To.
+    static char Helper(To);
+    static char (&Helper(...))[2];  // NOLINT
 
-	// We have to put the 'public' section after the 'private' section,
-	// or MSVC refuses to compile the code.
+    // We have to put the 'public' section after the 'private' section,
+    // or MSVC refuses to compile the code.
 public:
-	// MSVC warns about implicitly converting from double to int for
-	// possible loss of data, so we need to temporarily disable the
-	// warning.
+    // MSVC warns about implicitly converting from double to int for
+    // possible loss of data, so we need to temporarily disable the
+    // warning.
 #ifdef _MSC_VER
 # pragma warning(push)          // Saves the current warning state.
 # pragma warning(disable:4244)  // Temporarily disables warning 4244.
 
-	static const bool value =
-		sizeof(Helper(ImplicitlyConvertible::MakeFrom())) == 1;
+    static const bool value =
+        sizeof(Helper(ImplicitlyConvertible::MakeFrom())) == 1;
 # pragma warning(pop)           // Restores the warning state.
 #elif defined(__BORLANDC__)
-	// C++Builder cannot use member overload resolution during template
-	// instantiation.  The simplest workaround is to use its C++0x type traits
-	// functions (C++Builder 2009 and above only).
-	static const bool value = __is_convertible(From, To);
+    // C++Builder cannot use member overload resolution during template
+    // instantiation.  The simplest workaround is to use its C++0x type traits
+    // functions (C++Builder 2009 and above only).
+    static const bool value = __is_convertible(From, To);
 #else
-	static const bool value =
-		sizeof(Helper(ImplicitlyConvertible::MakeFrom())) == 1;
+    static const bool value =
+        sizeof(Helper(ImplicitlyConvertible::MakeFrom())) == 1;
 #endif  // _MSV_VER
 };
 template <typename From, typename To>
@@ -356,55 +334,11 @@ const bool ImplicitlyConvertible<From, To>::value;
 // of those.
 template <typename T>
 struct IsAProtocolMessage
-	: public traits_helper::bool_constant<
-	ImplicitlyConvertible<const T*, const ::ProtocolMessage*>::value ||
-	ImplicitlyConvertible<const T*, const ::proto2::Message*>::value> 
+    : public traits_helper::bool_constant<
+    ImplicitlyConvertible<const T*, const ::ProtocolMessage*>::value ||
+    ImplicitlyConvertible<const T*, const ::proto2::Message*>::value> 
 {
 };
-
-// When the compiler sees expression IsContainerTest<C>(0), if C is an
-// STL-style container class, the first overload of IsContainerTest
-// will be viable (since both C::iterator* and C::const_iterator* are
-// valid types and NULL can be implicitly converted to them).  It will
-// be picked over the second overload as 'int' is a perfect match for
-// the type of argument 0.  If C::iterator or C::const_iterator is not
-// a valid type, the first overload is not viable, and the second
-// overload will be picked.  Therefore, we can determine whether C is
-// a container class by checking the type of IsContainerTest<C>(0).
-// The value of the expression is insignificant.
-//
-// Note that we look for both C::iterator and C::const_iterator.  The
-// reason is that C++ injects the name of a class as a member of the
-// class itself (e.g. you can refer to class iterator as either
-// 'iterator' or 'iterator::iterator').  If we look for C::iterator
-// only, for example, we would mistakenly think that a class named
-// iterator is an STL container.
-//
-// Also note that the simpler approach of overloading
-// IsContainerTest(typename C::const_iterator*) and
-// IsContainerTest(...) doesn't work with Visual Age C++ and Sun C++.
-typedef int ContainerType;
-template <class C>
-ContainerType IsContainerTest(int /* dummy */,
-							typename C::iterator* /* it */ = NULL,
-							typename C::const_iterator* /* const_it */ = NULL)
-{
-	return 0;
-}
-
-typedef char NotContainerType;
-template <class C>
-NotContainerType IsContainerTest(long /* dummy */)
-{
-	return '\0'; 
-}
-
-//template <typename C>
-//bool IsContainer()
-//{
-//	return sizeof(traits_helper::yes_type == IsContainerTest<C>(0));
-//}
-
 
 // EnableIf<condition>::type is void when 'Cond' is true, and
 // undefined when 'Cond' is false.  To use SFINAE(Substitution Failure Is Not an Error, ∆•≈‰ ß∞‹≤ª «¥ÌŒÛ) to make a function
@@ -413,24 +347,9 @@ NotContainerType IsContainerTest(long /* dummy */)
 template<bool> struct EnableIf;
 template<> struct EnableIf<true>
 {
-	typedef void type;
+    typedef void type;
 };
 
-//
-// TEMPLATE CLASS enable_if
-//
-//template<bool Test, class Type = void>
-//struct enable_if
-//{ 
-//	// type is undefined for assumed !Test
-//};
-//
-//template<class Type>
-//struct enable_if<true, Type = void>
-//{ 
-//	// type is Type for Test
-//	typedef Type type;
-//};
 
 // StaticAssertTypeEqHelper is used by StaticAssertTypeEq.
 //
@@ -476,8 +395,8 @@ struct StaticAssertTypeEqHelper<T, T>
 template <typename T1, typename T2>
 bool StaticAssertTypeEq()
 {
-	(void)Util::StaticAssertTypeEqHelper<T1, T2>();
-	return true;
+    (void)Util::StaticAssertTypeEqHelper<T1, T2>();
+    return true;
 }
 
 //
@@ -504,12 +423,12 @@ bool StaticAssertTypeEq()
 //template<typename To>
 //inline To ImplicitCast(To x) 
 //{
-//	return x; 
+//    return x; 
 //}
 template<typename To, typename From>
 inline To ImplicitCast(From const &f)
 {
-	return f;
+    return f;
 }
 
 // When you upcast (that is, cast a pointer from type Foo to type
@@ -533,24 +452,24 @@ inline To ImplicitCast(From const &f)
 // This relatively ugly name is intentional. It prevents clashes with
 // similar functions users may have (e.g., down_cast). The internal
 // namespace alone is not enough because the function can be found by ADL.
-template<typename To, typename From>	// use like this: DownCast<T*>(foo);
-inline To DownCast(From* f)				// so we only accept pointers
+template<typename To, typename From>    // use like this: DownCast<T*>(foo);
+inline To DownCast(From* f)                // so we only accept pointers
 {  
-	// Ensures that To is a sub-type of From *.  This test is here only
-	// for compile-time type checking, and has no overhead in an
-	// optimized build at run-time, as it will be optimized away
-	// completely.
-	if (false) 
-	{
-		const To to = NULL;
-		ImplicitCast<From*>(to);
-	}
+    // Ensures that To is a sub-type of From *.  This test is here only
+    // for compile-time type checking, and has no overhead in an
+    // optimized build at run-time, as it will be optimized away
+    // completely.
+    if (false) 
+    {
+        const To to = NULL;
+        ImplicitCast<From*>(to);
+    }
 
 #if HAS_RTTI
-	// RTTI: debug mode only!
-	CHECK_SUCCESS(f == NULL || dynamic_cast<To>(f) != NULL);
+    // RTTI: debug mode only!
+    CHECK_SUCCESS(f == NULL || dynamic_cast<To>(f) != NULL);
 #endif
-	return static_cast<To>(f);
+    return static_cast<To>(f);
 }
 
 // Downcasts the pointer of type Base to Derived.
@@ -562,10 +481,10 @@ template <class Derived, class Base>
 Derived* CheckedDowncastToActualType(Base* base) 
 {
 #if HAS_RTTI
-	CHECK_SUCCESS(typeid(*base) == typeid(Derived));
-	return dynamic_cast<Derived*>(base);  // NOLINT
+    CHECK_SUCCESS(typeid(*base) == typeid(Derived));
+    return dynamic_cast<Derived*>(base);  // NOLINT
 #else
-	return static_cast<Derived*>(base);  // Poor man's downcast.
+    return static_cast<Derived*>(base);  // Poor man's downcast.
 #endif
 }
 
@@ -574,25 +493,25 @@ Derived* CheckedDowncastToActualType(Base* base)
 #   define BOOL_C_BASE(bool_value) : public traits_helper::bool_constant<bool_value>
 #endif
 
-#define BOOL_TRAIT_VALUE_DECL(bool_value)				\
-	typedef traits_helper::bool_constant<bool_value> base;\
-	using base::value;						
+#define BOOL_TRAIT_VALUE_DECL(bool_value)                \
+    typedef traits_helper::bool_constant<bool_value> base;\
+    using base::value;                        
 
-#define BOOL_TRAIT_DEF(trait, T, bool_value)		\
-	template<typename T> struct trait				\
-	BOOL_C_BASE(bool_value)							\
-{													\
-public:												\
-	BOOL_TRAIT_VALUE_DECL(bool_value)				\
-};											
+#define BOOL_TRAIT_DEF(trait, T, bool_value)        \
+    template<typename T> struct trait                \
+    BOOL_C_BASE(bool_value)                            \
+{                                                    \
+public:                                                \
+    BOOL_TRAIT_VALUE_DECL(bool_value)                \
+};                                            
 
-#define BOOL_TRAIT_SPEC(trait, sp, bool_value)		\
-	template<> struct trait<sp>						\
-	BOOL_C_BASE(bool_value)							\
-{													\
-public:												\
-	BOOL_TRAIT_VALUE_DECL(bool_value)				\
-};											
+#define BOOL_TRAIT_SPEC(trait, sp, bool_value)        \
+    template<> struct trait<sp>                        \
+    BOOL_C_BASE(bool_value)                            \
+{                                                    \
+public:                                                \
+    BOOL_TRAIT_VALUE_DECL(bool_value)                \
+};                                            
 
 //
 //* is a type T a floating-point type described in the standard
@@ -647,13 +566,13 @@ struct OR;
 template <bool b1, bool b2, bool b3, bool b4, bool b5, bool b6, bool b7>
 struct OR
 {
-	STATIC_CONSTANT(bool, value = true);
+    STATIC_CONSTANT(bool, value = true);
 };
 
 template <>
 struct OR<false, false, false, false, false, false, false>
 {
-	STATIC_CONSTANT(bool, value = false);
+    STATIC_CONSTANT(bool, value = false);
 };
 
 //
@@ -665,13 +584,13 @@ struct AND;
 template <bool b1, bool b2, bool b3, bool b4, bool b5, bool b6, bool b7>
 struct AND
 {
-	STATIC_CONSTANT(bool, value = false);
+    STATIC_CONSTANT(bool, value = false);
 };
 
 template <>
 struct AND<true, true, true, true, true, true, true>
 {
-	STATIC_CONSTANT(bool, value = true);
+    STATIC_CONSTANT(bool, value = true);
 };
 
 //
@@ -680,17 +599,17 @@ struct AND<true, true, true, true, true, true, true>
 template <int b1, int b2>
 struct EQ
 {
-	STATIC_CONSTANT(bool, value = (b1 == b2));
+    STATIC_CONSTANT(bool, value = (b1 == b2));
 };
 template <int b1, int b2>
 struct NE
 {
-	STATIC_CONSTANT(bool, value = (b1 != b2));
+    STATIC_CONSTANT(bool, value = (b1 != b2));
 };
 
 #ifndef NO_INCLASS_MEMBER_INITIALIZATION
-	template <int b1, int b2> bool const EQ<b1,b2>::value;
-	template <int b1, int b2> bool const NE<b1,b2>::value;
+    template <int b1, int b2> bool const EQ<b1,b2>::value;
+    template <int b1, int b2> bool const NE<b1,b2>::value;
 #endif
 
 //
@@ -699,13 +618,13 @@ struct NE
 template <bool b>
 struct NOT
 {
-	STATIC_CONSTANT(bool, value = true);
+    STATIC_CONSTANT(bool, value = true);
 };
 
 template <>
 struct NOT<true>
 {
-	STATIC_CONSTANT(bool, value = false);
+    STATIC_CONSTANT(bool, value = false);
 };
 
 UTILINTERNAL_END

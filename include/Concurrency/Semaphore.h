@@ -18,17 +18,16 @@ namespace UtilInternal
 class Semaphore
 {
 public:
-	Semaphore(long initialCount = 0);
-	~Semaphore();
+    Semaphore(long initialCount = 0);
+    ~Semaphore();
 
-	void Wait() const;			// P
-	bool TimedWait(const Util::Time&) const;	// P
+    void Wait() const;            // P
+    bool TimedWait(const Util::Time&) const;    // P
 
-	//将信号量对象的计数增加: releaseCount。
-	void Post(int releaseCount = 1) const;	// V
+    void Post(int releaseCount = 1) const;    // V
 
 private:
-	mutable HANDLE	m_sem;
+    mutable HANDLE    m_sem;
 };
 
 }

@@ -25,15 +25,6 @@
 
 using namespace std;
 
-#if defined(_MSC_VER) || defined(__BORLANDC__)
-	// MSVC and C++Builder do not provide a definition of STDERR_FILENO.
-	const int kStdOutFileno = 1;
-	const int kStdErrFileno = 2;
-#else
-	const int kStdOutFileno = STDOUT_FILENO;
-	const int kStdErrFileno = STDERR_FILENO;
-#endif  // _MSC_VER
-
 //
 // Determine if path is an absolute path
 //
@@ -95,55 +86,55 @@ UtilInternal::DirectoryExists(const string& path)
 inline string
 UtilInternal::FixDirSeparator(const string& path)
 {
-	string result = path;
-	size_t pos = 0;
-	while ((pos = result.find('/', pos)) != string::npos)
-	{
-		result[pos] = '\\';
-		pos++;
-	}
+    string result = path;
+    size_t pos = 0;
+    while ((pos = result.find('/', pos)) != string::npos)
+    {
+        result[pos] = '\\';
+        pos++;
+    }
 
-	return result;
+    return result;
 }
 
 bool UtilInternal::Exists(const string& name)
 {
-	return access(name.c_str(), 0/*F_OK*/) == 0;
+    return access(name.c_str(), 0/*F_OK*/) == 0;
 }
 
 bool UtilInternal::ReadFileToString(const string& name, string* output)
 {
-	char buffer[1024];
-	FILE* file = fopen(name.c_str(), "rb");
-	if (file == NULL) return false;
+    char buffer[1024];
+    FILE* file = fopen(name.c_str(), "rb");
+    if (file == NULL) return false;
 
-	while (true) 
-	{
-		size_t n = fread(buffer, 1, sizeof(buffer), file);
-		if (n <= 0) break;
-		output->append(buffer, n);
-	}
+    while (true) 
+    {
+        size_t n = fread(buffer, 1, sizeof(buffer), file);
+        if (n <= 0) break;
+        output->append(buffer, n);
+    }
 
-	int error = ferror(file);
-	if (fclose(file) != 0) return false;
-	return error == 0;
+    int error = ferror(file);
+    if (fclose(file) != 0) return false;
+    return error == 0;
 }
 
 void UtilInternal::ReadFileToStringOrDie(const string& name, string* output)
 {
-	UTIL_CHECK(ReadFileToString(name, output)) << "Could not read: " << name;
+    UTIL_CHECK(ReadFileToString(name, output)) << "Could not read: " << name;
 }
 
 void UtilInternal::WriteStringToFileOrDie(const string& contents, const string& name)
 {
-	FILE* file = fopen(name.c_str(), "wb");
-	UTIL_CHECK(file != NULL)
-		<< "fopen(" << name << ", \"wb\"): " << strerror(errno);
-	UTIL_CHECK_EQ(fwrite(contents.data(), 1, contents.size(), file),
-		contents.size())
-		<< "fwrite(" << name << "): " << strerror(errno);
-	UTIL_CHECK(fclose(file) == 0)
-		<< "fclose(" << name << "): " << strerror(errno);
+    FILE* file = fopen(name.c_str(), "wb");
+    UTIL_CHECK(file != NULL)
+        << "fopen(" << name << ", \"wb\"): " << strerror(errno);
+    UTIL_CHECK_EQ(fwrite(contents.data(), 1, contents.size(), file),
+        contents.size())
+        << "fwrite(" << name << "): " << strerror(errno);
+    UTIL_CHECK(fclose(file) == 0)
+        << "fclose(" << name << "): " << strerror(errno);
 }
 
 //
@@ -515,267 +506,210 @@ UtilInternal::ofstream::open(const string& path, ios_base::openmode mode)
 long 
 UtilInternal::ifstream::length()
 {
-	if (is_open())
-	{
-#if 0
-		long curpos = tellg();
-		// get length of file:
-		seekg(0, ios::end);
-		long flen = tellg() - curpos;
-		seekg(curpos);
-#else
-		// get pointer to associated buffer object
-		filebuf *pbuf = rdbuf();
-		streampos curpos = pbuf->pubseekoff(0, cur, ios::in);
-		// get file size using buffer's members
-		long flen = pbuf->pubseekoff(0, end, ios::in) - curpos;
-		pbuf->pubseekpos(curpos, ios::in);
-#endif
-		return flen;
-	}
+    if (is_open())
+    {
+        long curpos = tellg();
+        // get length of file:
+        seekg(0, ios::end);
+        long flen = tellg() - curpos;
+        seekg(curpos);
 
-	return -1;
+        return flen;
+    }
+
+    return -1;
 }
 
 std::string 
 UtilInternal::ifstream::load()
 {
-	long flength = length();
-	if (0 != flength)
-	{
-		string result;
-		result.resize(flength);
+    long flength = length();
+    if (0 != flength)
+    {
+        string result;
+        result.resize(flength);
 
-		// read data as a block:
-		read(&result[0], flength);
-		
-		//close(); // the destructor would call close().
+        // read data as a block:
+        read(&result[0], flength);
+        
+        assert(flength == gcount() || eof());
+        result.resize(gcount());
 
-		assert(flength == gcount() || eof());
-		result.resize(gcount());
+        return result;
+    }
 
-		return result;
-	}
-
-	return "";
+    return "";
 }
 
 void 
 UtilInternal::ifstream::reset()
 {
-	if (is_open())
-	{
-		close();
-		clear();
-	}
+    if (is_open())
+    {
+        close();
+        clear();
+    }
 }
 
 long UtilInternal::length(const std::string& path)
 {
-	UtilInternal::structstat st;
-	if (0 == UtilInternal::stat(path, &st) && S_ISREG(st.st_mode))
-	{
-		return st.st_size;
-	}
-	return -1;
+    UtilInternal::structstat st;
+    if (0 == UtilInternal::stat(path, &st) && S_ISREG(st.st_mode))
+    {
+        return st.st_size;
+    }
+    return -1;
 }
 
 long UtilInternal::length(int fd)
 {
-#if 0
-	long flength = ::filelength(fd);
-#else
-	long curpos = lseek(fd, 0, SEEK_CUR);
-	long flength = lseek(fd, 0, SEEK_END) - curpos;
-	lseek(fd, curpos, SEEK_SET);
-#endif
-
-	return flength;
+    return ::filelength(fd);
 }
 
 // Get the file size, so we can pre-allocate the string. HUGE speed impact.
 long UtilInternal::length(FILE* file)
 {
-	//FILE* file = fopen(path.c_str(), "rb");
-	if (NULL == file)
-	{
-		return -1;
-	}
+    if (NULL == file)
+    {
+        return -1;
+    }
 
-#if 0
-	return length(fileno(file));
-#else
-	int curpos = fseek(file, 0, SEEK_CUR);
-	fseek(file, 0, SEEK_END);
-	long flength = ftell(file) - curpos;
-	fseek(file, curpos, SEEK_SET);
-	//fclose(file);
-	return flength;
-#endif
+    return length(fileno(file));
 }
 
 std::string UtilInternal::fload(const std::string& path)
 {
-	FILE* file = fopen(path.c_str(), "rb");
-	if (NULL == file)
-	{
-		return "";
-	}
+    FILE* file = fopen(path.c_str(), "rb");
+    if (NULL == file)
+    {
+        return "";
+    }
 
-	long flength = length(file);
-	if (flength <= 0)
-	{
-		return "";
-	}
+    long flength = length(file);
+    if (flength <= 0)
+    {
+        return "";
+    }
 
-#if 0
-	string content;
-	content.resize(flength);
+    string content;
+    content.resize(flength);
 
-	if (1 != fread(&content[0], flength, 1, file))
-	{
-		fclose(file);
-		return "";
-	}
-#else
-	char* const buffer = new char[flength];
+    if (1 != fread(&content[0], flength, 1, file))
+    {
+        fclose(file);
+        return "";
+    }
 
-	size_t bytes_last_read = 0;  // # of bytes read in the last fread()
-	size_t bytes_read = 0;       // # of bytes read so far
+    fclose(file);
 
-	// Keeps reading the file until we cannot read further or the
-	// pre-determined file size is reached.
-	do
-	{
-		bytes_last_read = fread(buffer + bytes_read, 1, flength - bytes_read, file);
-		bytes_read += bytes_last_read;
-	} while (bytes_last_read > 0 && bytes_read < static_cast<size_t>(flength));
-
-	const std::string content(buffer, bytes_read);
-	delete[] buffer;
-#endif
-
-	fclose(file);
-
-	return Util::String::TranslatingCR2LF(content);
+    return Util::String::TranslatingCR2LF(content);
 }
 
 std::string UtilInternal::fload(int fd)
 {
-	long flength = length(fd);
-	if (flength <= 0)
-	{
-		return "";
-	}
+    long flength = length(fd);
+    if (flength <= 0)
+    {
+        return "";
+    }
 
-	string result;
-	result.resize(flength);
+    string result;
+    result.resize(flength);
 
-	if (flength != read(fd, &result[0], flength))
-	{
-		return "";
-	}
+    if (flength != read(fd, &result[0], flength))
+    {
+        return "";
+    }
 
-	return Util::String::TranslatingCR2LF(result);
+    return Util::String::TranslatingCR2LF(result);
 }
 
 std::string UtilInternal::fload(FILE* file)
 {
-#if 0
+    const size_t file_size = length(file);
+    char* const buffer = new char[file_size];
 
-	return fload(fileno(file));
+    size_t bytes_last_read = 0;  // # of bytes read in the last fread()
+    size_t bytes_read = 0;       // # of bytes read so far
 
-#else
+    // Keeps reading the file until we cannot read further or the
+    // pre-determined file size is reached.
+    do 
+    {
+        bytes_last_read = fread(buffer + bytes_read, 1, file_size - bytes_read, file);
+        bytes_read += bytes_last_read;
+    } while (bytes_last_read > 0 && bytes_read < file_size);
 
-	const size_t file_size = length(file);
-	char* const buffer = new char[file_size];
+    const std::string content(buffer, bytes_read);
+    delete[] buffer;
 
-	size_t bytes_last_read = 0;  // # of bytes read in the last fread()
-	size_t bytes_read = 0;       // # of bytes read so far
-
-	//fseek(file, 0, SEEK_SET);
-
-	// Keeps reading the file until we cannot read further or the
-	// pre-determined file size is reached.
-	do 
-	{
-		bytes_last_read = fread(buffer + bytes_read, 1, file_size - bytes_read, file);
-		bytes_read += bytes_last_read;
-	} while (bytes_last_read > 0 && bytes_read < file_size);
-
-	const std::string content(buffer, bytes_read);
-	delete[] buffer;
-
-	return Util::String::TranslatingCR2LF(content);
-
-#endif
+    return Util::String::TranslatingCR2LF(content);
 }
 
 void  UtilInternal::redirection(const std::string& filename, 
-								const Util::StringConverterPtr& converter, 
-								FILE* oldfile/* = stdout | stderr*/)
+                                const Util::StringConverterPtr& converter, 
+                                FILE* oldfile/* = stdout | stderr*/)
 {
-	if ("" != filename)
-	{
+    if ("" != filename)
+    {
 #ifdef _LARGEFILE64_SOURCE
-		FILE* file = freopen64(filename.c_str(), "a", oldfile);
+        FILE* file = freopen64(filename.c_str(), "a", oldfile);
 #else
 #ifdef _WIN32
-		FILE* file = _wfreopen(Util::StringToWstring(
-			NativeToUTF8(converter, filename)).c_str(), L"a", oldfile);
+        FILE* file = _wfreopen(Util::StringToWstring(
+            NativeToUTF8(converter, filename)).c_str(), L"a", oldfile);
 #else
-		FILE* file = freopen(filename.c_str(), "a", oldfile);
+        FILE* file = freopen(filename.c_str(), "a", oldfile);
 #endif
 #endif
-		if (0 == file)
-		{
-			Util::FileException ex(__FILE__, __LINE__, UtilInternal::GetSystemErrno(), filename);
-			throw ex;
-		}
-	}
+        if (0 == file)
+        {
+            Util::FileException ex(__FILE__, __LINE__, UtilInternal::GetSystemErrno(), filename);
+            throw ex;
+        }
+    }
 }
 
 std::vector<std::vector<std::string> > 
 UtilInternal::LoadCSVFile(const string& csvfile, const string& separator)
 {
-	UtilInternal::ifstream in(csvfile);
-	if (!in)
-	{
-		throw Util::FileException(__FILE__, __LINE__, UtilInternal::GetSystemErrno(), csvfile);
-	}
+    UtilInternal::ifstream in(csvfile);
+    if (!in)
+    {
+        throw Util::FileException(__FILE__, __LINE__, UtilInternal::GetSystemErrno(), csvfile);
+    }
 
-	std::vector<std::vector<std::string> > retvec;
-	string line;
-	bool firstLine = true;
-	while (getline(in, line))
-	//while (getmultiline(in, line))
-	{
-		//
-		// Skip UTF8 BOM if present.
-		//
-		if (firstLine)
-		{
-			const unsigned char UTF8_BOM[3] = {0xEF, 0xBB, 0xBF}; 
-			if (line.size() >= 3 &&
-				static_cast<const unsigned char>(line[0]) == UTF8_BOM[0] &&
-				static_cast<const unsigned char>(line[1]) == UTF8_BOM[1] && 
-				static_cast<const unsigned char>(line[2]) == UTF8_BOM[2])
-			{
-				line = line.substr(3);
-			}
-			firstLine = false;
-		}
-		
-		if (line.empty() || '#' == line[0] || 
-			('[' == line[0] && ']' == line[line.size() - 1]))
-		{
-			continue;
-		}
+    std::vector<std::vector<std::string> > retvec;
+    string line;
+    bool firstLine = true;
+    while (getline(in, line))
+    {
+        //
+        // Skip UTF8 BOM if present.
+        //
+        if (firstLine)
+        {
+            const unsigned char UTF8_BOM[3] = {0xEF, 0xBB, 0xBF}; 
+            if (line.size() >= 3 &&
+                static_cast<const unsigned char>(line[0]) == UTF8_BOM[0] &&
+                static_cast<const unsigned char>(line[1]) == UTF8_BOM[1] && 
+                static_cast<const unsigned char>(line[2]) == UTF8_BOM[2])
+            {
+                line = line.substr(3);
+            }
+            firstLine = false;
+        }
+        
+        if (line.empty() || '#' == line[0] || 
+            ('[' == line[0] && ']' == line[line.size() - 1]))
+        {
+            continue;
+        }
 
-		vector<string> colms;
-		Util::String::SplitString(line, separator, colms, true);
-		retvec.push_back(colms);
-	}
+        vector<string> colms;
+        Util::String::SplitString(line, separator, colms, true);
+        retvec.push_back(colms);
+    }
 
-	return retvec;
+    return retvec;
 }

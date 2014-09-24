@@ -31,19 +31,4 @@
 #include <Concurrency/ThreadLocal.h>
 #include <Concurrency/Timer.h>
 
-#include <Concurrency//MapReduce/BufferQueue.h>
-#include <Concurrency//MapReduce/ClosedError.h>
-#include <Concurrency//MapReduce/ConcurrentPriorityQueue.h>
-#include <Concurrency//MapReduce/IteratorQueue.h>
-#include <Concurrency//MapReduce/MapReduce.h>
-#include <Concurrency//MapReduce/MapReduceHelpers.h>
-#include <Concurrency//MapReduce/MapReduceImpl.h>
-#include <Concurrency//MapReduce/MutableThread.h>
-#include <Concurrency//MapReduce/QueueBase.h>
-#include <Concurrency//MapReduce/SerialExecutor.h>
-#include <Concurrency//MapReduce/SimpleThreadPool.h>
-#include <Concurrency//MapReduce/StdThread.h>
-#include <Concurrency//MapReduce/StreamMutex.h>
-//#include <Concurrency//MapReduce/SystemError.h>
-
 #endif

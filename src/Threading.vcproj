@@ -202,10 +202,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\include\Concurrency\Latch.h"
-					>
-				</File>
-				<File
 					RelativePath="..\include\Concurrency\Lock.h"
 					>
 				</File>
@@ -294,10 +290,6 @@
 				Name="Util"
 				>
 				<File
-					RelativePath="..\include\Util\ArgVector.h"
-					>
-				</File>
-				<File
 					RelativePath="..\include\Util\AtExitManager.h"
 					>
 				</File>
@@ -323,10 +315,6 @@
 				</File>
 				<File
 					RelativePath="..\include\Util\FileUtilInternal.h"
-					>
-				</File>
-				<File
-					RelativePath="..\include\Util\InitData.h"
 					>
 				</File>
 				<File
@@ -432,10 +420,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Concurrency\Latch.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\Concurrency\Mutex.cpp"
 					>
 				</File>
@@ -501,10 +485,6 @@
 				</File>
 				<File
 					RelativePath=".\Util\FileUtilInternal.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\Util\InitData.cpp"
 					>
 				</File>
 				<File

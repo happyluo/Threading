@@ -16,17 +16,17 @@ CONCURRENCY_BEGIN
 class CONCURRENCY_API SpinMutex
 {
 public:
-	void Lock() UTIL_NOEXCEPT;
-	void Unlock() UTIL_NOEXCEPT;
+    void Lock() UTIL_NOEXCEPT;
+    void Unlock() UTIL_NOEXCEPT;
 
 private:
-	UTIL_CONSTEXPR SpinMutex(void*) UTIL_NOEXCEPT;
-	SpinMutex(const SpinMutex&);
-	SpinMutex& operator =(const SpinMutex&);
+    UTIL_CONSTEXPR SpinMutex(void*) UTIL_NOEXCEPT;
+    SpinMutex(const SpinMutex&);
+    SpinMutex& operator =(const SpinMutex&);
 
-	void* m_pmutex;
+    void* m_pmutex;
 
-	friend CONCURRENCY_API SpinMutex& GetSpinMutex(const void*);
+    friend CONCURRENCY_API SpinMutex& GetSpinMutex(const void*);
 };
 
 CONCURRENCY_API SpinMutex& GetSpinMutex(const void*);

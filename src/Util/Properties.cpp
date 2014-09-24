@@ -9,11 +9,8 @@
 #include <Util/Properties.h>
 #include <Util/DisableWarnings.h>
 #include <Util/StringUtil.h>
-//#include <Util/FileUtil.h>
 #include <Logging/Logger.h>
 #include <Logging/LoggerUtil.h>
-//#include <Util/ArgVector.h>
-#include <Util/InitData.h>
 
 using namespace std;
 using namespace Util;
@@ -98,7 +95,7 @@ Util::Properties::GetPropertyAsListWithDefault(const string& key, const StringSe
         p->second.used = true;
 
         StringSeq result;
-		if (!Util::String::SplitString(p->second.value, ", \t\r\n", result))
+        if (!Util::String::SplitString(p->second.value, ", \t\r\n", result))
         {
             Warning out(GetProcessLogger());
             out << "mismatched quotes in property " << key << "'s value, returning default value";
@@ -216,137 +213,32 @@ Util::Properties::ParseCommandLineOptions(const string& prefix, const StringSeq&
 void
 Util::Properties::Load(const std::string& file)
 {
-//
-// Metro style applications cannot access Windows registry.
-//
-#if defined (_WIN32) && !defined(OS_WINRT)
-    if (file.find("HKLM\\") == 0)
+    UtilInternal::ifstream in(Util::NativeToUTF8(m_converter, file));
+    if (!in)
     {
-        HKEY iceKey;
-        const wstring keyName = Util::StringToWstring(Util::NativeToUTF8(m_converter, file).substr(5)).c_str();
-        LONG err;
-        if ((err = RegOpenKeyExW(HKEY_LOCAL_MACHINE, keyName.c_str(), 0, KEY_QUERY_VALUE, &iceKey)) != ERROR_SUCCESS)
-        {
-            InitializationException ex(__FILE__, __LINE__);
-            ex.m_reason = "could not open Windows registry key `" + file + "':\n" + Util::ErrorToString(err);
-            throw ex;
-        }
-
-        DWORD maxNameSize; // Size in characters not including terminating null character.
-        DWORD maxDataSize; // Size in bytes
-        DWORD numValues;
-        try
-        {
-            err = RegQueryInfoKey(iceKey, NULL, NULL, NULL, NULL, NULL, NULL, &numValues, &maxNameSize, &maxDataSize, 
-                                  NULL, NULL);
-            if (err != ERROR_SUCCESS)
-            {
-                InitializationException ex(__FILE__, __LINE__);
-                ex.m_reason = "could not open Windows registry key `" + file + "':\n";
-                ex.m_reason += Util::ErrorToString(err);
-                throw ex;
-            }
-
-            for (DWORD i = 0; i < numValues; ++i)
-            {
-                vector<wchar_t> nameBuf(maxNameSize + 1);
-                vector<BYTE> dataBuf(maxDataSize);
-                DWORD keyType;
-                DWORD nameBufSize = static_cast<DWORD>(nameBuf.size());
-                DWORD dataBufSize = static_cast<DWORD>(dataBuf.size());
-                err = RegEnumValueW(iceKey, i, &nameBuf[0], &nameBufSize, NULL, &keyType, &dataBuf[0], &dataBufSize);
-                if (err != ERROR_SUCCESS || nameBufSize == 0)
-                {
-                    ostringstream os;
-                    os << "could not read Windows registry property name, key: `" + file + "', index: " << i << ":\n";
-                    if (nameBufSize == 0)
-                    {
-                        os << "property name can't be the empty string";
-                    }
-                    else
-                    {
-                        os << Util::ErrorToString(err);
-                    }
-                    GetProcessLogger()->Warning(os.str());
-                    continue;
-                }
-                string name = Util::WstringToString(wstring(reinterpret_cast<wchar_t*>(&nameBuf[0]), nameBufSize));
-                name = Util::UTF8ToNative(m_converter, name);
-                if (keyType != REG_SZ && keyType != REG_EXPAND_SZ)
-                {
-                    ostringstream os;
-                    os << "unsupported type for Windows registry property `" + name + "' key: `" + file + "'";
-                    GetProcessLogger()->Warning(os.str());
-                    continue;
-                }
-
-                string value;
-                wstring valueW = wstring(reinterpret_cast<wchar_t*>(&dataBuf[0]), (dataBufSize / sizeof(wchar_t)) - 1);
-                if (keyType == REG_SZ)
-                {
-                    value = Util::WstringToString(valueW);
-                }
-                else // keyType == REG_EXPAND_SZ
-                {
-                    vector<wchar_t> expandedValue(1024);
-                    DWORD sz = ExpandEnvironmentStringsW(valueW.c_str(), &expandedValue[0],
-                                                         static_cast<DWORD>(expandedValue.size()));
-                    if (sz >= expandedValue.size())
-                    {
-                        expandedValue.resize(sz + 1);
-                        if (ExpandEnvironmentStringsW(valueW.c_str(), &expandedValue[0],
-                                                     static_cast<DWORD>(expandedValue.size())) == 0)
-                        {
-                            ostringstream os;
-                            os << "could not expand variable in property `" << name << "', key: `" + file + "':\n";
-                            os << Util::LastErrorToString();
-                            GetProcessLogger()->Warning(os.str());
-                            continue;
-                        }
-                    }
-                    value = Util::WstringToString(wstring(&expandedValue[0], sz -1));
-                }
-                value = Util::UTF8ToNative(m_converter, value);
-                SetProperty(name, value);
-            }
-        }
-        catch(...)
-        {
-            RegCloseKey(iceKey);
-            throw;
-        }
-        RegCloseKey(iceKey);
+        throw FileException(__FILE__, __LINE__, UtilInternal::GetSystemErrno(), file);
     }
-    else
-#endif
-    {
-        UtilInternal::ifstream in(Util::NativeToUTF8(m_converter, file));
-        if (!in)
-        {
-			throw FileException(__FILE__, __LINE__, UtilInternal::GetSystemErrno(), file);
-        }
 
-        string line;
-        bool firstLine = true;
-        while (getline(in, line))
+    string line;
+    bool firstLine = true;
+    while (getline(in, line))
+    {
+        //
+        // Skip UTF8 BOM if present.
+        //
+        if (firstLine)
         {
-            //
-            // Skip UTF8 BOM if present.
-            //
-            if (firstLine)
+            const unsigned char UTF8_BOM[3] = {0xEF, 0xBB, 0xBF}; 
+            if (line.size() >= 3 &&
+                static_cast<const unsigned char>(line[0]) == UTF8_BOM[0] &&
+                static_cast<const unsigned char>(line[1]) == UTF8_BOM[1] && 
+                static_cast<const unsigned char>(line[2]) == UTF8_BOM[2])
             {
-                const unsigned char UTF8_BOM[3] = {0xEF, 0xBB, 0xBF}; 
-                if (line.size() >= 3 &&
-                   static_cast<const unsigned char>(line[0]) == UTF8_BOM[0] &&
-                   static_cast<const unsigned char>(line[1]) == UTF8_BOM[1] && 
-                   static_cast<const unsigned char>(line[2]) == UTF8_BOM[2])
-                {
-                    line = line.substr(3);
-                }
-                firstLine = false;
+                line = line.substr(3);
             }
-            ParseLine(line, m_converter);
+            firstLine = false;
         }
+        ParseLine(line, m_converter);
     }
 }
 
@@ -360,7 +252,7 @@ Util::Properties::Clone()
 size_t 
 Util::Properties::Size() const
 {
-	return m_properties.size();
+    return m_properties.size();
 }
 
 set<string>
@@ -387,75 +279,6 @@ Util::Properties::Properties(const Properties* p) :
 Util::Properties::Properties(const StringConverterPtr& converter) :
     m_converter(converter)
 {
-}
-
-Util::Properties::Properties(StringSeq& args, const PropertiesPtr& defaults, const StringConverterPtr& converter) :
-    m_converter(converter)
-{
-    if (defaults != 0)
-    {
-        m_properties = static_cast<Properties*>(defaults.Get())->m_properties;
-    }
-
-    StringSeq::iterator q = args.begin();
-
-    map<string, PropertyValue>::iterator p = m_properties.find("Util.ProgramName");
-    if (p == m_properties.end())
-    {
-        if (q != args.end())
-        {
-            //
-            // Use the first argument as the value for Util.ProgramName. Replace
-            // any backslashes in this value with forward slashes, in case this
-            // value is used by the event logger.
-            //
-            string name = *q;
-            replace(name.begin(), name.end(), '\\', '/');
-
-            PropertyValue pv(name, true);
-            m_properties["Util.ProgramName"] = pv;
-        }
-    }
-    else
-    {
-        p->second.used = true;
-    }
-
-    StringSeq tmp;
-
-    bool loadConfigFiles = false;
-    while (q != args.end())
-    {
-        string s = *q;
-        if (s.find("--Util.Config") == 0)
-        {
-            if (s.find('=') == string::npos)
-            {
-                s += "=1";
-            }
-            ParseLine(s.substr(2), 0);
-            loadConfigFiles = true;
-        }
-        else
-        {
-            tmp.push_back(s);
-        }
-        ++q;
-    }
-    args = tmp;
-
-    if (!loadConfigFiles)
-    {
-        //
-        // If Util.Config is not set, load from UTIL_CONFIG (if set)
-        //
-        loadConfigFiles = (m_properties.find("Util.Config") == m_properties.end());
-    }
-
-    if (loadConfigFiles)
-    {
-        LoadConfig();
-    }
 }
 
 void
@@ -578,8 +401,8 @@ Util::Properties::ParseLine(const string& line, const StringConverterPtr& conver
                 }
                 else
                 {
-					value += value.length() == 0 ? escapedspace : whitespace;
-					value += c;
+                    value += value.length() == 0 ? escapedspace : whitespace;
+                    value += c;
                 }
                 break;
 
@@ -690,4 +513,10 @@ Util::Properties::LoadConfig()
 
     PropertyValue pv(value, true);
     m_properties["Util.Config"] = pv;
+}
+
+PropertiesPtr
+Util::CreateProperties(const StringConverterPtr& converter)
+{
+    return new Properties(converter);
 }

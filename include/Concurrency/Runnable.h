@@ -17,10 +17,10 @@ CONCURRENCY_BEGIN
 class Runnable : virtual public Util::Shared
 {
 public:
-	Runnable(void) {}
-	virtual ~Runnable(void) {}
+    Runnable(void) {}
+    virtual ~Runnable(void) {}
 
-	virtual void Run() = 0;
+    virtual void Run() = 0;
 };
 
 CONCURRENCY_END

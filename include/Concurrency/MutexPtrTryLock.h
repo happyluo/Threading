@@ -20,80 +20,79 @@ class MutexPtrTryLock : public noncopyable
 {
 
 public:
-	MutexPtrTryLock<M>(const M* mutex) :
-		m_mutex(mutex),
-		m_acquired(false)
-	{
-		if (m_mutex)
-		{
-			m_acquired = m_mutex->TryLock();
-		}
-	}
+    MutexPtrTryLock<M>(const M* mutex) :
+        m_mutex(mutex),
+        m_acquired(false)
+    {
+        if (m_mutex)
+        {
+            m_acquired = m_mutex->TryLock();
+        }
+    }
 
-	~MutexPtrTryLock()
-	{
-		if (m_mutex && m_acquired)
-		{
-			m_mutex->Unlock();
-			//m_acquired = false;
-		}
-	}
+    ~MutexPtrTryLock()
+    {
+        if (m_mutex && m_acquired)
+        {
+            m_mutex->Unlock();
+        }
+    }
 
-	void Acquire() const
-	{
-		if (m_acquired)
-		{
-			throw ThreadLockedException(__FILE__, __LINE__);
-		}
+    void Acquire() const
+    {
+        if (m_acquired)
+        {
+            throw ThreadLockedException(__FILE__, __LINE__);
+        }
 
-		if (m_mutex)
-		{
-			m_mutex->Lock();
-			m_acquired = true;
-		}
-	}
+        if (m_mutex)
+        {
+            m_mutex->Lock();
+            m_acquired = true;
+        }
+    }
 
-	void TryAcquire() const
-	{
-		if (m_acquired)
-		{
-			throw ThreadLockedException(__FILE__, __LINE__);
-		}
+    void TryAcquire() const
+    {
+        if (m_acquired)
+        {
+            throw ThreadLockedException(__FILE__, __LINE__);
+        }
 
-		if (m_mutex)
-		{
-			m_acquired = m_mutex->TryLock();
-			return m_acquired;
-		}
-	}
+        if (m_mutex)
+        {
+            m_acquired = m_mutex->TryLock();
+            return m_acquired;
+        }
+    }
 
-	void Release() const
-	{
-		if (m_mutex)
-		{
-			if (!m_acquired)
-			{
-				throw ThreadLockedException(__FILE__, __LINE__);
-			}
+    void Release() const
+    {
+        if (m_mutex)
+        {
+            if (!m_acquired)
+            {
+                throw ThreadLockedException(__FILE__, __LINE__);
+            }
 
-			m_mutex->Unlock();
-			m_acquired = false;
-		}
-	}
+            m_mutex->Unlock();
+            m_acquired = false;
+        }
+    }
 
-	bool Acquired() const
-	{
-		return m_acquired;
-	}
+    bool Acquired() const
+    {
+        return m_acquired;
+    }
 
 private:
-	// Not implemented; prevents accidental use.
-	//
-	//MutexPtrTryLock<M>(const MutexPtrTryLock<M>&);
-	//MutexPtrTryLock<M>& operator=(const MutexPtrTryLock<M>&);
+    // Not implemented; prevents accidental use.
+    //
+    //MutexPtrTryLock<M>(const MutexPtrTryLock<M>&);
+    //MutexPtrTryLock<M>& operator=(const MutexPtrTryLock<M>&);
 
-	const M*	m_mutex;
-	mutable bool	m_acquired;
+    const M*    m_mutex;
+    mutable bool    m_acquired;
 };
 
 }

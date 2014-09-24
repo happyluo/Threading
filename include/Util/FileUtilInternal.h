@@ -55,7 +55,7 @@ UTIL_API  void ReadFileToStringOrDie(const std::string& name, std::string* outpu
 
 // Create a file and write a std::string to it.
 UTIL_API  void WriteStringToFileOrDie(const std::string& contents,
-								   const std::string& name);
+                                   const std::string& name);
 
 #ifdef _WIN32
 
@@ -93,15 +93,15 @@ UTIL_API FILE* fopen(const std::string& path, const std::string& mode);
 UTIL_API int open(const std::string& path, int flags);
 
 #ifndef OS_WINRT
-UTIL_API int getcwd(std::string& cwd);		// current work directory.
+UTIL_API int getcwd(std::string& cwd);        // current work directory.
 #endif
 
 UTIL_API int unlink(const std::string& path);
 UTIL_API int close(int fd);
 
 // get file length.
-UTIL_API long length(const std::string& path);	
-UTIL_API long length(int fd);		// file handle
+UTIL_API long length(const std::string& path);    
+UTIL_API long length(int fd);        // file handle
 UTIL_API long length(FILE* file);
 
 // load file contents.
@@ -110,8 +110,8 @@ UTIL_API std::string fload(int fd);
 UTIL_API std::string fload(FILE* file);
 
 UTIL_API void redirection(const std::string& filename, 
-						  const Util::StringConverterPtr& converter, 
-						  FILE* oldfile = stdout/*stderr*/);
+                          const Util::StringConverterPtr& converter, 
+                          FILE* oldfile = stdout/*stderr*/);
 
 UTIL_API std::vector<std::vector<std::string> > LoadCSVFile(const std::string& csvfile, const std::string& separator);
 
@@ -156,9 +156,9 @@ public:
     ifstream();
     ifstream(const std::string&, std::ios_base::openmode mode = std::ios_base::in);
     void open(const std::string&, std::ios_base::openmode mode = std::ios_base::in);
-	long length();
-	std::string load();
-	void reset();
+    long length();
+    std::string load();
+    void reset();
 
 #ifdef __SUNPRO_CC
     using std::ifstream::open;

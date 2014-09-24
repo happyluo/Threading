@@ -83,10 +83,10 @@ namespace UtilInternal
 
 enum ConversionResult
 {
-	conversionOK,           /* conversion successful */
-	sourceExhausted,        /* partial character in source, but hit end */
-	targetExhausted,        /* insuff. room in target for conversion */
-	sourceIllegal           /* source sequence is illegal/malformed */
+    conversionOK,           /* conversion successful */
+    sourceExhausted,        /* partial character in source, but hit end */
+    targetExhausted,        /* insuff. room in target for conversion */
+    sourceIllegal           /* source sequence is illegal/malformed */
 };
 
 UTIL_API ConversionResult 

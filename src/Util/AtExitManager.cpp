@@ -20,62 +20,62 @@ static AtExitManager* gTopManager = NULL;
 
 AtExitManager::AtExitManager() : m_nextManager(NULL) 
 {
-	UTIL_DCHECK(!gTopManager);
-	gTopManager = this;
+    UTIL_DCHECK(!gTopManager);
+    gTopManager = this;
 }
 
 AtExitManager::AtExitManager(bool shadow) : m_nextManager(gTopManager)
 {
-	UTIL_DCHECK(shadow || !gTopManager);
-	gTopManager = this;
+    UTIL_DCHECK(shadow || !gTopManager);
+    gTopManager = this;
 }
 
 AtExitManager::~AtExitManager() 
 {
-	if (!gTopManager)
-	{
-		NOTREACHED() << "Tried to ~AtExitManager without an AtExitManager";
-		return;
-	}
-	UTIL_DCHECK(gTopManager == this);
+    if (!gTopManager)
+    {
+        NOTREACHED() << "Tried to ~AtExitManager without an AtExitManager";
+        return;
+    }
+    UTIL_DCHECK(gTopManager == this);
 
-	ProcessCallbacksNow();
-	gTopManager = m_nextManager;
+    ProcessCallbacksNow();
+    gTopManager = m_nextManager;
 }
 
 // static
 void AtExitManager::RegisterCallback(AtExitCallbackType func, void* param)
 {
-	if (!gTopManager)
-	{
-		NOTREACHED() << "Tried to RegisterCallback without an AtExitManager";
-		return;
-	}
+    if (!gTopManager)
+    {
+        NOTREACHED() << "Tried to RegisterCallback without an AtExitManager";
+        return;
+    }
 
-	UTIL_DCHECK(func);
+    UTIL_DCHECK(func);
 
-	Util::Mutex::LockGuard sync(gTopManager->m_lock);
-	gTopManager->m_stack.push(CallbackAndParam(func, param));
+    Util::Mutex::LockGuard sync(gTopManager->m_lock);
+    gTopManager->m_stack.push(CallbackAndParam(func, param));
 }
 
 // static
 void AtExitManager::ProcessCallbacksNow() 
 {
-	if (!gTopManager)
-	{
-		NOTREACHED() << "Tried to ProcessCallbacksNow without an AtExitManager";
-		return;
-	}
+    if (!gTopManager)
+    {
+        NOTREACHED() << "Tried to ProcessCallbacksNow without an AtExitManager";
+        return;
+    }
 
-	Util::Mutex::LockGuard sync(gTopManager->m_lock);
+    Util::Mutex::LockGuard sync(gTopManager->m_lock);
 
-	while (!gTopManager->m_stack.empty())
-	{
-		CallbackAndParam callback_and_param = gTopManager->m_stack.top();
-		gTopManager->m_stack.pop();
+    while (!gTopManager->m_stack.empty())
+    {
+        CallbackAndParam callback_and_param = gTopManager->m_stack.top();
+        gTopManager->m_stack.pop();
 
-		callback_and_param.m_func(callback_and_param.m_param);
-	}
+        callback_and_param.m_func(callback_and_param.m_param);
+    }
 }
 
 }  // namespace Util

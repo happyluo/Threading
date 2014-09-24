@@ -10,7 +10,6 @@
 #define UTIL_PROPERTIES_H
 
 #include <Concurrency/Mutex.h>
-//#include <Util/Properties.h>
 #include <Unicoder/StringConverter.h>
 
 #include <set>
@@ -27,52 +26,52 @@ class UTIL_API Properties : public Util::Mutex, public Shared
 {
 public:
 
-	virtual std::string GetProperty(const std::string& key);
-	virtual std::string GetPropertyWithDefault(const std::string& key, const std::string& value);
-	virtual Util::Int GetPropertyAsInt(const std::string& key);
-	virtual Util::Int GetPropertyAsIntWithDefault(const std::string& key, Util::Int value);
-	virtual Util::StringSeq GetPropertyAsList(const std::string& key);
-	virtual Util::StringSeq GetPropertyAsListWithDefault(const std::string& key, const Util::StringSeq& value);
+    virtual std::string GetProperty(const std::string& key);
+    virtual std::string GetPropertyWithDefault(const std::string& key, const std::string& value);
+    virtual Util::Int GetPropertyAsInt(const std::string& key);
+    virtual Util::Int GetPropertyAsIntWithDefault(const std::string& key, Util::Int value);
+    virtual Util::StringSeq GetPropertyAsList(const std::string& key);
+    virtual Util::StringSeq GetPropertyAsListWithDefault(const std::string& key, const Util::StringSeq& value);
 
-	virtual PropertyDict GetPropertiesForPrefix(const std::string& prefix);
-	virtual void SetProperty(const std::string& key, const std::string& value);
-	virtual StringSeq GetCommandLineOptions();
-	virtual StringSeq ParseCommandLineOptions(const std::string& prefix, const StringSeq& options);
-	virtual void Load(const std::string& file);
-	virtual PropertiesPtr Clone();
-	size_t Size() const;
+    virtual PropertyDict GetPropertiesForPrefix(const std::string& prefix);
+    virtual void SetProperty(const std::string& key, const std::string& value);
+    virtual StringSeq GetCommandLineOptions();
+    virtual StringSeq ParseCommandLineOptions(const std::string& prefix, const StringSeq& options);
+    virtual void Load(const std::string& file);
+    virtual PropertiesPtr Clone();
+    size_t Size() const;
 
-	std::set<std::string> GetUnusedProperties();
-	
+    std::set<std::string> GetUnusedProperties();
+    
 private:
-	Properties(const StringConverterPtr& converter);
-	Properties(StringSeq& args, const PropertiesPtr& defaults, const StringConverterPtr& converter);
-	Properties(const Properties* properties);
+    Properties(const StringConverterPtr& converter);
+    Properties(const Properties* properties);
 
-	friend UTIL_API PropertiesPtr CreateProperties(const StringConverterPtr&);
-	friend UTIL_API PropertiesPtr CreateProperties(StringSeq&, const PropertiesPtr&, const StringConverterPtr&);
-	friend UTIL_API PropertiesPtr CreateProperties(int&, char*[], const PropertiesPtr&, const StringConverterPtr&);
+    friend UTIL_API PropertiesPtr CreateProperties(const StringConverterPtr&);
 
-	void ParseLine(const std::string& line, const StringConverterPtr& converter);
+    void ParseLine(const std::string& line, const StringConverterPtr& converter);
 
-	void LoadConfig();
+    void LoadConfig();
 
-	struct PropertyValue
-	{
-		PropertyValue() : used(false)
-		{
-		}
+    struct PropertyValue
+    {
+        PropertyValue() : used(false)
+        {
+        }
 
-		PropertyValue(const std::string& v, bool u) : value(v), used(u)
-		{
-		}
+        PropertyValue(const std::string& v, bool u) : value(v), used(u)
+        {
+        }
 
-		std::string value;
-		bool used;
-	};
-	std::map<std::string, PropertyValue> m_properties;
-	const StringConverterPtr m_converter;
+        std::string value;
+        bool used;
+    };
+    std::map<std::string, PropertyValue> m_properties;
+    const StringConverterPtr m_converter;
 };
+
+UTIL_API PropertiesPtr 
+CreateProperties(const Util::StringConverterPtr& converter= 0);
 
 }
 
