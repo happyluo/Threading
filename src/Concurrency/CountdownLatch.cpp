@@ -19,12 +19,12 @@ Util::CountdownLatch::CountdownLatch(int count) :
         throw Exception(__FILE__, __LINE__);
     }
 
-#ifdef _WIN32
-#   ifndef OS_WINRT
-    m_event = CreateEvent(0, TRUE, FALSE, 0);    
-#   else
-    m_event = CreateEventExW(0, 0,  CREATE_EVENT_MANUAL_RESET, SEMAPHORE_ALL_ACCESS);
-#   endif
+    m_event = 
+# ifndef OS_WINRT
+    CreateEvent(0, TRUE, FALSE, 0);    
+# else
+    CreateEventExW(0, 0,  CREATE_EVENT_MANUAL_RESET, SEMAPHORE_ALL_ACCESS);
+# endif
     if (0 == m_event)
     {
         throw ThreadSyscallException(__FILE__, __LINE__, GetLastError());
@@ -52,10 +52,12 @@ void Util::CountdownLatch::Await() const
 {
     while (InterlockedExchangeAdd(&m_count, 0) > 0)
     {
-        DWORD returnVal = WaitForSingleObject(m_event, INFINITE);
-#   else
-        DWORD rc = WaitForSingleObjectEx(m_event, INFINITE, false);
-#   endif
+        WORD returnVal = 
+# ifndef OS_WINRT
+        WaitForSingleObject(m_event, INFINITE);
+# else
+        WaitForSingleObjectEx(m_event, INFINITE, false);
+# endif
         assert(WAIT_OBJECT_0 == returnVal || WAIT_FAILED == returnVal);
 
         if (WAIT_FAILED == returnVal)
