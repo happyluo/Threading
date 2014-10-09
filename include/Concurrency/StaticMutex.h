@@ -10,7 +10,7 @@
 #ifndef CONCURRENCY_STATIC_MUTEX_H
 #define CONCURRENCY_STATIC_MUTEX_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Concurrency/Lock.h>
 #include <Concurrency/ThreadException.h>
 
@@ -24,18 +24,17 @@
 #   endif
 #endif
 
-namespace Util
-{
+THREADING_BEGIN
 
 class Cond;
 
 //
-// Simple non-recursive Util::Mutex implementation.
+// Simple non-recursive Threading::Mutex implementation.
 // These mutexes are POD types (see ISO C++ 9(4) and 8.5.1) and must be
 // initialized statically using STATIC_MUTEX_INITIALIZER.
 //
 
-class CONCURRENCY_API StaticMutex
+class THREADING_API StaticMutex
 {
 public:
 
@@ -50,20 +49,20 @@ public:
     // directly. Instead use LockGuard & TryLockGuard.
     //
  
-    DEPRECATED_API void Lock() const;
+    void Lock() const;
 
     //
     // Returns true if the lock was acquired, and false otherwise.
     //
-    DEPRECATED_API bool TryLock() const;
+    bool TryLock() const;
 
-    DEPRECATED_API void Unlock() const;
+    void Unlock() const;
 
 
 #ifdef _WIN32
-    DEPRECATED_API mutable CRITICAL_SECTION* m_mutex;
+    mutable CRITICAL_SECTION* m_mutex;
 #else
-    DEPRECATED_API mutable pthread_mutex_t m_mutex;
+    mutable pthread_mutex_t m_mutex;
 #endif
 
 
@@ -86,7 +85,7 @@ private:
 #else
     struct LockState
     {
-        pthread_mutex_t* mutex;
+        pthread_mutex_t* m_pmutex;
     };
 #endif
 
@@ -110,6 +109,6 @@ private:
 #   define STATIC_MUTEX_INITIALIZER { PTHREAD_MUTEX_INITIALIZER }
 #endif
 
-} // End namespace Util
+THREADING_END
 
 #endif

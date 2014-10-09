@@ -10,7 +10,7 @@
 #define UTIL_SHARED_H
 
 
-#include <Util/Config.h>
+#include <Config.h>
 
 #if defined(USE_MUTEX_SHARED)
 
@@ -40,11 +40,10 @@
 #    include <Concurrency/Mutex.h>
 #endif
 
-namespace Util
-{
+THREADING_BEGIN
 // class SimpleShared
 /// A non thread-safe base class for reference-counted types.
-class UTIL_API SimpleShared
+class THREADING_API SimpleShared
 {
 public:
     SimpleShared();
@@ -101,7 +100,7 @@ private:
 
 // class Shared
 /// A thread-safe base class for reference-counted types.
-class UTIL_API Shared
+class THREADING_API Shared
 {
 public:
     Shared();
@@ -131,11 +130,11 @@ protected:
 
 #else
     long    m_ref;
-    Util::Mutex    m_mutex;    
+    Threading::Mutex    m_mutex;    
 #endif
     bool m_noDelete;    
 };
 
-}
+THREADING_END
 
 #endif

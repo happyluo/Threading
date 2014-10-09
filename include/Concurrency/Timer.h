@@ -16,10 +16,9 @@
 #include <Concurrency/Thread.h>
 #include <Concurrency/Monitor.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
-class CONCURRENCY_API TimerTask : virtual public Shared
+class THREADING_API TimerTask : virtual public Shared
 {
 public:
     virtual ~TimerTask() {}
@@ -45,8 +44,8 @@ public:
 struct ScheduleTask
 {
     TimerTaskPtr    m_task;    
-    Time            m_delay;
     Time            m_scheduledtime;  
+    Time            m_delay;
 
     inline ScheduleTask();
 
@@ -56,7 +55,7 @@ struct ScheduleTask
 };
 
 
-class CONCURRENCY_API Timer : virtual public Shared, virtual private Thread
+class THREADING_API Timer : virtual public Shared, virtual private Thread
 {
 public:
 
@@ -84,13 +83,13 @@ private:
 
     Time    m_taskWakeUpTime;
 
-    Monitor<Util::Mutex>    m_monitor;
+    Monitor<Threading::Mutex>    m_monitor;
 
     std::set<ScheduleTask>    m_scheduleTasks;
 
     std::map<TimerTaskPtr, Time, TimerTaskCompare> m_alltasks;
 };
-typedef Util::SharedPtr<Timer> TimerPtr;
+typedef Threading::SharedPtr<Timer> TimerPtr;
 
 inline ScheduleTask::ScheduleTask() :
     m_task(0), m_scheduledtime(Time()), m_delay(Time())
@@ -117,7 +116,7 @@ inline bool ScheduleTask::operator <(const ScheduleTask& rhs) const
     return m_task.Get() < rhs.m_task.Get();
 }
 
-}
+THREADING_END
 
 
 #endif

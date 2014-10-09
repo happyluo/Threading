@@ -9,14 +9,13 @@
 #ifndef CONCURRENCY_THREAD_EXCEPTION_H
 #define CONCURRENCY_THREAD_EXCEPTION_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Util/Exception.h>
 #include <Util/Time.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
-class CONCURRENCY_API ThreadSyscallException : public SyscallException
+class THREADING_API ThreadSyscallException : public SyscallException
 {
 public:
     ThreadSyscallException(const char *file, int line, int syscallError);
@@ -33,7 +32,7 @@ private:
     static const char *ms_pcName;
 };
 
-class CONCURRENCY_API ThreadLockedException : public Exception
+class THREADING_API ThreadLockedException : public Exception
 {
 public:
     ThreadLockedException(const char *file, int line);
@@ -50,7 +49,7 @@ private:
     static const char *ms_pcName;
 };
 
-class CONCURRENCY_API ThreadStartedException : public Exception
+class THREADING_API ThreadStartedException : public Exception
 {
 public:
     ThreadStartedException(const char *file, int line);
@@ -67,7 +66,7 @@ private:
     static const char *ms_pcName;
 };
 
-class CONCURRENCY_API ThreadNotStartedException : public Exception
+class THREADING_API ThreadNotStartedException : public Exception
 {
 public:
     ThreadNotStartedException(const char *file, int line);
@@ -84,7 +83,7 @@ private:
     static const char *ms_pcName;
 };
 
-class CONCURRENCY_API BadThreadControlException : public Exception
+class THREADING_API BadThreadControlException : public Exception
 {
 public:
     BadThreadControlException(const char *file, int line);
@@ -101,7 +100,7 @@ private:
     static const char *ms_pcName;
 };
 
-class CONCURRENCY_API InvalidTimeoutException : public Exception
+class THREADING_API InvalidTimeoutException : public Exception
 {
 public:
     InvalidTimeoutException(const char *file, int line, const Time& timeout);
@@ -121,7 +120,7 @@ private:
     static const char *ms_pcName;
 };
 
-class CONCURRENCY_API DeadlockException : public Exception
+class THREADING_API DeadlockException : public Exception
 {
 public:
     DeadlockException(const char *file, int line);
@@ -138,7 +137,7 @@ private:
     static const char *ms_pcName;
 };
 
-class CONCURRENCY_API ThreadPoolDestroyedException : public Exception
+class THREADING_API ThreadPoolDestroyedException : public Exception
 {
 public:
     ThreadPoolDestroyedException(const char *file, int line);
@@ -155,5 +154,6 @@ private:
     static const char *ms_pcName;
 };
 
-}
+THREADING_END
+
 #endif

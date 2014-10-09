@@ -24,7 +24,7 @@
 #include <Util/Exception.h>
 #include <Build/UsefulMacros.h>
 
-using namespace Util;
+using namespace Threading;
 
 #ifdef _WIN32
 
@@ -75,24 +75,20 @@ InitializeTime initializeTime;
 }
 #endif
 
-Util::Time::Time() throw() :
+Threading::Time::Time() throw() :
     m_microsec(0)
 {
 }
 
-Util::Time::Time(int year, int month, int day, int hour, int min, int sec, int DST)
+#ifdef _WIN32
+Threading::Time::Time(int year, int month, int day, int hour, int min, int sec, int DST)
 {
-#pragma warning (push)
-#pragma warning (disable: 4127)  // conditional expression constant
-
-    ENSURE_THROW(year >= 1900, Util::IllegalArgumentException);
-    ENSURE_THROW(month >= 1 && month <= 12, Util::IllegalArgumentException);
-    ENSURE_THROW(day >= 1 && day <= 31, Util::IllegalArgumentException);
-    ENSURE_THROW(hour >= 0 && hour <= 23, Util::IllegalArgumentException);
-    ENSURE_THROW(min >= 0 && min <= 59, Util::IllegalArgumentException);
-    ENSURE_THROW(sec >= 0 && sec <= 59, Util::IllegalArgumentException);
-
-#pragma warning (pop)
+    ENSURE_THROW(year >= 1900, Threading::IllegalArgumentException);
+    ENSURE_THROW(month >= 1 && month <= 12, Threading::IllegalArgumentException);
+    ENSURE_THROW(day >= 1 && day <= 31, Threading::IllegalArgumentException);
+    ENSURE_THROW(hour >= 0 && hour <= 23, Threading::IllegalArgumentException);
+    ENSURE_THROW(min >= 0 && min <= 59, Threading::IllegalArgumentException);
+    ENSURE_THROW(sec >= 0 && sec <= 59, Threading::IllegalArgumentException);
 
     struct tm atm;
 
@@ -104,18 +100,70 @@ Util::Time::Time(int year, int month, int day, int hour, int min, int sec, int D
     atm.tm_year = year - 1900;    // tm_year is 1900 based
     atm.tm_isdst = DST;
 
-    __time64_t time = _mktime64(&atm);
+    Int64 time = _mktime64(&atm);
     assert(-1 != time);       // indicates an illegal input time
     if(-1 == time)
     {
-        throw Util::IllegalArgumentException(__FILE__, __LINE__);
+        throw Threading::IllegalArgumentException(__FILE__, __LINE__);
     }
 
     m_microsec = static_cast<Int64>(time) * UTIL_INT64(1000000);
 }
 
+struct tm* 
+Threading::Time::GetGmtTime(struct tm* ptm) const
+{
+    // Ensure ptm is valid
+    ENSURE_THROW(0 != ptm, Threading::IllegalArgumentException);
+
+    if (0 != ptm)
+    {
+        Int64 time = m_microsec / 1000000;
+        struct tm tmTemp;
+        errno_t err = _gmtime64_s(&tmTemp, &time);
+
+        // Be sure the call succeeded
+        if(0 != err) 
+        {
+            return 0; 
+        }
+
+        *ptm = tmTemp;
+        return ptm;
+    }
+
+    return 0;
+}
+
+bool 
+Threading::Time::GetAsSystemTime(SYSTEMTIME& timeDest) const throw()
+{
+    struct tm ttm;
+    struct tm* ptm;
+
+    ptm = GetLocalTime(&ttm);
+
+    if(!ptm) 
+    {
+        return false; 
+    }
+
+    timeDest.wYear = (WORD) (1900 + ptm->tm_year);
+    timeDest.wMonth = (WORD) (1 + ptm->tm_mon);
+    timeDest.wDayOfWeek = (WORD) ptm->tm_wday;
+    timeDest.wDay = (WORD) ptm->tm_mday;
+    timeDest.wHour = (WORD) ptm->tm_hour;
+    timeDest.wMinute = (WORD) ptm->tm_min;
+    timeDest.wSecond = (WORD) ptm->tm_sec;
+    timeDest.wMilliseconds = 0;
+
+    return true;
+}
+
+#endif
+
 Time
-Util::Time::Now(Clock clock)
+Threading::Time::Now(Clock clock)
 {
     if (clock == Realtime)
     {
@@ -211,55 +259,55 @@ Time::TimeOfToday(size_t hour, size_t minute, size_t second)
 }
 
 Time
-Util::Time::Hours(size_t t)
+Threading::Time::Hours(size_t t)
 {
     return Time(t * 3600 * UTIL_INT64(1000000));
 }
 
 Time
-Util::Time::Minutes(size_t t)
+Threading::Time::Minutes(size_t t)
 {
     return Time(t * 60 * UTIL_INT64(1000000));
 }
 
 Time
-Util::Time::Seconds(Int64 t)
+Threading::Time::Seconds(Int64 t)
 {
     return Time(t * UTIL_INT64(1000000));
 }
 
 Time
-Util::Time::MilliSeconds(Int64 t)
+Threading::Time::MilliSeconds(Int64 t)
 {
     return Time(t * UTIL_INT64(1000));
 }
 
 Time
-Util::Time::MicroSeconds(Int64 t)
+Threading::Time::MicroSeconds(Int64 t)
 {
     return Time(t);
 }
 
 Time
-Util::Time::SecondsDouble(double t)
+Threading::Time::SecondsDouble(double t)
 {
     return Time(Int64(t * 1000000));
 }
 
 Time
-Util::Time::MilliSecondsDouble(double t)
+Threading::Time::MilliSecondsDouble(double t)
 {
     return Time(Int64(t * 1000));
 }
 
 Time
-Util::Time::MicroSecondsDouble(double t)
+Threading::Time::MicroSecondsDouble(double t)
 {
     return Time(Int64(t));
 }
 
 #ifndef _WIN32
-Util::Time::operator timeval() const
+Threading::Time::operator timeval() const
 {
     timeval tv;
     tv.tv_sec = static_cast<long>(m_microsec / 1000000);
@@ -268,7 +316,7 @@ Util::Time::operator timeval() const
 }
 #endif
 
-Util::Time::operator tm() const
+Threading::Time::operator tm() const
 {
     time_t time = static_cast<long>(m_microsec / 1000000);
 
@@ -285,43 +333,43 @@ Util::Time::operator tm() const
 }
 
 Int64
-Util::Time::ToSeconds() const
+Threading::Time::ToSeconds() const
 {
     return m_microsec / 1000000;
 }
 
 Int64
-Util::Time::ToMilliSeconds() const
+Threading::Time::ToMilliSeconds() const
 {
     return m_microsec / 1000;
 }
 
 Int64
-Util::Time::ToMicroSeconds() const
+Threading::Time::ToMicroSeconds() const
 {
     return m_microsec;
 }
 
 double
-Util::Time::ToSecondsDouble() const
+Threading::Time::ToSecondsDouble() const
 {
     return m_microsec / 1000000.0;
 }
 
 double
-Util::Time::ToMilliSecondsDouble() const
+Threading::Time::ToMilliSecondsDouble() const
 {
     return m_microsec / 1000.0;
 }
 
 double
-Util::Time::ToMicroSecondsDouble() const
+Threading::Time::ToMicroSecondsDouble() const
 {
     return static_cast<double>(m_microsec);
 }
 
 std::string
-Util::Time::ToDateTime(Clock clock) const
+Threading::Time::ToDateTime(Clock clock) const
 {
     time_t time = static_cast<long>(m_microsec / 1000000);
 
@@ -353,7 +401,7 @@ Util::Time::ToDateTime(Clock clock) const
 }
 
 std::string
-Util::Time::ToDuration() const
+Threading::Time::ToDuration() const
 {
     Int64 usecs = m_microsec % 1000000;
     Int64 secs = m_microsec / 1000000 % 60;
@@ -377,92 +425,43 @@ Util::Time::ToDuration() const
     return os.str();
 }
 
-struct tm* 
-Util::Time::GetGmtTime(struct tm* ptm) const
+Int64 
+Threading::Time::GetTime() const throw()
 {
-    // Ensure ptm is valid
-    ENSURE_THROW(0 != ptm, Util::IllegalArgumentException);
-
-    if (0 != ptm)
-    {
-        __time64_t time = m_microsec / 1000000;
-        struct tm tmTemp;
-        errno_t err = _gmtime64_s(&tmTemp, &time);
-
-        // Be sure the call succeeded
-        if(0 != err) 
-        {
-            return 0; 
-        }
-
-        *ptm = tmTemp;
-        return ptm;
-    }
-
-    return 0;
+    return(m_microsec / 1000000);
 }
 
 struct tm* 
-Util::Time::GetLocalTime(struct tm* ptm) const
+Threading::Time::GetLocalTime(struct tm* ptm) const
 {
     // Ensure ptm is valid
-    ENSURE_THROW(0 != ptm, Util::IllegalArgumentException);
+    ENSURE_THROW(0 != ptm, Threading::IllegalArgumentException);
 
     if (0 != ptm)
     {
-        __time64_t time = m_microsec / 1000000;
-        struct tm tmTemp;
-        errno_t err = _localtime64_s(&tmTemp, &time);
-
+        time_t time = static_cast<long>(m_microsec / 1000000);
+        
+        struct tm tval;
+#ifdef _WIN32
+        
+        errno_t err = _localtime64_s(&tval, &time);
         if(0 != err) 
         {
-            return NULL;    // indicates that m_time was not initialized!
+            return NULL;
         }
+#else
+        localtime_r(&time, &tval);
+#endif
 
-        *ptm = tmTemp;
+        *ptm = tval;
         return ptm;
     }
 
     return NULL;
 }
 
-#ifdef _WIN32
-
-bool 
-Util::Time::GetAsSystemTime(SYSTEMTIME& timeDest) const throw()
-{
-    struct tm ttm;
-    struct tm* ptm;
-
-    ptm = GetLocalTime(&ttm);
-
-    if(!ptm) 
-    {
-        return false; 
-    }
-
-    timeDest.wYear = (WORD) (1900 + ptm->tm_year);
-    timeDest.wMonth = (WORD) (1 + ptm->tm_mon);
-    timeDest.wDayOfWeek = (WORD) ptm->tm_wday;
-    timeDest.wDay = (WORD) ptm->tm_mday;
-    timeDest.wHour = (WORD) ptm->tm_hour;
-    timeDest.wMinute = (WORD) ptm->tm_min;
-    timeDest.wSecond = (WORD) ptm->tm_sec;
-    timeDest.wMilliseconds = 0;
-
-    return true;
-}
-
-#endif
-
-__time64_t 
-Util::Time::GetTime() const throw()
-{
-    return(m_microsec / 1000000);
-}
-
 int 
-Util::Time::GetYear() const
+Threading::Time::GetYear() const throw()
 { 
     struct tm ttm;
     struct tm * ptm;
@@ -472,7 +471,7 @@ Util::Time::GetYear() const
 }
 
 int 
-Util::Time::GetMonth() const
+Threading::Time::GetMonth() const throw()
 { 
     struct tm ttm;
     struct tm * ptm;
@@ -482,7 +481,7 @@ Util::Time::GetMonth() const
 }
 
 int 
-Util::Time::GetDay() const
+Threading::Time::GetDay() const throw()
 {
     struct tm ttm;
     struct tm * ptm;
@@ -492,7 +491,7 @@ Util::Time::GetDay() const
 }
 
 int 
-Util::Time::GetHour() const
+Threading::Time::GetHour() const throw()
 {
     struct tm ttm;
     struct tm * ptm;
@@ -502,7 +501,7 @@ Util::Time::GetHour() const
 }
 
 int 
-Util::Time::GetMinute() const
+Threading::Time::GetMinute() const throw()
 {
     struct tm ttm;
     struct tm * ptm;
@@ -512,7 +511,7 @@ Util::Time::GetMinute() const
 }
 
 int 
-Util::Time::GetSecond() const
+Threading::Time::GetSecond() const throw()
 { 
     struct tm ttm;
     struct tm * ptm;
@@ -522,7 +521,7 @@ Util::Time::GetSecond() const
 }
 
 int 
-Util::Time::GetDayOfWeek() const
+Threading::Time::GetDayOfWeek() const throw()
 { 
     struct tm ttm;
     struct tm * ptm;
@@ -537,7 +536,7 @@ Time::Time(Int64 usec) :
 }
 
 std::ostream&
-Util::operator <<(std::ostream& out, const Time& tm)
+Threading::operator <<(std::ostream& out, const Time& tm)
 {
     return out << tm.ToMicroSeconds() / 1000000.0;
 }

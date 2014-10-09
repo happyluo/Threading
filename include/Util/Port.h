@@ -11,6 +11,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 // Determines the version of gcc that is used to compile this.
 #ifdef __GNUC__
@@ -95,7 +96,7 @@
 
 #if OS_LINUX_ANDROID
 // Used to define __ANDROID_API__ matching the target NDK API level.
-#    include <android/api-level.h>  // NOLINT
+#    include <android/api-level.h>  
 #endif
 
 
@@ -146,10 +147,10 @@
 #if HAS_PTHREAD
 // Port.h guarantees to #include <pthread.h> when HAS_PTHREAD is
 // true.
-#    include <pthread.h>  // NOLINT
+#    include <pthread.h>  
 
 // For timespec and nanosleep, used below.
-#    include <time.h>  // NOLINT
+#    include <time.h>  
 #endif
 
 // Determines whether the system compiler uses UTF-16 for encoding wide strings.
@@ -176,29 +177,29 @@
 
 # define HAS_GETTIMEOFDAY 1
 
-# include <fcntl.h>  // NOLINT
-# include <limits.h>  // NOLINT
-# include <sched.h>  // NOLINT
+# include <fcntl.h>  
+# include <limits.h>  
+# include <sched.h>  
 // Declares vsnprintf().  This header is not available on Windows.
-# include <strings.h>  // NOLINT
-# include <sys/mman.h>  // NOLINT
-# include <sys/time.h>  // NOLINT
-# include <unistd.h>  // NOLINT
+# include <strings.h>  
+# include <sys/mman.h>  
+# include <sys/time.h>  
+# include <unistd.h>  
 # include <string>
 
 #elif OS_ZOS
 # define HAS_GETTIMEOFDAY 1
-# include <sys/time.h>  // NOLINT
+# include <sys/time.h>  
 
 // On z/OS we additionally need strings.h for strcasecmp.
-# include <strings.h>  // NOLINT
+# include <strings.h>  
 
 #elif OS_WINDOWS  // We are on Windows proper.
 
-# include <io.h>  // NOLINT
-# include <sys/timeb.h>  // NOLINT
-# include <sys/types.h>  // NOLINT
-# include <sys/stat.h>  // NOLINT
+# include <io.h>  
+# include <sys/timeb.h>  
+# include <sys/types.h>  
+# include <sys/stat.h>  
 
 # if OS_WINDOWS_MINGW
 // MinGW has gettimeofday() but not _ftime64().
@@ -206,12 +207,12 @@
 //   Windows, like GetTickCount() or GetSystemTimeAsFileTime().  MinGW
 //   supports these.  consider using them instead.
 #  define HAS_GETTIMEOFDAY 1
-#  include <sys/time.h>  // NOLINT
+#  include <sys/time.h>  
 # endif  // OS_WINDOWS_MINGW
 
 // cpplint thinks that the header is already included, so we want to
 // silence it.
-# include <windows.h>  // NOLINT
+# include <windows.h>  
 
 #else
 
@@ -220,19 +221,19 @@
 
 // cpplint thinks that the header is already included, so we want to
 // silence it.
-# include <sys/time.h>  // NOLINT
-# include <unistd.h>  // NOLINT
+# include <sys/time.h>  
+# include <unistd.h>  
 
 #endif  // OS_LINUX
 
 #if CAN_STREAM_RESULTS_
-# include <arpa/inet.h>  // NOLINT
-# include <netdb.h>  // NOLINT
+# include <arpa/inet.h>  
+# include <netdb.h>  
 #endif
 
 
-namespace Util
-{
+//THREADING_BEGIN
+
 namespace Posix
 {
 
@@ -336,6 +337,6 @@ namespace Posix
 
 }    // namespace Posix
 
-}    // namespace Util
+//THREADING_END
 
 #endif

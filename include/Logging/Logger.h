@@ -9,23 +9,22 @@
 #ifndef UTIL_LOGGER_H
 #define UTIL_LOGGER_H
 
-#include <Util/Config.h>
+#include <Config.h>
 #include <Logging/ColorStream.h>
 #include <Util/Shared.h>
 #include <Util/SharedPtr.h>
-#include <Util/FileUtilInternal.h>
+#include <Util/FileUtil.h>
 
 
-namespace Util
-{
+THREADING_BEGIN
 
 class Logger;
-typedef Util::SharedPtr<Logger> LoggerPtr;
+typedef Threading::SharedPtr<Logger> LoggerPtr;
 
-UTIL_API LoggerPtr GetProcessLogger();
-UTIL_API void SetProcessLogger(const LoggerPtr&);
+THREADING_API LoggerPtr GetProcessLogger();
+THREADING_API void SetProcessLogger(const LoggerPtr&);
 
-class UTIL_API Logger : public Shared
+class THREADING_API Logger : public Shared
 {
 public:
 
@@ -46,7 +45,7 @@ private:
     void Write(const std::string& message, bool indent, std::ostream& (*color)(std::ostream &out) = 0);
 
     std::string m_prefix;
-    UtilInternal::ofstream m_out;
+    Threading::ofstream m_out;
     std::string m_file;
 };
 
@@ -55,7 +54,7 @@ private:
 // 
 // Formats a source file path and a line number as they would appear
 // in an error message from the compiler used to compile this code.
-UTIL_API ::std::string FormatFileLocation(const char* file, int line);
+THREADING_API ::std::string FormatFileLocation(const char* file, int line);
 
 
 // Defines logging utilities:
@@ -85,7 +84,7 @@ enum LogSeverity
 // Formats log entry severity, provides a stream object for streaming the
 // log message, and terminates the message with a newline when going out of
 // scope.
-class UTIL_API StderrLog 
+class THREADING_API StderrLog 
 {
 public:
     StderrLog(LogSeverity severity, const char* file, int line);
@@ -113,7 +112,7 @@ operator <<(StderrLog& out, const T& val)
 }
 
 #define STDERR_LOG(severity) \
-    ::Util::StderrLog(::Util::##severity, __FILE__, __LINE__).GetStream()
+    ::Threading::StderrLog(::Threading::##severity, __FILE__, __LINE__).GetStream()
 
 //inline void LogToStderr() {}
 inline void FlushInfoLog()
@@ -157,7 +156,7 @@ namespace internal
 {
 class LogFinisher;
 
-class UTIL_API LogMessage
+class THREADING_API LogMessage
 {
 public:
     LogMessage(LogSeverity level, const char* filename, int line);
@@ -184,7 +183,7 @@ private:
 
 // Used to make the entire "LOG(BLAH) << etc." expression have a void return
 // type and print a newline after each message.
-class UTIL_API LogFinisher
+class THREADING_API LogFinisher
 {
 public:
     void operator=(LogMessage& other);
@@ -221,9 +220,9 @@ public:
 #undef UTIL_DCHECK_GE
 
 #define UTIL_LOG(LEVEL)                               \
-    ::Util::internal::LogFinisher() =                 \
-    ::Util::internal::LogMessage(                     \
-    ::Util::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
+    ::Threading::internal::LogFinisher() =                 \
+    ::Threading::internal::LogMessage(                     \
+    ::Threading::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
 #define UTIL_LOG_IF(LEVEL, CONDITION)                 \
     !(CONDITION) ? (void)0 : UTIL_LOG(LEVEL)
 
@@ -253,7 +252,7 @@ T* CheckNotNull(const char* /* file */, int /* line */, const char* name, T* val
 }  // namespace internal
 
 #define UTIL_CHECK_NOTNULL(A) \
-    ::Util::internal::CheckNotNull(__FILE__, __LINE__, "'" #A "' must not be NULL", (A))
+    ::Threading::internal::CheckNotNull(__FILE__, __LINE__, "'" #A "' must not be NULL", (A))
 
 #ifdef NDEBUG
 
@@ -307,9 +306,9 @@ T* CheckNotNull(const char* /* file */, int /* line */, const char* name, T* val
 #undef EXPECT_FALSE
 
 #define TEST_LOG(LEVEL)                               \
-    ::Util::internal::LogFinisher() =                 \
-    ::Util::internal::LogMessage(                     \
-    ::Util::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
+    ::Threading::internal::LogFinisher() =                 \
+    ::Threading::internal::LogMessage(                     \
+    ::Threading::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
 #define TEST_LOG_IF(LEVEL, CONDITION)                 \
     !(CONDITION) ? (void)0 : TEST_LOG(LEVEL)
 
@@ -329,13 +328,13 @@ T* CheckNotNull(const char* /* file */, int /* line */, const char* name, T* val
 
 #define ASSERT_EQ(A, B) ASSERT_TEST((A) == (B))
 
-UTIL_API LoggerPtr SetLogger(LoggerPtr newlogger);
+THREADING_API LoggerPtr SetLogger(LoggerPtr newlogger);
 
 typedef void LogHandler(LogSeverity level, const char* filename, int line,
                         const std::string& message, LoggerPtr logger);
 
-UTIL_API LogHandler* SetLogHandler(LogHandler* newfunc);
+THREADING_API LogHandler* SetLogHandler(LogHandler* newfunc);
 
-}
+THREADING_END
 
 #endif

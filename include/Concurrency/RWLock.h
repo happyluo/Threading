@@ -11,8 +11,7 @@
 
 #include <Util/Time.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
 //////////////////////////////////////////////////////////////////////////
 /// class RLockT
@@ -238,7 +237,7 @@ public:
 
 };
 
-}
+THREADING_END
 
 
 #endif

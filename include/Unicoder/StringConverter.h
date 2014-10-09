@@ -18,22 +18,20 @@
 #ifndef UTIL_STRING_CONVERTER_H
 #define UTIL_STRING_CONVERTER_H
 
-#include <Util/Config.h>
+#include <string>
+#include <Config.h>
 #include <Util/Exception.h>
 #include <Util/Shared.h>
 #include <Util/SharedPtr.h>
 #include <Unicoder/Unicode.h>
 
-#include <string>
-
-namespace Util
-{
+THREADING_BEGIN
 
 //
 // Provides bytes to ToUTF8. Raises MemoryLimitException when too many
 // bytes are requested.
 //
-class UTIL_API UTF8Buffer
+class THREADING_API UTF8Buffer
 {
 public:
     virtual Byte* GetMoreBytes(size_t howMany, Byte* firstUnused) = 0;
@@ -47,7 +45,7 @@ public:
 // It report errors by raising StringConversionFailed or MemoryLimitException.
 //
 template<typename charT>
-class BasicStringConverter : public Util::Shared
+class BasicStringConverter : public Threading::Shared
 {
 public:
     
@@ -66,27 +64,27 @@ public:
 };
 
 typedef BasicStringConverter<char> StringConverter;
-typedef Util::SharedPtr<StringConverter> StringConverterPtr;
+typedef Threading::SharedPtr<StringConverter> StringConverterPtr;
 
 typedef BasicStringConverter<wchar_t> WstringConverter;
-typedef Util::SharedPtr<WstringConverter> WstringConverterPtr;
+typedef Threading::SharedPtr<WstringConverter> WstringConverterPtr;
 
 
 //
 // Converts to and from UTF-16 or UTF-32 depending on sizeof(wchar_t)
 //
-class UTIL_API UnicodeWstringConverter : public WstringConverter
+class THREADING_API UnicodeWstringConverter : public WstringConverter
 {
 public:
 
-    UnicodeWstringConverter(Util::ConversionFlags = Util::lenientConversion);
+    UnicodeWstringConverter(Threading::ConversionFlags = Threading::lenientConversion);
 
     virtual Byte* ToUTF8(const wchar_t*, const wchar_t*, UTF8Buffer&) const;
 
     virtual void FromUTF8(const Byte*, const Byte*, std::wstring&) const;
 
 private:
-    const Util::ConversionFlags m_conversionFlags;
+    const Threading::ConversionFlags m_conversionFlags;
 };
 
 #ifdef _WIN32
@@ -95,7 +93,7 @@ private:
 // Converts to/from UTF-8 using MultiByteToWideChar and WideCharToMultiByte
 //
 
-class UTIL_API WindowsStringConverter : public StringConverter
+class THREADING_API WindowsStringConverter : public StringConverter
 {
 public:
 
@@ -112,6 +110,7 @@ private:
     unsigned int m_codePage;
     UnicodeWstringConverter m_unicodeWstringConverter;
 };
+
 #endif
 
 //
@@ -119,25 +118,26 @@ private:
 // UTF8 using the given converter. If the converter is null, returns
 // the given string.
 //
-UTIL_API std::string
-NativeToUTF8(const Util::StringConverterPtr&, const std::string&);
+THREADING_API std::string
+NativeToUTF8(const Threading::StringConverterPtr&, const std::string&);
 
 //
 // Converts the given string from UTF8 to the native narrow string
 // encoding using the given converter. If the converter is null,
 // returns the given string.
 //
-UTIL_API std::string
-UTF8ToNative(const Util::StringConverterPtr&, const std::string&);
+THREADING_API std::string
+UTF8ToNative(const Threading::StringConverterPtr&, const std::string&);
 
 //////////////////////////////////////////////////////////////////////////
 /// StringConversionException
-class UTIL_API StringConversionException : public Exception
+class THREADING_API StringConversionException : public Exception
 {
 public:
 
     StringConversionException(const char* file, int line);
     StringConversionException(const char* file, int line, const std::string& reason);
+    virtual ~StringConversionException() throw();
     virtual std::string Name() const;
     virtual void Print(std::ostream& out) const;
     virtual StringConversionException* Clone() const;
@@ -152,6 +152,6 @@ private:
     static const char* m_name;    
 };
 
-}
+THREADING_END
 
 #endif

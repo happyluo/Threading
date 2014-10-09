@@ -9,10 +9,9 @@
 #ifndef UTIL_UNIQUE_PTR_H
 #define UTIL_UNIQUE_PTR_H
 
-#include <Util/Config.h>
+#include <Config.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
 template<typename T>
 class UniquePtr
@@ -92,6 +91,6 @@ private:
     T* m_ptr;
 };
 
-} // End of namespace Util
+THREADING_END
 
 #endif

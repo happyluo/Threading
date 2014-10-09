@@ -15,10 +15,9 @@
 #include <Concurrency/Mutex.h>
 #include <Concurrency/ThreadControl.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
-class CONCURRENCY_API Thread : virtual public Shared, public noncopyable
+class THREADING_API Thread : virtual public Shared, public noncopyable
 {
 public:
     Thread(void);
@@ -46,7 +45,7 @@ public:
 
 protected:
     const std::string m_name;
-    Util::Mutex m_statemutex;
+    Threading::Mutex m_statemutex;
     bool m_started;
     bool m_running;
 
@@ -71,6 +70,6 @@ private:
 
 typedef SharedPtr<Thread> ThreadPtr;
 
-}
+THREADING_END
 
 #endif

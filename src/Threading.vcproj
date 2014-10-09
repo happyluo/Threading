@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include/;../src/Util"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;NOMINMAX;UTIL_API_EXPORTS;CONCURRENCY_API_EXPORTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;NOMINMAX;THREADING_API_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -178,6 +178,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\include\Config.h"
+				>
+			</File>
 			<Filter
 				Name="Concurrency"
 				>
@@ -191,10 +195,6 @@
 				</File>
 				<File
 					RelativePath="..\include\Concurrency\Cond.h"
-					>
-				</File>
-				<File
-					RelativePath="..\include\Concurrency\Config.h"
 					>
 				</File>
 				<File
@@ -290,15 +290,7 @@
 				Name="Util"
 				>
 				<File
-					RelativePath="..\include\Util\AtExitManager.h"
-					>
-				</File>
-				<File
 					RelativePath="..\include\Util\Atomic.h"
-					>
-				</File>
-				<File
-					RelativePath="..\include\Util\Config.h"
 					>
 				</File>
 				<File
@@ -314,7 +306,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\include\Util\FileUtilInternal.h"
+					RelativePath="..\include\Util\FileUtil.h"
 					>
 				</File>
 				<File
@@ -468,10 +460,6 @@
 				Name="Util"
 				>
 				<File
-					RelativePath=".\Util\AtExitManager.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\Util\Atomic.cpp"
 					>
 				</File>
@@ -484,7 +472,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Util\FileUtilInternal.cpp"
+					RelativePath=".\Util\FileUtil.cpp"
 					>
 				</File>
 				<File

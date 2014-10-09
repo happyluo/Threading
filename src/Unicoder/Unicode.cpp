@@ -19,8 +19,7 @@
 #include <Unicoder/ConvertUTF.h>
 
 using namespace std;
-using namespace Util;
-using namespace UtilInternal;
+using namespace Threading;
 
 namespace
 {
@@ -94,7 +93,7 @@ struct WstringHelper<4>
 //
 
 ConversionResult 
-UtilInternal::ConvertUTFWstringToUTF8(
+Threading::ConvertUTFWstringToUTF8(
     const wchar_t*& sourceStart, const wchar_t* sourceEnd, 
     Byte*& targetStart, Byte* targetEnd, ConversionFlags flags)
 {
@@ -103,7 +102,7 @@ UtilInternal::ConvertUTFWstringToUTF8(
 }
 
 ConversionResult
-UtilInternal::ConvertUTF8ToUTFWstring(
+Threading::ConvertUTF8ToUTFWstring(
     const Byte*& sourceStart, const Byte* sourceEnd, 
     wchar_t*& targetStart, wchar_t* targetEnd, ConversionFlags flags)
 {
@@ -112,7 +111,7 @@ UtilInternal::ConvertUTF8ToUTFWstring(
 }
 
 ConversionResult 
-UtilInternal::ConvertUTF8ToUTFWstring(const Byte*& sourceStart, const Byte* sourceEnd, 
+Threading::ConvertUTF8ToUTFWstring(const Byte*& sourceStart, const Byte* sourceEnd, 
                                  std::wstring& target, ConversionFlags flags)
 {
     //
@@ -141,22 +140,22 @@ UtilInternal::ConvertUTF8ToUTFWstring(const Byte*& sourceStart, const Byte* sour
 // WstringToString and StringToWstring
 //
 
-const char* Util::UTFConversionException::m_name = "Util::UTFConversionException";
+const char* Threading::UTFConversionException::m_name = "Threading::UTFConversionException";
 
-Util::UTFConversionException::UTFConversionException(const char* file, int line, 
+Threading::UTFConversionException::UTFConversionException(const char* file, int line, 
                                                         ConversionErrorType ce): 
     Exception(file, line),
     m_conversionError(ce)
 {}
 
 string
-Util::UTFConversionException::Name() const
+Threading::UTFConversionException::Name() const
 {
     return m_name;
 }
 
 void
-Util::UTFConversionException::Print(ostream& os) const
+Threading::UTFConversionException::Print(ostream& os) const
 {
     Exception::Print(os);
     switch(m_conversionError)
@@ -173,27 +172,27 @@ Util::UTFConversionException::Print(ostream& os) const
     };
 }
 
-Util::UTFConversionException*
-Util::UTFConversionException::Clone() const
+Threading::UTFConversionException*
+Threading::UTFConversionException::Clone() const
 {
     return new UTFConversionException(*this);
 }
 
 void
-Util::UTFConversionException::Throw() const
+Threading::UTFConversionException::Throw() const
 {
     throw *this;
 }
 
-Util::ConversionErrorType
-Util::UTFConversionException::ConversionError() const
+Threading::ConversionErrorType
+Threading::UTFConversionException::ConversionError() const
 {
     return m_conversionError;
 }
 
 
 string
-Util::WstringToString(const wstring& wstr, ConversionFlags flags)
+Threading::WstringToString(const wstring& wstr, ConversionFlags flags)
 {
     string target;
     
@@ -226,7 +225,7 @@ Util::WstringToString(const wstring& wstr, ConversionFlags flags)
 }
 
 wstring
-Util::StringToWstring(const string& str, ConversionFlags flags)
+Threading::StringToWstring(const string& str, ConversionFlags flags)
 {
     wstring result;
     const Byte* sourceStart = reinterpret_cast<const Byte*>(str.data());

@@ -148,17 +148,19 @@ namespace std {
 #define ToLowerChar(X)  (char)tolower((unsigned char)X)
 #define ToUpperChar(X)  (char)toupper((unsigned char)X)
 
-//#define DigitValue(X)  ({                                \
-//    unsigned char uc(static_cast<unsigned char>(X));    \
-//    isdigit(uc) ? uc - '0' : -1;                        \
-//})
-//
-//#define XDigitValue(X)  ({                            \
-//    unsigned char uc(static_cast<unsigned char>(X));    \
-//    isxdigit(uc)                                        \
-//    ? (isdigit(uc) ? uc - '0' : toupper(uc) - 'A' + 10)    \
-//    : -1;                                                \
-//})
+#if 0
+#define DigitValue(X)  ({                                \
+    unsigned char uc(static_cast<unsigned char>(X)); \
+    isdigit(uc) ? uc - '0' : -1;                         \
+})
+
+#define XDigitValue(X)  ({                               \
+    unsigned char uc(static_cast<unsigned char>(X)); \
+    isxdigit(uc)                                         \
+    ? (isdigit(uc) ? uc - '0' : toupper(uc) - 'A' + 10)  \
+    : -1;                                                \
+})
+#endif
 
 // The arraysize(arr) macro returns the # of elements in an array arr.
 // The expression is a compile-time constant, and therefore can be
@@ -174,14 +176,14 @@ namespace std {
 // This template function declaration is used in defining arraysize.
 // Note that the function doesn't need an implementation, as we only
 // use its type.
-template <typename T, size_t N>
+template <typename T, unsigned int N>
 char (&ArraySizeHelper(T (&array)[N]))[N];
 
 // That gcc wants both of these prototypes seems mysterious. VC, for
 // its part, can't decide which to use (another mystery). Matching of
 // template overloads: the final frontier.
 #ifndef _MSC_VER
-template <typename T, size_t N>
+template <typename T, unsigned int N>
 char (&ArraySizeHelper(const T (&array)[N]))[N];
 #endif
 

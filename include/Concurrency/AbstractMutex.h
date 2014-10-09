@@ -9,12 +9,11 @@
 #ifndef UTIL_ABSTRACT_MUTEX_H
 #define UTIL_ABSTRACT_MUTEX_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Concurrency/Lock.h>
 
 
-namespace Util
-{
+THREADING_BEGIN
 
 class AbstractMutex
 {
@@ -112,6 +111,6 @@ public:
     {}
 };
 
-}
+THREADING_END
 
 #endif

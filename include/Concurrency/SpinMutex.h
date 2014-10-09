@@ -9,11 +9,11 @@
 #ifndef CONCURRENCY_SPIN_MUTEX_H
 #define CONCURRENCY_SPIN_MUTEX_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 
-CONCURRENCY_BEGIN
+THREADING_BEGIN
 
-class CONCURRENCY_API SpinMutex
+class THREADING_API SpinMutex
 {
 public:
     void Lock() UTIL_NOEXCEPT;
@@ -26,11 +26,11 @@ private:
 
     void* m_pmutex;
 
-    friend CONCURRENCY_API SpinMutex& GetSpinMutex(const void*);
+    friend THREADING_API SpinMutex& GetSpinMutex(const void*);
 };
 
-CONCURRENCY_API SpinMutex& GetSpinMutex(const void*);
+THREADING_API SpinMutex& GetSpinMutex(const void*);
 
-CONCURRENCY_END
+THREADING_END
 
 #endif

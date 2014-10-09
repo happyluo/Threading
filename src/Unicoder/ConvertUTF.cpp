@@ -54,10 +54,8 @@
 #include <stdio.h>
 #endif
 
-using namespace Util;
 
-namespace UtilInternal
-{
+THREADING_BEGIN
 
 const int halfShift  = 10; /* used for shifting by 10 bits */
 
@@ -435,10 +433,7 @@ ConversionResult ConvertUTF8toUTF32 (
    --------------------------------------------------------------------- */
 }
 
-namespace Util
-{
-
-using namespace UtilInternal;
+THREADING_BEGIN
 
 /* --------------------------------------------------------------------- */
 
@@ -468,4 +463,4 @@ Boolean IsLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd) {
     }
 }
 
-}
+THREADING_END

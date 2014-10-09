@@ -12,7 +12,7 @@
 #include <vector>
 #include <cfloat>
 #include <limits.h>        // for CHAR_BIT 
-#include <Util/Config.h>
+#include <Config.h>
 
 #define BITMASK(b)      (1 << ((b) % CHAR_BIT))
 #define BITSLOT(b)      ((b) / CHAR_BIT)
@@ -21,7 +21,7 @@
 #define BITTEST(a, b)   ((a)[BITSLOT(b)] & BITMASK(b))
 #define BITNSLOTS(nb)   ((nb + CHAR_BIT - 1) / CHAR_BIT)
 
-UTIL_BEGIN
+THREADING_BEGIN
 
 //
 // Max
@@ -32,7 +32,7 @@ public:
     template<typename T>
     static inline T Max()
     {
-        STATIC_ASSERT(UtilInternal::IsIntegral<T>::value);
+        STATIC_ASSERT(Threading::IsIntegral<T>::value);
 
         size_t bitsperword = sizeof (T) * 8;
 
@@ -73,7 +73,7 @@ public:
     template<typename T>
     static inline T Min()
     {
-        STATIC_ASSERT(UtilInternal::IsIntegral<T>::value);
+        STATIC_ASSERT(Threading::IsIntegral<T>::value);
 
         size_t bitsperword = sizeof (T) * 8;
 
@@ -231,6 +231,6 @@ inline int Log2Ceiling(uint32 n)
     }
 }
 
-UTIL_END
+THREADING_END
 
 #endif

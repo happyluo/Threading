@@ -12,16 +12,16 @@
 
 #if defined(LANG_CPP11)
 
-void Util::RecMutex::init(MutexProtocol)
+void Threading::RecMutex::init(MutexProtocol)
 {
 }
 
-Util::RecMutex::~RecMutex(void)
+Threading::RecMutex::~RecMutex(void)
 {
     m_mutex.~mutex();
 }
 
-void Util::RecMutex::Lock()    const
+void Threading::RecMutex::Lock()    const
 {
     try
     {
@@ -33,12 +33,12 @@ void Util::RecMutex::Lock()    const
     }
 }
 
-bool Util::RecMutex::TryLock() const
+bool Threading::RecMutex::TryLock() const
 {
     return m_mutex.try_lock();
 }
 
-void Util::RecMutex::Unlock() const
+void Threading::RecMutex::Unlock() const
 {
     try
     {
@@ -53,16 +53,16 @@ void Util::RecMutex::Unlock() const
 
 // LockState and the lock/unlock variations are for use by the
 // Condition variable implementation.
-void Util::RecMutex::unlock(LockState& state) const
+void Threading::RecMutex::unlock(LockState& state) const
 {
     state.m_pmutex = &m_mutex;
 }
 
-void Util::RecMutex::lock(LockState& state) const
+void Threading::RecMutex::lock(LockState& state) const
 {
 }
 
-bool Util::RecMutex::WillUnlock() const
+bool Threading::RecMutex::WillUnlock() const
 {
     std::unique_lock<std::mutex> ul(m_mutex, std::adopt_lock);
     bool result = ul.owns_lock();
@@ -72,12 +72,12 @@ bool Util::RecMutex::WillUnlock() const
 
 #else
 
-Util::RecMutex::RecMutex() : m_count(0)
+Threading::RecMutex::RecMutex() : m_count(0)
 {
     init(PrioNone);
 }
 
-Util::RecMutex::RecMutex(MutexProtocol protocol) : m_count(0)
+Threading::RecMutex::RecMutex(MutexProtocol protocol) : m_count(0)
 {
 #ifdef _WIN32
     init(PrioNone);
@@ -86,14 +86,14 @@ Util::RecMutex::RecMutex(MutexProtocol protocol) : m_count(0)
 #endif
 }
 
-bool Util::RecMutex::WillUnlock() const
+bool Threading::RecMutex::WillUnlock() const
 {
     return (1 == m_count);
 }
 
 #    if defined(_WIN32)
 
-void Util::RecMutex::init(MutexProtocol)
+void Threading::RecMutex::init(MutexProtocol)
 {
 #ifdef HAS_WIN32_CONDVAR    //OS_WINRT
     InitializeCriticalSectionEx(&m_mutex, 0, 0);
@@ -102,13 +102,13 @@ void Util::RecMutex::init(MutexProtocol)
 #endif
 }
 
-Util::RecMutex::~RecMutex(void)
+Threading::RecMutex::~RecMutex(void)
 {
     assert(0 == m_count);
     DeleteCriticalSection(&m_mutex);
 }
 
-void Util::RecMutex::Lock()    const
+void Threading::RecMutex::Lock()    const
 {
     EnterCriticalSection(&m_mutex);
     if (++m_count > 1)
@@ -117,7 +117,7 @@ void Util::RecMutex::Lock()    const
     }
 }
 
-bool Util::RecMutex::TryLock() const
+bool Threading::RecMutex::TryLock() const
 {
     if (!TryEnterCriticalSection(&m_mutex))
     {
@@ -132,7 +132,7 @@ bool Util::RecMutex::TryLock() const
     return true;
 }
 
-void Util::RecMutex::Unlock() const
+void Threading::RecMutex::Unlock() const
 {
     if (0 == --m_count)
     {
@@ -143,28 +143,28 @@ void Util::RecMutex::Unlock() const
 // LockState and the lock/unlock variations are for use by the
 // Condition variable implementation.
 #        ifdef HAS_WIN32_CONDVAR
-void Util::RecMutex::unlock(LockState& state) const
+void Threading::RecMutex::unlock(LockState& state) const
 {
     state.m_pmutex = &m_mutex;
     state.m_count = m_count;
     m_count = 0;
 }
 
-void Util::RecMutex::lock(LockState& state) const
+void Threading::RecMutex::lock(LockState& state) const
 {
     m_count = state.m_count;
 }
 
 #        else
 
-void Util::RecMutex::unlock(LockState& state) const
+void Threading::RecMutex::unlock(LockState& state) const
 {
     state.m_count = m_count;
     m_count = 0;                // clear current mutex's lock count.
     LeaveCriticalSection(&m_mutex);        // release(unlock) current mutex.
 }
 
-void Util::RecMutex::lock(LockState& state) const
+void Threading::RecMutex::lock(LockState& state) const
 {
     EnterCriticalSection(&m_mutex);        
     m_count = state.m_count;                
@@ -173,17 +173,17 @@ void Util::RecMutex::lock(LockState& state) const
 
 #    else
 
-//Util::RecMutex::RecMutex(void) : m_count(0)
+//Threading::RecMutex::RecMutex(void) : m_count(0)
 //{
 //    init(PrioNone);
 //}
 //
-//Util::RecMutex::RecMutex(Util::MutexProtocol protocol) : m_count(0)
+//Threading::RecMutex::RecMutex(Threading::MutexProtocol protocol) : m_count(0)
 //{
 //    init(protocol);
 //}
 
-void Util::RecMutex::init(Util::MutexProtocol protocol)
+void Threading::RecMutex::init(Threading::MutexProtocol protocol)
 {
     pthread_mutexattr_t mutexAttr;
     int returnVal = pthread_mutexattr_init(&mutexAttr);
@@ -239,7 +239,7 @@ void Util::RecMutex::init(Util::MutexProtocol protocol)
     }
 }
 
-Util::RecMutex::~RecMutex(void)
+Threading::RecMutex::~RecMutex(void)
 {
     assert(0 == m_count);
 #ifndef NDEBUG
@@ -253,7 +253,7 @@ Util::RecMutex::~RecMutex(void)
 #endif
 }
 
-void Util::RecMutex::Lock()    const
+void Threading::RecMutex::Lock()    const
 {
     int returnVal = pthread_mutex_lock(&m_mutex);
     if (0 != returnVal)
@@ -272,7 +272,7 @@ void Util::RecMutex::Lock()    const
     }
 }
 
-bool Util::RecMutex::TryLock() const
+bool Threading::RecMutex::TryLock() const
 {
     int returnVal = pthread_mutex_trylock(&m_mutex);
     if (0 != returnVal)
@@ -295,7 +295,7 @@ bool Util::RecMutex::TryLock() const
     return (0 == returnVal);
 }
 
-void Util::RecMutex::Unlock() const
+void Threading::RecMutex::Unlock() const
 {
     if (0 == --m_count)
     {
@@ -314,14 +314,14 @@ void Util::RecMutex::Unlock() const
 
 // LockState and the lock/unlock variations are for use by the
 // Condition variable implementation.
-void Util::RecMutex::unlock(LockState& state) const
+void Threading::RecMutex::unlock(LockState& state) const
 {
     state.m_count = m_count;
     m_count = 0;
     state.m_pmutex = &m_mutex;
 }
 
-void Util::RecMutex::lock(LockState& state) const
+void Threading::RecMutex::lock(LockState& state) const
 {
     m_count = state.m_count;
 }

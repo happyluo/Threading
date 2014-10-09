@@ -8,11 +8,11 @@
 
 #include <Util/Shared.h>
 
-using namespace Util;
+
 
 #ifdef HAS_ATOMIC_FUNCTIONS
 
-namespace UtilInternal
+namespace Internal
 {
 
 //
@@ -83,32 +83,32 @@ static inline int atomicExchangeAdd(volatile int* counter, int i)
 #endif
 
 
-Util::SimpleShared::SimpleShared() :
+Threading::SimpleShared::SimpleShared() :
     m_ref(0),
     m_noDelete(false)
 {
 }
 
-Util::SimpleShared::SimpleShared(const SimpleShared&) :
+Threading::SimpleShared::SimpleShared(const SimpleShared&) :
     m_ref(0),
     m_noDelete(false)
 {
 }
 
-Util::Shared::Shared() :
+Threading::Shared::Shared() :
     m_ref(0),
     m_noDelete(false)
 {
 }
 
-Util::Shared::Shared(const Shared& rhs) :
+Threading::Shared::Shared(const Shared& rhs) :
     m_ref(0),
     m_noDelete(false)
 {
 }
 
 void 
-Util::Shared::IncRef()
+Threading::Shared::IncRef()
 {
 #if defined(_WIN32)
     assert(InterlockedExchangeAdd(&m_ref, 0) >= 0);
@@ -124,8 +124,8 @@ Util::Shared::IncRef()
         __sync_fetch_and_add(&m_ref, 1);
     assert(c >= 0);
 #elif defined(HAS_ATOMIC_FUNCTIONS)
-    assert(UtilInternal::atomicExchangeAdd(&m_ref, 0) >= 0);
-    UtilInternal::atomicInc(&m_ref);
+    assert(Internal::atomicExchangeAdd(&m_ref, 0) >= 0);
+    Internal::atomicInc(&m_ref);
 #else
     m_mutex.Lock();
     assert(m_ref >= 0);
@@ -135,7 +135,7 @@ Util::Shared::IncRef()
 }
 
 void 
-Util::Shared::DecRef()
+Threading::Shared::DecRef()
 {
 #if defined(_WIN32)
     assert(InterlockedExchangeAdd(&m_ref, 0) > 0);
@@ -155,8 +155,8 @@ Util::Shared::DecRef()
         delete this;
     }
 #elif defined(HAS_ATOMIC_FUNCTIONS)
-    assert(UtilInternal::atomicExchangeAdd(&m_ref, 0) > 0);
-    if (UtilInternal::atomicDecAndTest(&m_ref) && !m_noDelete)
+    assert(Internal::atomicExchangeAdd(&m_ref, 0) > 0);
+    if (Internal::atomicDecAndTest(&m_ref) && !m_noDelete)
     {
         m_noDelete = true;
         delete this;
@@ -179,14 +179,14 @@ Util::Shared::DecRef()
 }
 
 int
-Util::Shared::GetRef() const
+Threading::Shared::GetRef() const
 {
 #if defined(_WIN32)
     return InterlockedExchangeAdd(const_cast<LONG*>(&m_ref), 0);
 #elif defined(HAS_GCC_BUILTINS)
     return __sync_fetch_and_sub(const_cast<volatile int*>(&m_ref), 0);
 #elif defined(HAS_ATOMIC_FUNCTIONS)
-    return UtilInternal::atomicExchangeAdd(const_cast<volatile int*>(&m_ref), 0);
+    return Internal::atomicExchangeAdd(const_cast<volatile int*>(&m_ref), 0);
 #else
     m_mutex.Lock();
     int ret = m_ref;
@@ -196,7 +196,7 @@ Util::Shared::GetRef() const
 }
 
 void
-Util::Shared::SetNoDelete(bool b)
+Threading::Shared::SetNoDelete(bool b)
 {
     m_noDelete = b;
 }

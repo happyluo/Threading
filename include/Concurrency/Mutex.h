@@ -9,20 +9,19 @@
 #ifndef CONCURRENCY_MUTEX_H
 #define CONCURRENCY_MUTEX_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Concurrency/Lock.h>
 
 #ifdef LANG_CPP11
 #   include <mutex>
 #endif
 
-namespace Util
-{
+THREADING_BEGIN
 
 //
-// Simple non-recursive Util::Mutex implementation.
+// Simple non-recursive Threading::Mutex implementation.
 //
-class CONCURRENCY_API Mutex : public Base::noncopyable
+class THREADING_API Mutex : public noncopyable
 {
     friend class Cond;
 
@@ -72,9 +71,9 @@ private:
 #elif defined(_WIN32)
     struct LockState
     {
-#   ifdef HAS_WIN32_CONDVAR
+#  ifdef HAS_WIN32_CONDVAR
         CRITICAL_SECTION* m_pmutex;
-#   endif 
+#  endif 
     };
 #else
     struct LockState
@@ -114,6 +113,6 @@ inline Mutex::Mutex(MutexProtocol protocol)
 #endif
 }
 
-}
+THREADING_END
 
 #endif

@@ -11,8 +11,7 @@
 
 #include <Concurrency/ThreadException.h>
 
-namespace Util
-{
+THREADING_BEGIN
     
 template <typename M>
 class MutexPtrLock : public noncopyable
@@ -94,6 +93,6 @@ private:
     mutable bool    m_acquired;
 };
 
-}
+THREADING_END
 
 #endif

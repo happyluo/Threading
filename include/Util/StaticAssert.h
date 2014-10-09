@@ -11,7 +11,7 @@
 
 #include <Build/UsefulMacros.h>
 
-UTIL_BEGIN
+THREADING_BEGIN
 
 //
 // version 1 - libcxx
@@ -51,7 +51,7 @@ struct StaticAssert<true>
 
 #if 0
 
-#define STATIC_ASSERT(expression) (void)Util::StaticAssert<(static_cast<bool>(expression))>::VALUE 
+#define STATIC_ASSERT(expression) (void)Threading::StaticAssert<(static_cast<bool>(expression))>::VALUE 
 
 #else
 
@@ -61,7 +61,7 @@ struct StaticAssertTest
 };
 
 #define STATIC_ASSERT(expression) \
-    typedef Util::StaticAssertTest<sizeof(Util::StaticAssert<(static_cast<bool>(expression))>)> \
+    typedef Threading::StaticAssertTest<sizeof(Threading::StaticAssert<(static_cast<bool>(expression))>)> \
     static_assert_typedef
 
 #endif
@@ -95,7 +95,7 @@ struct CompileAssert {
 };
 
 #define COMPILE_ASSERT(expr, msg) \
-    typedef Util::CompileAssert<(static_cast<bool>(expr)) > \
+    typedef Threading::CompileAssert<(static_cast<bool>(expr)) > \
     msg[static_cast<bool>(expr) ? 1 : -1] ATTRIBUTE_UNUSED
 
 // Implementation details of COMPILE_ASSERT:
@@ -141,6 +141,6 @@ struct CompileAssert {
 
 #endif
 
-UTIL_END
+THREADING_END
 
 #endif

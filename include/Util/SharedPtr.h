@@ -16,8 +16,7 @@
 #include <algorithm>
 #include <Util/Exception.h>
 
-namespace Util
-{
+THREADING_BEGIN
 // class SharedPtrBase
 ///侵入式引用计数智能指针基类，实现对被管理指针的基本操作
 template<typename T>
@@ -267,6 +266,6 @@ public:
     }
 };
 
-}
+THREADING_END
 
 #endif

@@ -9,12 +9,12 @@
 #ifndef CONCURRENCY_RUNNABLE_H
 #define CONCURRENCY_RUNNABLE_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Util/Shared.h>
 
-CONCURRENCY_BEGIN
+THREADING_BEGIN
 
-class Runnable : virtual public Util::Shared
+class Runnable : virtual public Threading::Shared
 {
 public:
     Runnable(void) {}
@@ -23,6 +23,6 @@ public:
     virtual void Run() = 0;
 };
 
-CONCURRENCY_END
+THREADING_END
 
 #endif

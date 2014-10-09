@@ -6,7 +6,7 @@
 //
 // **********************************************************************
 
-#include <cstring>
+#include <string.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <math.h>
@@ -38,46 +38,15 @@
 
 using namespace std;
 
-UTIL_BEGIN
+THREADING_BEGIN
 
-String::String()
-{
-}
-
-String::String(const String& other) : std::string(other)
-{
-}
-
-String::String(const String& src, String::size_type i, String::size_type n) : std::string(src, i, n)
-{
-}
-
-String::String(const char* src, String::size_type n) : std::string(src, n)
-{
-}
-
-String::String(const char* src) : std::string(src)
-{
-}
-
-String::String(String::size_type n, char c) : std::string(n, c)
-{
-}
-
-String::String(const std::string& src) : std::string(src)
-{
-}
-
-String::~String()
-{
-}
 
 #ifdef _WIN32
 // Creates a UTF-16 wide string from the given ANSI string, allocating
 // memory using new. The caller is responsible for deleting the return
 // value using delete[]. Returns the wide string, or NULL if the
 // input is NULL.
-LPCWSTR String::AnsiToUTF16(const char* ansi)
+LPCWSTR AnsiToUTF16(const char* ansi)
 {
     if (!ansi) 
     {
@@ -98,7 +67,7 @@ LPCWSTR String::AnsiToUTF16(const char* ansi)
 // memory using new. The caller is responsible for deleting the return
 // value using delete[]. Returns the ANSI string, or NULL if the
 // input is NULL.
-const char* String::UTF16ToAnsi(LPCWSTR utf16_str)
+const char* UTF16ToAnsi(LPCWSTR utf16_str)
 {
     if (!utf16_str) 
     {
@@ -119,7 +88,7 @@ const char* String::UTF16ToAnsi(LPCWSTR utf16_str)
 
 #ifdef HAS_STD_WSTREAM
 
-std::wistream& operator >>(std::wistream& is, Util::String& strret)
+std::wistream& operator >>(std::wistream& is, std::string& strret)
 {
     std::wstring wstr;
     is >> wstr;
@@ -131,12 +100,12 @@ std::wistream& operator >>(std::wistream& is, Util::String& strret)
         new IconvStringConverter<char>();
 #    endif
 
-    strret = Util::UTF8ToNative(stringConverter, Util::WstringToString(wstr));
+    strret = Threading::UTF8ToNative(stringConverter, Threading::WstringToString(wstr));
 
     return is;
 }
 
-std::wostream& operator <<(std::wostream& os, const Util::String& strsrc)
+std::wostream& operator <<(std::wostream& os, const std::string& strsrc)
 {
     StringConverterPtr stringConverter = 
 #    if defined(_WIN32) && !defined(ICONV_ON_WINDOWS)
@@ -152,7 +121,7 @@ std::wostream& operator <<(std::wostream& os, const Util::String& strsrc)
     // NUL.  Given this, there doesn't seem much of a point in allowing NUL in
     // formatted output.  The semantics would be unclear anyway: what's the
     // screen width of a NUL?
-    os << Util::StringToWstring(Util::NativeToUTF8(stringConverter, strsrc));
+    os << Threading::StringToWstring(Threading::NativeToUTF8(stringConverter, strsrc));
 
     return os;
 }
@@ -227,7 +196,7 @@ EncodeChar(string::value_type b, string& s, const string& special)
             if (!(i >= 32 && i <= 126))
             {
                 s.push_back('\\');
-                string octal = Util::String::ToOctalString(i);
+                string octal = Threading::ToOctalString(i);
                 //
                 // Add leading zeroes so that we avoid problems during
                 // decoding. For example, consider the escaped string
@@ -264,7 +233,7 @@ EncodeChar(string::value_type b, string& s, const string& special)
 // prefixed with a backslash in the returned string.
 //
 string
-String::EscapeString(const string& s, const string& special)
+EscapeString(const string& s, const string& special)
 {
     for (string::size_type i = 0; i < special.size(); ++i)
     {
@@ -429,7 +398,7 @@ DecodeString(const string& s, string::size_type start, string::size_type end, st
 // Remove escape sequences added by escapeString.
 //
 string
-String::UnescapeString(const string& s, string::size_type start, string::size_type end)
+UnescapeString(const string& s, string::size_type start, string::size_type end)
 {
     assert(start <= end && end <= s.size());
 
@@ -441,7 +410,7 @@ String::UnescapeString(const string& s, string::size_type start, string::size_ty
 }
 
 bool
-String::SplitString(const string& str, const string& delim, vector<string>& result, bool keepblank)
+SplitString(const string& str, const string& delim, vector<string>& result, bool keepblank)
 {
     string::size_type pos = 0;
     string::size_type length = str.length();
@@ -502,7 +471,7 @@ String::SplitString(const string& str, const string& delim, vector<string>& resu
 }
 
 string
-String::JoinString(const std::vector<std::string>& values, const std::string& delimiter)
+JoinString(const std::vector<std::string>& values, const std::string& delimiter)
 {
     ostringstream out;
     for (unsigned int i = 0; i < values.size(); i++)
@@ -520,7 +489,7 @@ String::JoinString(const std::vector<std::string>& values, const std::string& de
 // Trim white space (" \t\r\n")
 //
 string
-String::Trim(const string& s)
+Trim(const string& s)
 {
     static const string delim = " \t\r\n";
     string::size_type beg = s.find_first_not_of(delim);
@@ -541,7 +510,7 @@ String::Trim(const string& s)
 // If no matching closing quote is found, then -1 is returned.
 //
 string::size_type
-String::CheckQuote(const string& s, string::size_type start)
+CheckQuote(const string& s, string::size_type start)
 {
     string::value_type quoteChar = s[start];
     if (quoteChar == '"' || quoteChar == '\'')
@@ -562,7 +531,7 @@ String::CheckQuote(const string& s, string::size_type start)
 }
 
 string::size_type
-String::ExistQuote(const string& s, string::size_type start)
+ExistQuote(const string& s, string::size_type start)
 {
     string::size_type pos;
     while (start < s.size() && (pos = s.find_first_of("\"\'", start)) != string::npos)
@@ -584,7 +553,7 @@ String::ExistQuote(const string& s, string::size_type start)
 // (whereas regex() isn't). Only one * per pattern is supported.
 //
 bool
-String::Match(const string& s, const string& pat, bool emptyMatch)
+Match(const string& s, const string& pat, bool emptyMatch)
 {
     assert(!s.empty());
     assert(!pat.empty());
@@ -633,7 +602,7 @@ String::Match(const string& s, const string& pat, bool emptyMatch)
 }
 
 std::string 
-String::TranslatingCR2LF(const std::string& src)
+TranslatingCR2LF(const std::string& src)
 {
     // Translating both the two-character sequence #xD #xA and any #xD that is not followed by #xA to 
     // a single #xA character.
@@ -683,7 +652,7 @@ String::TranslatingCR2LF(const std::string& src)
 }
 
 std::string
-String::ToLower(const std::string& s)
+ToLower(const std::string& s)
 {
     string result;
     result.reserve(s.size());
@@ -702,7 +671,7 @@ String::ToLower(const std::string& s)
 }
 
 std::string
-String::ToUpper(const std::string& s)
+ToUpper(const std::string& s)
 {
     string result;
     result.reserve(s.size());
@@ -721,7 +690,7 @@ String::ToUpper(const std::string& s)
 }
 
 unsigned long 
-String::Hash(const std::string& s)
+Hash(const std::string& s)
 {
     unsigned long hashCode = s.length();
     size_t step = (s.length() >> 5) + 1;
@@ -734,7 +703,7 @@ String::Hash(const std::string& s)
 }
 
 string
-String::RemoveWhitespace(const std::string& s)
+RemoveWhitespace(const std::string& s)
 {
     string result;
     for (unsigned int i = 0; i < s.length(); ++ i)
@@ -766,13 +735,13 @@ static const char digitVal[] =
 #ifdef __MINGW32__
 //#if defined(__MINGW32__) || (defined(_MSC_VER) && (_MSC_VER < 1300))
 
-namespace UtilInternal
+namespace
 {
 //
 // The MINGW runtime does not include _strtoi64, so we provide our own implementation
 //
 
-static Util::Int64 strToInt64Impl(const char* s, char** endptr, int base)
+static Threading::Int64 strToInt64Impl(const char* s, char** endptr, int base)
 {
     //
     // Assume nothing will be there to convert for now
@@ -901,8 +870,8 @@ static Util::Int64 strToInt64Impl(const char* s, char** endptr, int base)
 #endif
 
 
-Util::Int64 
-String::ToInt64(const char* s, char** endptr, int base)
+Threading::Int64 
+ToInt64(const char* s, char** endptr, int base)
 {
 #if defined(_WIN32)
 #   ifdef __MINGW32__
@@ -920,7 +889,7 @@ String::ToInt64(const char* s, char** endptr, int base)
 }
 
 bool 
-String::ToInt64(const string& s,  Util::Int64& result)
+ToInt64(const string& s,  Threading::Int64& result)
 {
     const char* start = s.c_str();
     char* end = 0;
@@ -930,7 +899,7 @@ String::ToInt64(const string& s,  Util::Int64& result)
 }
 
 unsigned long 
-String::ToULong(const std::string& strval, size_t* endindex, unsigned int base)
+ToULong(const std::string& strval, size_t* endindex, unsigned int base)
 {
     //
     // Assume nothing will be there to convert for now
@@ -1053,13 +1022,13 @@ String::ToULong(const std::string& strval, size_t* endindex, unsigned int base)
 }
 
 long 
-String::ToLong(const std::string& strval, size_t* endindex, unsigned int base)
+ToLong(const std::string& strval, size_t* endindex, unsigned int base)
 {
     return static_cast<long>(ToULong(strval, endindex, base));
 }
 
 double 
-String::ToDouble(const std::string& strval, size_t* endindex, int precision)
+ToDouble(const std::string& strval, size_t* endindex, int precision)
 {
     //
     // Assume nothing will be there to convert for now
@@ -1142,7 +1111,7 @@ String::ToDouble(const std::string& strval, size_t* endindex, int precision)
 }
 
 std::string 
-String::ToString(unsigned long n)
+ToString(unsigned long n)
 {
     string s;
     size_t size = sizeof(unsigned long) * 8;
@@ -1159,7 +1128,7 @@ String::ToString(unsigned long n)
 }
 
 std::string 
-String::ToString(long n)
+ToString(long n)
 {
     string s;
     size_t size = sizeof(unsigned long) * 8;
@@ -1188,7 +1157,7 @@ String::ToString(long n)
 }
 
 bool 
-String::IsNumber(const std::string& s, bool* isdecimal)
+IsNumber(const std::string& s, bool* isdecimal)
 {
     const char* src(s.c_str());
 
@@ -1249,7 +1218,7 @@ String::IsNumber(const std::string& s, bool* isdecimal)
 }
 
 int 
-String::GetIntInString(const char* s, char** endptr, int base)
+GetIntInString(const char* s, char** endptr, int base)
 {
     //
     // Assume nothing will be there to convert for now
@@ -1339,12 +1308,13 @@ String::GetIntInString(const char* s, char** endptr, int base)
         {
             int digit = digitVal[toupper(static_cast<unsigned char>(*s)) - '0'];
             assert(digit != 100);
-            if (result < _I32_MAX / base)
+            if (result < std::numeric_limits<int>::max() / base)
             {
                 result *= base;
                 result += digit;
             }
-            else if ((digit <= _I32_MAX % base) || (sign == -1 && digit == _I32_MAX % base + 1))
+            else if ((digit <= std::numeric_limits<int>::max() % base) ||
+                (sign == -1 && digit == std::numeric_limits<int>::max() % base + 1))
             {
                 result *= base;
                 result += digit;
@@ -1352,7 +1322,7 @@ String::GetIntInString(const char* s, char** endptr, int base)
             else
             {
                 overflow = true;
-                result = sign == -1 ? _I32_MIN : _I32_MAX;
+                result = sign == -1 ? std::numeric_limits<int>::min() : std::numeric_limits<int>::max();
             }
         }
         ++s;
@@ -1375,8 +1345,8 @@ String::GetIntInString(const char* s, char** endptr, int base)
     return result;
 }
 
-const Util::Byte* 
-String::FindStringInBuffer(Util::Byte* buffer, size_t buffsize, const std::string& strtosearch)
+const Threading::Byte* 
+FindStringInBuffer(Threading::Byte* buffer, size_t buffsize, const std::string& strtosearch)
 {
     if (buffsize < strtosearch.length()
         || "" == strtosearch)
@@ -1405,7 +1375,7 @@ String::FindStringInBuffer(Util::Byte* buffer, size_t buffsize, const std::strin
 }
 
 string 
-String::BytesToString(const Byte* src, size_t size)
+BytesToString(const Byte* src, size_t size)
 {
     const Byte* end(src + size);
 #if 0
@@ -1435,7 +1405,7 @@ String::BytesToString(const Byte* src, size_t size)
 }
 
 string
-String::BytesToString(const ByteSeq& bytes)
+BytesToString(const ByteSeq& bytes)
 {
     return BytesToString(&*bytes.begin(), bytes.size());
 
@@ -1467,7 +1437,7 @@ String::BytesToString(const ByteSeq& bytes)
 }
 
 ByteSeq
-String::StringToBytes(const string& str)
+StringToBytes(const string& str)
 {
     ByteSeq bytes;
     bytes.reserve((str.size() + 1) / 2);
@@ -1511,7 +1481,7 @@ String::StringToBytes(const string& str)
 }
 
 size_t 
-String::HexDumpLine(const void* ptr, size_t offset, size_t size, std::string& line, size_t linelength)
+HexDumpLine(const void* ptr, size_t offset, size_t size, std::string& line, size_t linelength)
 {
     // Line layout:
     // 12: address
@@ -1524,7 +1494,7 @@ String::HexDumpLine(const void* ptr, size_t offset, size_t size, std::string& li
     // Total: 19 + linelength * (1 + 2 + 1)
     line.clear();
     line.reserve(19 + linelength * (1 + 2 + 1));
-    const Util::Byte* srcstr = reinterpret_cast<const Util::Byte*>(ptr) + offset;
+    const Threading::Byte* srcstr = reinterpret_cast<const Threading::Byte*>(ptr) + offset;
     size_t length = std::min(size - offset, linelength);
 
     std::ostringstream out;
@@ -1566,7 +1536,7 @@ String::HexDumpLine(const void* ptr, size_t offset, size_t size, std::string& li
 }
 
 std::string 
-String::HexDump(const void* ptr, size_t size, size_t linelength) 
+HexDump(const void* ptr, size_t size, size_t linelength) 
 {
     std::ostringstream os;
     HexDump(ptr, size, std::ostream_iterator<const char*>(os, "\n"), linelength);
@@ -1574,7 +1544,7 @@ String::HexDump(const void* ptr, size_t size, size_t linelength)
 }
 
 std::string 
-String::HexStringToBuffer(const string &hexString, string &buffer, const std::string& delimiter)
+HexStringToBuffer(const string &hexString, string &buffer, const std::string& delimiter)
 {
     //
     //For the "C" locale, white-space characters are any of:
@@ -1660,7 +1630,7 @@ String::HexStringToBuffer(const string &hexString, string &buffer, const std::st
 }
 
 size_t
-String::BinDumpLine(const void* ptr, size_t offset, size_t size, std::string& line, size_t linelength)
+BinDumpLine(const void* ptr, size_t offset, size_t size, std::string& line, size_t linelength)
 {
     // Line layout:
     // 12: address
@@ -1673,7 +1643,7 @@ String::BinDumpLine(const void* ptr, size_t offset, size_t size, std::string& li
     // Total: 19 + linelength * (1 + 8 + 1)
     line.clear();
     line.reserve(19 + linelength * (1 + 8 + 1));
-    const Util::Byte* srcstr = reinterpret_cast<const Util::Byte*>(ptr) + offset;
+    const Threading::Byte* srcstr = reinterpret_cast<const Threading::Byte*>(ptr) + offset;
     size_t length = std::min(size - offset, linelength);
 
     std::ostringstream out;
@@ -1714,7 +1684,7 @@ String::BinDumpLine(const void* ptr, size_t offset, size_t size, std::string& li
 }
 
 std::string 
-String::BinDump(const void* ptr, size_t size, size_t linelength) 
+BinDump(const void* ptr, size_t size, size_t linelength) 
 {
     std::ostringstream os;
     BinDump(ptr, size, std::ostream_iterator<const char*>(os, "\n"), linelength);
@@ -1725,7 +1695,7 @@ String::BinDump(const void* ptr, size_t size, size_t linelength)
 // past the prefix and returns true; otherwise leaves *pstr unchanged
 // and returns false.  None of pstr, *pstr, and prefix can be NULL.
 bool 
-String::SkipPrefix(const char* prefix, const char** pstr) 
+SkipPrefix(const char* prefix, const char** pstr) 
 {
     const size_t prefix_len = strlen(prefix);
     if (strncmp(*pstr, prefix, prefix_len) == 0) 
@@ -2003,7 +1973,8 @@ bool CaseInsensitiveCStringEquals(const char * lhs, const char * rhs)
     {
         return false;
     }
-    return 0 == stricmp(lhs, rhs);
+
+    return 0 == Posix::StrCaseCmp(lhs, rhs);
 }
 
 // Compares two wide C strings, ignoring case.  Returns true iff they
@@ -2031,15 +2002,15 @@ bool CaseInsensitiveWideCStringEquals(const wchar_t* lhs, const wchar_t* rhs)
     }
 
 #ifdef _WIN32
-    return _wcsicmp(lhs, rhs) == 0;
+    return 0 == _wcsicmp(lhs, rhs);
 #elif defined (__linux__) && !defined(__ANDROID__)
-    return wcscasecmp(lhs, rhs) == 0;
+    return 0 == wcscasecmp(lhs, rhs);
 #else
     // Android, Mac OS X and Cygwin don't define wcscasecmp.
     // Other unknown OSes may not define it either.
     wint_t left, right;
     do
-	{
+    {
         left = towlower(*lhs++);
         right = towlower(*rhs++);
     } while (left && left == right);
@@ -2217,16 +2188,16 @@ Double2String(double value, int precision)
     return number;
 }
 
-bool
-IsAlpha(char c)
-{
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-}
+//bool
+//IsAlpha(char c)
+//{
+//    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+//}
 
-bool
-IsDigit(char c)
-{
-    return c >= '0' && c <= '9';
-}
+//bool
+//IsDigit(char c)
+//{
+//    return c >= '0' && c <= '9';
+//}
 
-UTIL_END
+THREADING_END

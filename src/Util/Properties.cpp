@@ -13,13 +13,13 @@
 #include <Logging/LoggerUtil.h>
 
 using namespace std;
-using namespace Util;
-using namespace UtilInternal;
+using namespace Threading;
+
 
 string
-Util::Properties::GetProperty(const string& key)
+Threading::Properties::GetProperty(const string& key)
 {
-    Util::Mutex::LockGuard sync(*this);
+    Threading::Mutex::LockGuard sync(*this);
 
     map<string, PropertyValue>::iterator p = m_properties.find(key);
     if (p != m_properties.end())
@@ -34,9 +34,9 @@ Util::Properties::GetProperty(const string& key)
 }
 
 string
-Util::Properties::GetPropertyWithDefault(const string& key, const string& value)
+Threading::Properties::GetPropertyWithDefault(const string& key, const string& value)
 {
-    Util::Mutex::LockGuard sync(*this);
+    Threading::Mutex::LockGuard sync(*this);
 
     map<string, PropertyValue>::iterator p = m_properties.find(key);
     if (p != m_properties.end())
@@ -51,15 +51,15 @@ Util::Properties::GetPropertyWithDefault(const string& key, const string& value)
 }
 
 Int
-Util::Properties::GetPropertyAsInt(const string& key)
+Threading::Properties::GetPropertyAsInt(const string& key)
 {
     return GetPropertyAsIntWithDefault(key, 0);
 }
 
 Int
-Util::Properties::GetPropertyAsIntWithDefault(const string& key, Int value)
+Threading::Properties::GetPropertyAsIntWithDefault(const string& key, Int value)
 {
-    Util::Mutex::LockGuard sync(*this);
+    Threading::Mutex::LockGuard sync(*this);
     
     map<string, PropertyValue>::iterator p = m_properties.find(key);
     if (p != m_properties.end())
@@ -78,16 +78,16 @@ Util::Properties::GetPropertyAsIntWithDefault(const string& key, Int value)
     return value;
 }
 
-Util::StringSeq
-Util::Properties::GetPropertyAsList(const string& key)
+Threading::StringSeq
+Threading::Properties::GetPropertyAsList(const string& key)
 {
     return GetPropertyAsListWithDefault(key, StringSeq());
 }
 
-Util::StringSeq
-Util::Properties::GetPropertyAsListWithDefault(const string& key, const StringSeq& value)
+Threading::StringSeq
+Threading::Properties::GetPropertyAsListWithDefault(const string& key, const StringSeq& value)
 {
-    Util::Mutex::LockGuard sync(*this);
+    Threading::Mutex::LockGuard sync(*this);
     
     map<string, PropertyValue>::iterator p = m_properties.find(key);
     if (p != m_properties.end())
@@ -95,7 +95,7 @@ Util::Properties::GetPropertyAsListWithDefault(const string& key, const StringSe
         p->second.used = true;
 
         StringSeq result;
-        if (!Util::String::SplitString(p->second.value, ", \t\r\n", result))
+        if (!Threading::SplitString(p->second.value, ", \t\r\n", result))
         {
             Warning out(GetProcessLogger());
             out << "mismatched quotes in property " << key << "'s value, returning default value";
@@ -114,9 +114,9 @@ Util::Properties::GetPropertyAsListWithDefault(const string& key, const StringSe
 
 
 PropertyDict
-Util::Properties::GetPropertiesForPrefix(const string& prefix)
+Threading::Properties::GetPropertiesForPrefix(const string& prefix)
 {
-    Util::Mutex::LockGuard sync(*this);
+    Threading::Mutex::LockGuard sync(*this);
 
     PropertyDict result;
     for (map<string, PropertyValue>::iterator p = m_properties.begin(); p != m_properties.end(); ++p)
@@ -132,18 +132,18 @@ Util::Properties::GetPropertiesForPrefix(const string& prefix)
 }
 
 void
-Util::Properties::SetProperty(const string& key, const string& value)
+Threading::Properties::SetProperty(const string& key, const string& value)
 {
     //
     // Trim whitespace
     //
-    string currentKey = Util::String::Trim(key);
+    string currentKey = Threading::Trim(key);
     if (currentKey.empty())
     {
         throw InitializationException(__FILE__, __LINE__, "Attempt to set property with empty key");
     }
 
-    Util::Mutex::LockGuard sync(*this);
+    Threading::Mutex::LockGuard sync(*this);
 
     //
     // Set or clear the property.
@@ -165,9 +165,9 @@ Util::Properties::SetProperty(const string& key, const string& value)
 }
 
 StringSeq
-Util::Properties::GetCommandLineOptions()
+Threading::Properties::GetCommandLineOptions()
 {
-    Util::Mutex::LockGuard sync(*this);
+    Threading::Mutex::LockGuard sync(*this);
 
     StringSeq result;
     result.reserve(m_properties.size());
@@ -179,7 +179,7 @@ Util::Properties::GetCommandLineOptions()
 }
 
 StringSeq
-Util::Properties::ParseCommandLineOptions(const string& prefix, const StringSeq& options)
+Threading::Properties::ParseCommandLineOptions(const string& prefix, const StringSeq& options)
 {
     string pfx = prefix;
     if (!pfx.empty() && pfx[pfx.size() - 1] != '.')
@@ -211,12 +211,12 @@ Util::Properties::ParseCommandLineOptions(const string& prefix, const StringSeq&
 }
 
 void
-Util::Properties::Load(const std::string& file)
+Threading::Properties::Load(const std::string& file)
 {
-    UtilInternal::ifstream in(Util::NativeToUTF8(m_converter, file));
+    Threading::ifstream in(Threading::NativeToUTF8(m_converter, file));
     if (!in)
     {
-        throw FileException(__FILE__, __LINE__, UtilInternal::GetSystemErrno(), file);
+        throw FileException(__FILE__, __LINE__, Threading::GetSystemErrno(), file);
     }
 
     string line;
@@ -243,22 +243,22 @@ Util::Properties::Load(const std::string& file)
 }
 
 PropertiesPtr
-Util::Properties::Clone()
+Threading::Properties::Clone()
 {
-    Util::Mutex::LockGuard sync(*this);
+    Threading::Mutex::LockGuard sync(*this);
     return new Properties(this);
 }
 
 size_t 
-Util::Properties::Size() const
+Threading::Properties::Size() const
 {
     return m_properties.size();
 }
 
 set<string>
-Util::Properties::GetUnusedProperties()
+Threading::Properties::GetUnusedProperties()
 {
-    Util::Mutex::LockGuard sync(*this);
+    Threading::Mutex::LockGuard sync(*this);
     set<string> unusedProperties;
     for (map<string, PropertyValue>::const_iterator p = m_properties.begin(); p != m_properties.end(); ++p)
     {
@@ -270,19 +270,19 @@ Util::Properties::GetUnusedProperties()
     return unusedProperties;
 }
 
-Util::Properties::Properties(const Properties* p) :
+Threading::Properties::Properties(const Properties* p) :
     m_properties(p->m_properties),
     m_converter(p->m_converter)
 {
 }
 
-Util::Properties::Properties(const StringConverterPtr& converter) :
+Threading::Properties::Properties(const StringConverterPtr& converter) :
     m_converter(converter)
 {
 }
 
 void
-Util::Properties::ParseLine(const string& line, const StringConverterPtr& converter)
+Threading::Properties::ParseLine(const string& line, const StringConverterPtr& converter)
 {
     string key;
     string value;
@@ -448,14 +448,14 @@ Util::Properties::ParseLine(const string& line, const StringConverterPtr& conver
         return;
     }
 
-    key = Util::UTF8ToNative(converter, key);
-    value = Util::UTF8ToNative(converter, value);
+    key = Threading::UTF8ToNative(converter, key);
+    value = Threading::UTF8ToNative(converter, value);
 
     SetProperty(key, value);
 }
 
 void
-Util::Properties::LoadConfig()
+Threading::Properties::LoadConfig()
 {
     string value = GetProperty("Util.Config");
 #ifndef OS_WINRT
@@ -473,7 +473,7 @@ Util::Properties::LoadConfig()
         }
         if (ret > 0)
         {
-            value = Util::UTF8ToNative(m_converter, Util::WstringToString(wstring(&v[0], ret)));
+            value = Threading::UTF8ToNative(m_converter, Threading::WstringToString(wstring(&v[0], ret)));
         }
         else
         {
@@ -516,7 +516,7 @@ Util::Properties::LoadConfig()
 }
 
 PropertiesPtr
-Util::CreateProperties(const StringConverterPtr& converter)
+Threading::CreateProperties(const StringConverterPtr& converter)
 {
     return new Properties(converter);
 }

@@ -9,7 +9,7 @@
 #ifndef BUILD_NONCOPYABLE_H
 #define BUILD_NONCOPYABLE_H
 
-namespace Base
+namespace Threading
 {
 //
 // By deriving from this class, other classes are made non-copyable.
@@ -31,6 +31,7 @@ private:
     noncopyable(const noncopyable&);
     const noncopyable& operator =(const noncopyable&);
 };
+
 }
 
 #endif 

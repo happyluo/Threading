@@ -12,8 +12,8 @@
 #include <Util/Time.h>
 
 #if defined(_WIN32)
-namespace UtilInternal
-{
+
+THREADING_BEGIN
 
 class Semaphore
 {
@@ -22,7 +22,7 @@ public:
     ~Semaphore();
 
     void Wait() const;            // P
-    bool TimedWait(const Util::Time&) const;    // P
+    bool TimedWait(const Threading::Time&) const;    // P
 
     void Post(int releaseCount = 1) const;    // V
 
@@ -30,7 +30,8 @@ private:
     mutable HANDLE    m_sem;
 };
 
-}
+THREADING_END
+
 #endif
 
 #endif

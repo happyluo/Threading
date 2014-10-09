@@ -21,6 +21,7 @@
 
 #include <Unicoder/StringConverter.h>
 #include <Build/UndefSysMacros.h>
+#include <Concurrency/ThreadException.h>
 
 #include <algorithm>
 #include <iconv.h>
@@ -43,8 +44,7 @@
 // altogether, by defining UTIL_NO_ERRNO
 //
 
-namespace Util
-{
+THREADING_BEGIN
 
 //
 // Converts charT encoded with internalCode to and from UTF-8 byte sequences
@@ -54,7 +54,7 @@ namespace Util
 //
 //
 template<typename charT>
-class IconvStringConverter : public Util::BasicStringConverter<charT>
+class IconvStringConverter : public Threading::BasicStringConverter<charT>
 {
 public:
 
@@ -66,9 +66,9 @@ public:
 
     virtual ~IconvStringConverter();
 
-    virtual Util::Byte* ToUTF8(const charT*, const charT*, Util::UTF8Buffer&) const;
+    virtual Threading::Byte* ToUTF8(const charT*, const charT*, Threading::UTF8Buffer&) const;
     
-    virtual void FromUTF8(const Util::Byte*, const Util::Byte*, std::basic_string<charT>&) const;
+    virtual void FromUTF8(const Threading::Byte*, const Threading::Byte*, std::basic_string<charT>&) const;
     
 private:
 
@@ -105,16 +105,16 @@ IconvStringConverter<charT>::IconvStringConverter(const char* internalCode) :
     {
         Close(CreateDescriptors());
     }
-    catch(const Util::StringConversionException& sce)
+    catch(const Threading::StringConversionException& sce)
     {
-        throw Util::InitializationException(__FILE__, __LINE__, sce.m_reason);
+        throw Threading::InitializationException(__FILE__, __LINE__, sce.m_reason);
     }
 
 #ifdef _WIN32
     m_key = TlsAlloc();
     if (m_key == TLS_OUT_OF_INDEXES)
     {
-        throw Util::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
+        throw Threading::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
     }
 #else
 #    ifdef __SUNPRO_CC
@@ -125,7 +125,7 @@ IconvStringConverter<charT>::IconvStringConverter(const char* internalCode) :
 
     if (rs != 0)
     {
-        throw Util::ThreadSyscallException(__FILE__, __LINE__, rs);
+        throw Threading::ThreadSyscallException(__FILE__, __LINE__, rs);
     }
 #endif
 }
@@ -166,7 +166,7 @@ IconvStringConverter<charT>::CreateDescriptors() const
     cdp.first = iconv_open(m_internalCode.c_str(), externalCode);
     if (cdp.first == iconv_t(-1))
     {
-        throw Util::StringConversionException(
+        throw Threading::StringConversionException(
             __FILE__, __LINE__,
             std::string("iconv cannot convert from ") 
             + externalCode + " to " + m_internalCode);                      
@@ -177,7 +177,7 @@ IconvStringConverter<charT>::CreateDescriptors() const
     {
         iconv_close(cdp.first);
 
-        throw Util::StringConversionException(
+        throw Threading::StringConversionException(
             __FILE__, __LINE__,
             std::string("iconv cannot convert from ") + m_internalCode + " to " + externalCode);                    
     }
@@ -203,13 +203,13 @@ IconvStringConverter<charT>::GetDescriptors() const
 #ifdef _WIN32
         if (TlsSetValue(m_key, new std::pair<iconv_t, iconv_t>(cdp)) == 0)
         {
-            throw Util::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
+            throw Threading::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
         }
 #else
         int rs = pthread_setspecific(m_key, new std::pair<iconv_t, iconv_t>(cdp));
         if (rs != 0)
         {
-            throw Util::ThreadSyscallException(__FILE__, __LINE__, rs);
+            throw Threading::ThreadSyscallException(__FILE__, __LINE__, rs);
         }
 #endif
         return cdp;
@@ -235,8 +235,8 @@ IconvStringConverter<charT>::Close(std::pair<iconv_t, iconv_t> cdp)
     assert(rs == 0);
 }
  
-template<typename charT> Util::Byte* 
-IconvStringConverter<charT>::ToUTF8(const charT* sourceStart, const charT* sourceEnd, Util::UTF8Buffer& buf) const
+template<typename charT> Threading::Byte* 
+IconvStringConverter<charT>::ToUTF8(const charT* sourceStart, const charT* sourceEnd, Threading::UTF8Buffer& buf) const
 { 
     iconv_t cd = GetDescriptors().second;
     
@@ -259,7 +259,7 @@ IconvStringConverter<charT>::ToUTF8(const charT* sourceStart, const charT* sourc
     do
     {
         size_t howMany = std::max(inbytesleft, size_t(4));
-        outbuf = reinterpret_cast<char*>(buf.GetMoreBytes(howMany, reinterpret_cast<Util::Byte*>(outbuf)));
+        outbuf = reinterpret_cast<char*>(buf.GetMoreBytes(howMany, reinterpret_cast<Threading::Byte*>(outbuf)));
         count = iconv(cd, &inbuf, &inbytesleft, &outbuf, &howMany);
 #ifdef UTIL_NO_ERRNO
     } while (count == size_t(-1));
@@ -276,13 +276,13 @@ IconvStringConverter<charT>::ToUTF8(const charT* sourceStart, const charT* sourc
             msg = strerror(errno);
         }
 #endif
-        throw Util::StringConversionException(__FILE__, __LINE__, msg);
+        throw Threading::StringConversionException(__FILE__, __LINE__, msg);
     }
-    return reinterpret_cast<Util::Byte*>(outbuf);
+    return reinterpret_cast<Threading::Byte*>(outbuf);
 }
   
 template<typename charT> void
-IconvStringConverter<charT>::FromUTF8(const Util::Byte* sourceStart, const Util::Byte* sourceEnd,
+IconvStringConverter<charT>::FromUTF8(const Threading::Byte* sourceStart, const Threading::Byte* sourceEnd,
                                       std::basic_string<charT>& target) const
 {
     iconv_t cd = GetDescriptors().first;
@@ -297,7 +297,7 @@ IconvStringConverter<charT>::FromUTF8(const Util::Byte* sourceStart, const Util:
 #ifdef Util_CONST_ICONV_INBUF
     const char* inbuf = reinterpret_cast<const char*>(sourceStart);
 #else
-    const char* inbuf = reinterpret_cast<char*>(const_cast<Util::Byte*>(sourceStart));
+    const char* inbuf = reinterpret_cast<char*>(const_cast<Threading::Byte*>(sourceStart));
 #endif
     size_t inbytesleft = sourceEnd - sourceStart;
 
@@ -319,7 +319,7 @@ IconvStringConverter<charT>::FromUTF8(const Util::Byte* sourceStart, const Util:
         if (newbuf == 0)
         {
             free(buf);
-            throw Util::StringConversionException(
+            throw Threading::StringConversionException(
                 __FILE__, __LINE__, "Out of memory");
         }
 
@@ -345,7 +345,7 @@ IconvStringConverter<charT>::FromUTF8(const Util::Byte* sourceStart, const Util:
         }
 #endif
         free(buf);
-        throw Util::StringConversionException(__FILE__, __LINE__, msg);
+        throw Threading::StringConversionException(__FILE__, __LINE__, msg);
     }
     
     size_t length = (bufsize - outbytesleft) / sizeof(charT);
@@ -355,6 +355,6 @@ IconvStringConverter<charT>::FromUTF8(const Util::Byte* sourceStart, const Util:
     free(buf);
 }
 
-}
+THREADING_END
 
 #endif

@@ -9,7 +9,7 @@
 #ifndef CONCURRENCY_COND_H
 #define CONCURRENCY_COND_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Concurrency/ThreadException.h>
 #include <Concurrency/Semaphore.h>
 
@@ -21,8 +21,7 @@
 #endif
 
 
-namespace Util
-{
+THREADING_BEGIN
 
 //
 // Forward declaration (for friend declarations).
@@ -31,18 +30,18 @@ template <class T> class Monitor;
 class RecMutex;
 class Mutex;
 
-class Cond : public noncopyable
+class THREADING_API Cond : public noncopyable
 {
-    friend class Monitor<Util::Mutex>;
+    friend class Monitor<Threading::Mutex>;
     friend class Monitor<RecMutex>;
 
 public:
-    CONCURRENCY_API Cond(void);
-    CONCURRENCY_API ~Cond(void);
+    Cond(void);
+    ~Cond(void);
 
-    CONCURRENCY_API void Signal();
+    void Signal();
 
-    CONCURRENCY_API void Broadcast();
+    void Broadcast();
 
     template <typename L> 
     inline void Wait(const L& lock) const
@@ -83,25 +82,25 @@ private:
     inline bool  timedWaitImpl(const M& mutex, const Time& timeout) const;
 
 #if defined(LANG_CPP11)            // cpp11
-#    if defined(USING_COND_ANY)
+#  if defined(USING_COND_ANY)
     mutable std::condition_variable_any m_cond;
-#    else
+#  else
     mutable std::condition_variable m_cond;
-#    endif
+#  endif
 #elif defined(_WIN32)            // win32
 #  ifdef HAS_WIN32_CONDVAR            // WinRT & Visual Studio 2012
     mutable CONDITION_VARIABLE m_cond;   
-#    else                            // Windows XP or Windows Server 2003.
-    CONCURRENCY_API void wake(bool broadcast);
-    CONCURRENCY_API void doWait() const;
-    CONCURRENCY_API bool timedDowait(const Time& timeout) const;
+#  else                            // Windows XP or Windows Server 2003.
+    void wake(bool broadcast);
+    void doWait() const;
+    bool timedDowait(const Time& timeout) const;
     /// 将等待线程加入阻塞队列
-    CONCURRENCY_API void waitingToWait() const;
+    void waitingToWait() const;
     
     /// 等待线程进入 postWait 时，如果存在更多阻塞线程需被激活(BROADCAST), 
     /// 信号量m_worksem的V(Post)操作会再次被调用，以唤起其他等待线程。如果无其他线程需被激活，
     /// 则信号量m_gatesem会被释放，从而允许signaling或waiting to wait线程继续执行
-    CONCURRENCY_API void postWait(bool timed_out_or_failed) const;
+    void postWait(bool timed_out_or_failed) const;
 
     enum State
     {
@@ -118,17 +117,17 @@ private:
 
     /// 对 m_signaleddnum 进行同步的互斥量，同一时刻只有一个等待线程受信。
     /// 在广播(Broadcast)情况下是多个等待线程随机连续受信
-    Util::Mutex            m_signaledmutex;
+    Threading::Mutex            m_signaledmutex;
 
     /// 对m_blockednum进行同步的信号量，允许多个线程进入等待状态
     /// 当有线程正在进入受信状态时，此信号量会将其他想要进入signal 或 wait 状态的线程阻塞，
     /// 直至所有受信线程(signaled threads)恢复工作，并释放m_gatesem信号量
-    UtilInternal::Semaphore        m_gatesem;
+    Threading::Semaphore        m_gatesem;
      
     /// 用于控制线程阻塞或受信的信号量，阻塞的线程用此信号量等待条件变量变为受信(be signaled)，即m_worksem.Post()被调用
-    UtilInternal::Semaphore        m_worksem;
+    Threading::Semaphore        m_worksem;
 
-#    endif
+#  endif
 
 #else                            // Linux like sys.
     mutable pthread_cond_t m_cond;
@@ -148,9 +147,9 @@ inline void Cond::waitImpl(const M& mutex) const
     try
     {
 # if defined(USING_COND_ANY)
-        m_cond.wait(*state.m_pmuxte);
+        m_cond.wait(*state.m_pmutex);
 # else
-        std::unique_lock<std::mutex> ul(*state.m_pmuxte, std::adopt_lock);
+        std::unique_lock<std::mutex> ul(*state.m_pmutex, std::adopt_lock);
         m_cond.wait(ul);
         ul.release();
 # endif
@@ -180,9 +179,9 @@ inline bool  Cond::timedWaitImpl(const M& mutex, const Time& timeout) const
     {
 # if defined(USING_COND_ANY)
         std::cv_status result = 
-            m_cond.wait_for (*state.m_pmuxte, std::chrono::microseconds(timeout.ToMicroSeconds()));
+            m_cond.wait_for (*state.m_pmutex, std::chrono::microseconds(timeout.ToMicroSeconds()));
 # else
-        std::unique_lock<std::mutex> ul(*state.m_pmuxte, std::adopt_lock);
+        std::unique_lock<std::mutex> ul(*state.m_pmutex, std::adopt_lock);
         std::cv_status result = 
             m_cond.wait_for (ul, std::chrono::microseconds(timeout.ToMicroSeconds()));
         ul.release();
@@ -201,7 +200,7 @@ inline bool  Cond::timedWaitImpl(const M& mutex, const Time& timeout) const
 
 #elif defined(_WIN32)
 
-#   ifdef HAS_WIN32_CONDVAR
+# ifdef HAS_WIN32_CONDVAR
 
 template <typename M> inline void
 Cond::waitImpl(const M& mutex) const
@@ -210,7 +209,7 @@ Cond::waitImpl(const M& mutex) const
 
     LockState state;
     mutex.unlock(state);
-    BOOL ok = SleepConditionVariableCS(&m_cond, state.m_pmuxte, INFINITE);  
+    BOOL ok = SleepConditionVariableCS(&m_cond, state.m_pmutex, INFINITE);  
     mutex.lock(state);
 
     if (!ok)
@@ -222,17 +221,17 @@ Cond::waitImpl(const M& mutex) const
 template <typename M> inline bool
 Cond::timedWaitImpl(const M& mutex, const Time& timeout) const
 {
-    Util::Int64 msTimeout = timeout.ToMilliSeconds();
+    Threading::Int64 msTimeout = timeout.ToMilliSeconds();
     if (msTimeout < 0 || msTimeout > 0x7FFFFFFF)
     {
-        throw Util::InvalidTimeoutException(__FILE__, __LINE__, timeout);
+        throw Threading::InvalidTimeoutException(__FILE__, __LINE__, timeout);
     } 
 
     typedef typename M::LockState LockState;
 
     LockState state;
     mutex.unlock(state);
-    BOOL ok = SleepConditionVariableCS(&m_cond, state.m_pmuxte, static_cast<DWORD>(msTimeout));  
+    BOOL ok = SleepConditionVariableCS(&m_cond, state.m_pmutex, static_cast<DWORD>(msTimeout));  
     mutex.lock(state);
 
     if (!ok)
@@ -248,7 +247,7 @@ Cond::timedWaitImpl(const M& mutex, const Time& timeout) const
     return true;
 }
 
-#   else
+# else
 
 template <typename M>
 inline void Cond::waitImpl(const M& mutex) const
@@ -298,7 +297,7 @@ inline bool  Cond::timedWaitImpl(const M& mutex, const Time& timeout) const
     }
 }
 
-#   endif
+# endif
 
 #else
 
@@ -308,7 +307,7 @@ inline void Cond::waitImpl(const M& mutex) const
     typedef typename M::LockState LockState;
     LockState state;
     mutex.unlock(state);        
-    int returnVal = pthread_cond_wait(&m_cond, state.m_pmuxte);
+    int returnVal = pthread_cond_wait(&m_cond, state.m_pmutex);
     mutex.lock(state);
 
     if (0 != returnVal)
@@ -329,16 +328,16 @@ inline bool  Cond::timedWaitImpl(const M& mutex, const Time& timeout) const
     LockState state;
     mutex.unlock(state);    
 
-#   ifdef __APPLE__
+#  ifdef __APPLE__
     //
     // The monotonic time is based on mach_absolute_time and pthread
     // condition variables require time from gettimeofday  so we get
     // the realtime time.
     //
     timeval tv = Time::Now(Time::Realtime) + timeout;
-#   else
+#  else
     timeval tv = Time::Now(Time::Monotonic) + timeout;
-#   endif
+#  endif
 
     timespec ts;
     ts.tv_sec = tv.tv_sec;
@@ -362,6 +361,6 @@ inline bool  Cond::timedWaitImpl(const M& mutex, const Time& timeout) const
 
 #endif
 
-}
+THREADING_END
 
 #endif

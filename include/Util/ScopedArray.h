@@ -9,10 +9,9 @@
 #ifndef UTIL_SCOPED_ARRAY_H
 #define UTIL_SCOPED_ARRAY_H
 
-#include <Util/Config.h>
+#include <Config.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
 template <class T> class ScopedPtr;
 template <class T> class ScopedArray;
@@ -231,6 +230,6 @@ private:
     void operator=(const ScopedArray&);
 };
 
-} // End of namespace Util
+THREADING_END
 
 #endif

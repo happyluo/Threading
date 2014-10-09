@@ -10,7 +10,8 @@
 #include <Concurrency/ThreadException.h>
 
 using namespace std;
-using namespace Util;
+
+THREADING_BEGIN
 
 Timer::Timer(void) : Thread("Util timer thread"), m_destroyed(false)
 {
@@ -34,7 +35,7 @@ Timer::~Timer()
 void Timer::Destroy()
 {
     {
-        Monitor<Util::Mutex>::LockGuard sync(m_monitor);
+        Monitor<Threading::Mutex>::LockGuard sync(m_monitor);
         if (m_destroyed)
         {
             return;
@@ -57,7 +58,7 @@ void Timer::Destroy()
 
 void Timer::Schedule(const TimerTaskPtr& task, const Time& delaytime)
 {
-    Monitor<Util::Mutex>::LockGuard sync(m_monitor);
+    Monitor<Threading::Mutex>::LockGuard sync(m_monitor);
     if (m_destroyed)
     {
         throw IllegalArgumentException(__FILE__, __LINE__, "timer destroyed");
@@ -86,7 +87,7 @@ void Timer::Schedule(const TimerTaskPtr& task, const Time& delaytime)
 
 void Timer::ScheduleRepeated(const TimerTaskPtr& task, const Time& delaytime, const Time& basetime)
 {
-    Monitor<Util::Mutex>::LockGuard sync(m_monitor);
+    Monitor<Threading::Mutex>::LockGuard sync(m_monitor);
     if (m_destroyed)
     {
         throw IllegalArgumentException(__FILE__, __LINE__, "timer destroyed");
@@ -114,7 +115,7 @@ void Timer::ScheduleRepeated(const TimerTaskPtr& task, const Time& delaytime, co
 
 bool Timer::Cancel(const TimerTaskPtr& task)
 {
-    Monitor<Util::Mutex>::LockGuard sync(m_monitor);
+    Monitor<Threading::Mutex>::LockGuard sync(m_monitor);
     if (m_destroyed)
     {
         return false;
@@ -140,7 +141,7 @@ void Timer::Run()
     {
         //Time repeateBaseTime;
         {
-            Monitor<Util::Mutex>::LockGuard sync(m_monitor);
+            Monitor<Threading::Mutex>::LockGuard sync(m_monitor);
             if (!m_destroyed)
             {
                 if (Time() != scheduleTask.m_delay)
@@ -188,16 +189,16 @@ void Timer::Run()
             }
             catch(const Exception& e)
             {
-                cerr << "Util::Timer::Run(): uncaught exception:\n" << e.what();
+                cerr << "Threading::Timer::Run(): uncaught exception:\n" << e.what();
                 cerr << endl;
             } 
             catch(const std::exception& e)
             {
-                cerr << "Util::Timer::Run(): uncaught exception:\n" << e.what() << endl;
+                cerr << "Threading::Timer::Run(): uncaught exception:\n" << e.what() << endl;
             } 
             catch(...)
             {
-                cerr << "Util::Timer::Run(): uncaught exception" << endl;
+                cerr << "Threading::Timer::Run(): uncaught exception" << endl;
             }
         }
     }    
@@ -250,3 +251,5 @@ bool Timer::doSchedule(ScheduleTask& scheduleTask)
 
     return false;
 }
+
+THREADING_END

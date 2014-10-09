@@ -6,8 +6,8 @@
 //
 // **********************************************************************
 
-#ifndef UTIL_CONFIG_H
-#define UTIL_CONFIG_H
+#ifndef THREADING_CONFIG_H
+#define THREADING_CONFIG_H
 
 #ifndef NOMINMAX
 #    define NOMINMAX
@@ -51,17 +51,39 @@ namespace std {
 #endif
 
 //
-// Let's use these extensions with Util:
+// Let's use these extensions with Threading:
 //
-#ifdef  UTIL_API_EXPORTS
-#    define UTIL_API    DECLSPEC_EXPORT
+#ifdef  THREADING_API_EXPORTS
+#    define THREADING_API    DECLSPEC_EXPORT
 #else
-#    define UTIL_API    DECLSPEC_IMPORT
+#    define THREADING_API    DECLSPEC_IMPORT
 #endif
 
-namespace Util
+//
+// NAMESPACE 
+//
+#if defined(__cplusplus)
+#    define THREADING_BEGIN            namespace Threading {
+#    define THREADING_END              }
+#    define USING_THREADING            using namespace Threading;
+#    define THREADING                  ::Threading::
+
+#else // __cplusplus
+
+#    define THREADING_BEGIN
+#    define THREADING_END
+#    define THREADING
+
+#endif // __cplusplus
+
+namespace Threading
 {
 
+enum MutexProtocol
+{
+    PrioInherit,
+    PrioNone
+};
 
 //
 // Calculate current CPU's endianness
@@ -72,7 +94,7 @@ enum EndianType
     LittleEndian,        //LittleEndian
 };
 
-/*static */inline bool IsBigEndian() 
+inline bool IsBigEndian() 
 {
 #ifdef BIG_ENDIAN
     return true;
@@ -85,89 +107,22 @@ enum EndianType
     return 0 == cValue;
 }
 
-/*static */inline EndianType CurrentEndian()
+inline EndianType CurrentEndian()
 {
 #ifdef BIG_ENDIAN
     return BigEndian;
 #else
     return LittleEndian;
 #endif
+}
 
-#if 0
-    union
-    {
-        int m_int;
-        char m_cahr[sizeof(int)];
-    }endian;
-
-    endian.m_int = 1;
-    if (1 == endian.m_cahr[sizeof(long) - 1])
-    {
-        return LittleEndian;
-    }
-
-    return BigEndian;
-
-//#else
-
-    int iValue = 1;
-    unsigned char cValue = *((unsigned char*)&iValue);
-    if (0 == cValue)
-    {
-        return BigEndian;
-    }
-
-    return LittleEndian;
+// TODO: Should not be inline, this is not performance critical.
+#ifdef _WIN32
+    inline int GetSystemErrno() { return GetLastError(); }
+#else
+    inline int GetSystemErrno() { return errno; }
 #endif
-}
 
-// 
-// Calculate stack grow direction.
-// 
-enum StackDirection
-{
-    GrowUpward,
-    GrowDownward
-};
-
-inline StackDirection GetStackDirection()
-{
-    static char *addr = NULL;    // Address of first `dummy', once known. 
-    auto char dummy;            // To get stack address. (all the temporary variables are stored in stack.)
-
-    if (NULL == addr)
-    { 
-        // Initial entry. 
-        addr = &dummy;
-
-        return GetStackDirection();    // Recurse once. 
-    }
-    else
-    {
-        // Second entry. 
-        if (&dummy > addr)
-            return GrowUpward;        // Stack grew upward. 
-        else
-            return GrowDownward;    // Stack grew downward. 
-    }
-}
-
-//
-// By deriving from this class, other classes are made non-copyable.
-//
-class UTIL_API noncopyable
-{
-protected:
-
-    noncopyable() { }
-    ~noncopyable() { } // May not be virtual! Classes without virtual 
-                       // operations also derive from noncopyable.
-
-private:
-
-    noncopyable(const noncopyable&);
-    const noncopyable& operator=(const noncopyable&);
-};
 
 //
 // Int64 typedef
@@ -183,13 +138,13 @@ private:
     typedef unsigned long          UInt64;
 #else
     typedef long long              Int64;
-    typedef unsigned long long     UInt64;  // NOLINT
+    typedef unsigned long long     UInt64;  
 #endif
 
 typedef unsigned char            Byte;
 typedef short                    Short;
 typedef int                      Int;
-typedef Util::Int64              Long;
+typedef Threading::Int64         Long;
 typedef float                    Float;
 typedef double                   Double;
 
@@ -212,41 +167,6 @@ typedef std::vector<std::string>     StringSeq;
 
 }
 
-namespace UtilInternal
-{
-// TODO: Should not be inline, this is not performance critical.
-#ifdef _WIN32
-    inline int GetSystemErrno() { return GetLastError(); }
-#else
-    inline int GetSystemErrno() { return errno; }
-#endif
-}
-
-//
-// NAMESPACE 
-//
-#if defined(__cplusplus)
-#    define UTIL_BEGIN            namespace Util {
-#    define UTIL_END              }
-#    define USING_UTIL            using namespace Util;
-#    define UTIL                  ::Util::
-
-#    define UTILINTERNAL_BEGIN    namespace UtilInternal {
-#    define UTILINTERNAL_END      }
-#    define USING_UTILINTERNAL    using namespace UtilInternal;
-#    define UTILINTERNAL          ::UtilInternal::
-
-#else // __cplusplus
-
-#    define UTIL_BEGIN
-#    define UTIL_END
-#    define UTIL
-
-#    define UTILINTERNAL_BEGIN
-#    define UTILINTERNAL_END
-#    define UTILINTERNAL
-
-#endif // __cplusplus
 
 //  NO_STDC_NAMESPACE workaround  --------------------------------------------//
 //  Because std::size_t usage is so common, even in headers which do not

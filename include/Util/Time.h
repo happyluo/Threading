@@ -9,20 +9,23 @@
 #ifndef UTIL_TIME_H
 #define UTIL_TIME_H
 
-#include <Util/Config.h>
+#include <Config.h>
 
 #ifndef _WIN32
 #   include <sys/time.h>
 #endif
 
-namespace Util
-{
+THREADING_BEGIN
 
-class UTIL_API Time
+class THREADING_API Time
 {
 public:
     Time(void) throw();
+#ifdef _WIN32
     Time(int year, int month, int day, int hour, int min, int sec, int DST = -1);
+    struct tm* GetGmtTime(struct tm* ptm) const;
+    bool GetAsSystemTime(SYSTEMTIME& st) const throw();
+#endif
     //~Time(void);
 
     // No copy constructor and assignment operator necessary. The
@@ -60,13 +63,9 @@ public:
     std::string ToDateTime(Clock = Realtime) const;
     std::string ToDuration() const;
 
-    struct tm* GetGmtTime(struct tm* ptm) const;
-    struct tm* GetLocalTime(struct tm* ptm) const;
+    Int64 GetTime() const throw();
 
-#ifdef _WIN32
-    bool GetAsSystemTime(SYSTEMTIME& st) const throw();
-#endif
-    __time64_t GetTime() const throw();
+    struct tm* GetLocalTime(struct tm* ptm) const;
 
     int GetYear() const throw();
     int GetMonth() const throw();
@@ -224,7 +223,7 @@ private:
     
 };
 
-UTIL_API std::ostream& operator <<(std::ostream&, const Time&);
+THREADING_API std::ostream& operator <<(std::ostream&, const Time&);
 
 #ifndef _WIN32
 //
@@ -292,14 +291,12 @@ static inline void TimevalSub(const struct timeval a,
     }
 }
 
-#ifndef _WIN32
 static inline void TimevalToTimespec(
     const struct timeval a, struct timespec *ts)
 {
     ts->tv_sec = a.tv_sec;
     ts->tv_nsec = a.tv_usec * NSEC_IN_USEC;
 }
-#endif
 
 static inline double TimevalDiff(struct timeval *start, struct timeval *end)
 {
@@ -311,6 +308,6 @@ static inline double TimevalDiff(struct timeval *start, struct timeval *end)
 
 #endif
 
-}
+THREADING_END
 
 #endif

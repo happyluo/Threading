@@ -13,9 +13,9 @@
 // This file must include *all* other headers of Concurrency.
 //
 #include <Concurrency/AbstractMutex.h>
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Concurrency/Cond.h>
-#include <Concurrency/CountDownLatch.h>
+#include <Concurrency/CountdownLatch.h>
 #include <Concurrency/Lock.h>
 #include <Concurrency/Monitor.h>
 #include <Concurrency/Mutex.h>

@@ -11,31 +11,31 @@
 
 #ifdef LANG_CPP11
 
-Util::ThreadControl::ThreadControl() :
+Threading::ThreadControl::ThreadControl() :
     m_id(this_thread::get_id())
 {
 }
 
-Util::ThreadControl::ThreadControl(const shared_ptr<thread>& thread) :
+Threading::ThreadControl::ThreadControl(const shared_ptr<thread>& thread) :
     m_thread(thread), 
     m_id(_thread->get_id())
 {
 }
 
 bool
-Util::ThreadControl::operator ==(const ThreadControl& rhs) const
+Threading::ThreadControl::operator ==(const ThreadControl& rhs) const
 {
     return Id() == rhs.Id();
 }
 
 bool
-Util::ThreadControl::operator !=(const ThreadControl& rhs) const
+Threading::ThreadControl::operator !=(const ThreadControl& rhs) const
 {
     return Id() != rhs.Id();
 }
 
 void
-Util::ThreadControl::Join()
+Threading::ThreadControl::Join()
 {
     if (!m_thread)
     {
@@ -53,7 +53,7 @@ Util::ThreadControl::Join()
 }
 
 void
-Util::ThreadControl::Detach()
+Threading::ThreadControl::Detach()
 {
     if (!m_thread)
     {
@@ -70,48 +70,48 @@ Util::ThreadControl::Detach()
     }
 }
 
-Util::ThreadControl::ID
-Util::ThreadControl::Id() const
+Threading::ThreadControl::ID
+Threading::ThreadControl::Id() const
 {
     return m_id;
 }
 
 void
-Util::ThreadControl::Sleep(const Time& timeout)
+Threading::ThreadControl::Sleep(const Time& timeout)
 {
     this_thread::sleep_for (chrono::microseconds(timeout.ToMicroSeconds()));
 }
 
 void
-Util::ThreadControl::Yield()
+Threading::ThreadControl::Yield()
 {
     this_thread::yield();
 }
 
 #elif defined(_WIN32)
 
-Util::ThreadControl::ThreadControl(void) :
+Threading::ThreadControl::ThreadControl(void) :
     m_thread(0),
     m_id(GetCurrentThreadId())
 {
 }
 
-Util::ThreadControl::ThreadControl(HANDLE thread, Util::ThreadControl::ID id) :
+Threading::ThreadControl::ThreadControl(HANDLE thread, Threading::ThreadControl::ID id) :
     m_thread(thread), m_id(id)
 {
 }
 
-bool Util::ThreadControl::operator ==(const ThreadControl& rhs) const
+bool Threading::ThreadControl::operator ==(const ThreadControl& rhs) const
 {
     return m_id == rhs.m_id;    
 }
 
-bool Util::ThreadControl::operator !=(const ThreadControl& rhs) const
+bool Threading::ThreadControl::operator !=(const ThreadControl& rhs) const
 {
     return m_id != rhs.m_id;    
 }
 
-void Util::ThreadControl::Join()
+void Threading::ThreadControl::Join()
 {
     if (0 == m_thread)
     {
@@ -127,7 +127,7 @@ void Util::ThreadControl::Join()
     Detach();
 }
 
-void Util::ThreadControl::Detach()
+void Threading::ThreadControl::Detach()
 {
     if (0 == m_thread)
     {
@@ -140,12 +140,12 @@ void Util::ThreadControl::Detach()
     }
 }
 
-Util::ThreadControl::ID Util::ThreadControl::Id() const
+Threading::ThreadControl::ID Threading::ThreadControl::Id() const
 {
     return m_id;
 }
 
-void Util::ThreadControl::Sleep(const Time& timeout)
+void Threading::ThreadControl::Sleep(const Time& timeout)
 {
     //::Sleep(static_cast<DWORD>(timeout.ToMilliSeconds()));
 
@@ -157,37 +157,37 @@ void Util::ThreadControl::Sleep(const Time& timeout)
     }
 }
 
-void Util::ThreadControl::Yield()
+void Threading::ThreadControl::Yield()
 {
     ::Sleep(0);
 }
 
 #else
 
-Util::ThreadControl::ThreadControl(void) :
+Threading::ThreadControl::ThreadControl(void) :
     m_thread(pthread_self()),
     m_detachable(false)
 {
 }
 
-Util::ThreadControl::ThreadControl(pthread_t thread) :
+Threading::ThreadControl::ThreadControl(pthread_t thread) :
     m_thread(thread),
     m_detachable(true)
 {
 
 }
 
-bool Util::ThreadControl::operator ==(const ThreadControl& rhs) const
+bool Threading::ThreadControl::operator ==(const ThreadControl& rhs) const
 {
     return 0 != pthread_equal(m_thread, rhs.m_thread);
 }
 
-bool Util::ThreadControl::operator !=(const ThreadControl& rhs) const
+bool Threading::ThreadControl::operator !=(const ThreadControl& rhs) const
 {
     return !operator ==(rhs);
 }
 
-void Util::ThreadControl::Join()
+void Threading::ThreadControl::Join()
 {
     if (!m_detachable)
     {
@@ -202,14 +202,13 @@ void Util::ThreadControl::Join()
     }
 }
 
-void Util::ThreadControl::Detach()
+void Threading::ThreadControl::Detach()
 {
     if (!m_detachable)
     {
         throw BadThreadControlException(__FILE__, __LINE__);
     }
 
-    void *pignore = 0;
     int result = pthread_detach(m_thread);
     if (0 != result)
     {
@@ -217,12 +216,12 @@ void Util::ThreadControl::Detach()
     }
 }
 
-Util::ThreadControl::ID Util::ThreadControl::Id() const
+Threading::ThreadControl::ID Threading::ThreadControl::Id() const
 {
     return m_thread;
 }
 
-void Util::ThreadControl::Sleep(const Time& timeout)
+void Threading::ThreadControl::Sleep(const Time& timeout)
 {
     struct timeval tv = timeout;
     struct timespec tosleep, remaining;
@@ -231,11 +230,11 @@ void Util::ThreadControl::Sleep(const Time& timeout)
 
     while (nanosleep(&tosleep, &remaining) == -1 && errno == EINTR) 
     {
-        sleep_time = remaining;  
+        tosleep = remaining;  
     }
 }
 
-void Util::ThreadControl::Yield()
+void Threading::ThreadControl::Yield()
 {
     sched_yield();
 }

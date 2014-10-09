@@ -12,51 +12,51 @@
 using namespace std;
 
 string
-Util::LoggerOutputBase::Str() const
+Threading::LoggerOutputBase::Str() const
 {
     return m_strstream.str();
 }
 
 ostringstream&
-Util::LoggerOutputBase::Strstream()
+Threading::LoggerOutputBase::Strstream()
 {
     return m_strstream;
 }
 
-Util::LoggerOutputBase&
-Util::operator <<(Util::LoggerOutputBase& out, std::ios_base& (*val)(std::ios_base&))
+Threading::LoggerOutputBase&
+Threading::operator <<(Threading::LoggerOutputBase& out, std::ios_base& (*val)(std::ios_base&))
 {
     out.Strstream() << val;
     return out;
 }
 
-Util::LoggerOutputBase& 
-Util::operator <<(Util::LoggerOutputBase& out, std::ostream& (*val)(std::ostream&))
+Threading::LoggerOutputBase& 
+Threading::operator <<(Threading::LoggerOutputBase& out, std::ostream& (*val)(std::ostream&))
 {
     out.Strstream() << val;
     return out;
 }
 
-Util::LoggerOutputBase&
-Util::operator <<(Util::LoggerOutputBase& out, const std::exception& ex)
+Threading::LoggerOutputBase&
+Threading::operator <<(Threading::LoggerOutputBase& out, const std::exception& ex)
 {
     out.Strstream() << ex.what();
     return out;
 }
 
-Util::Trace::Trace(const LoggerPtr& logger, const string& category) :
+Threading::Trace::Trace(const LoggerPtr& logger, const string& category) :
     m_logger(logger),
     m_category(category)
 {
 }
 
-Util::Trace::~Trace()
+Threading::Trace::~Trace()
 {
     Flush();
 }
 
 void
-Util::Trace::Flush()
+Threading::Trace::Flush()
 {
     string s = Strstream().str();
     if (!s.empty())

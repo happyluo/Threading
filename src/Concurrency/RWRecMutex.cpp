@@ -8,20 +8,20 @@
 
 #include <Concurrency/RWRecMutex.h>
 
-Util::RWRecMutex::RWRecMutex(void) :
+Threading::RWRecMutex::RWRecMutex(void) :
     m_count(0),
     m_waitingWriterNum(0),
     m_upgrading(false)
 {
 }
 
-Util::RWRecMutex::~RWRecMutex(void)
+Threading::RWRecMutex::~RWRecMutex(void)
 {
 }
 
-void Util::RWRecMutex::ReadLock() const
+void Threading::RWRecMutex::ReadLock() const
 {
-    Util::Mutex::LockGuard sync(m_mutex);
+    Threading::Mutex::LockGuard sync(m_mutex);
 
     while (m_count < 0 || m_waitingWriterNum != 0)
     {
@@ -31,9 +31,9 @@ void Util::RWRecMutex::ReadLock() const
     ++m_count;
 }
 
-bool Util::RWRecMutex::TryReadLock() const
+bool Threading::RWRecMutex::TryReadLock() const
 {
-    Util::Mutex::LockGuard sync(m_mutex);
+    Threading::Mutex::LockGuard sync(m_mutex);
 
     if (m_count < 0 || m_waitingWriterNum != 0)
     {
@@ -44,9 +44,9 @@ bool Util::RWRecMutex::TryReadLock() const
     return true;
 }
 
-bool Util::RWRecMutex::TimedReadLock(const Time& timeout) const
+bool Threading::RWRecMutex::TimedReadLock(const Time& timeout) const
 {
-    Util::Mutex::LockGuard sync(m_mutex);
+    Threading::Mutex::LockGuard sync(m_mutex);
 
     Time end = Time::Now(Time::Monotonic) + timeout;
     while (m_count < 0 || m_waitingWriterNum != 0)
@@ -69,9 +69,9 @@ bool Util::RWRecMutex::TimedReadLock(const Time& timeout) const
     return true;
 }
 
-void Util::RWRecMutex::WriteLock() const
+void Threading::RWRecMutex::WriteLock() const
 {
-    Util::Mutex::LockGuard sync(m_mutex);
+    Threading::Mutex::LockGuard sync(m_mutex);
 
     if (m_count < 0 && m_writerThreadId == ThreadControl())
     {
@@ -99,9 +99,9 @@ void Util::RWRecMutex::WriteLock() const
     return;
 }
 
-bool Util::RWRecMutex::TryWriteLock() const
+bool Threading::RWRecMutex::TryWriteLock() const
 {
-    Util::Mutex::LockGuard sync(m_mutex);
+    Threading::Mutex::LockGuard sync(m_mutex);
 
     if (m_count < 0 && m_writerThreadId == ThreadControl())
     {
@@ -119,9 +119,9 @@ bool Util::RWRecMutex::TryWriteLock() const
     return true;
 } 
 
-bool Util::RWRecMutex::TimedWriteLock(const Time& timeout) const
+bool Threading::RWRecMutex::TimedWriteLock(const Time& timeout) const
 {
-    Util::Mutex::LockGuard sync(m_mutex);
+    Threading::Mutex::LockGuard sync(m_mutex);
 
     if (m_count < 0 && m_writerThreadId == ThreadControl())
     {
@@ -163,13 +163,13 @@ bool Util::RWRecMutex::TimedWriteLock(const Time& timeout) const
     return true;
 }
 
-void Util::RWRecMutex::Unlock() const
+void Threading::RWRecMutex::Unlock() const
 {
     bool writerWaiting = false;
     bool readerWaiting = false;
 
     {
-        Util::Mutex::LockGuard sync(m_mutex);
+        Threading::Mutex::LockGuard sync(m_mutex);
         assert(0 != m_count);
 
         if (m_count < 0) 
@@ -207,9 +207,9 @@ void Util::RWRecMutex::Unlock() const
     }
 }
 
-void Util::RWRecMutex::Upgrade() const
+void Threading::RWRecMutex::Upgrade() const
 {
-    Util::Mutex::LockGuard sync(m_mutex);
+    Threading::Mutex::LockGuard sync(m_mutex);
 
     if (true == m_upgrading)
     {
@@ -246,9 +246,9 @@ void Util::RWRecMutex::Upgrade() const
 }
 
 
-bool Util::RWRecMutex::TimedUpgrade(const Time& timeout) const
+bool Threading::RWRecMutex::TimedUpgrade(const Time& timeout) const
 {
-    Util::Mutex::LockGuard sync(m_mutex);
+    Threading::Mutex::LockGuard sync(m_mutex);
 
     if (true == m_upgrading)
     {
@@ -301,9 +301,9 @@ bool Util::RWRecMutex::TimedUpgrade(const Time& timeout) const
     return true;
 }
 
-void Util::RWRecMutex::Downgrade() const
+void Threading::RWRecMutex::Downgrade() const
 {
-    Util::Mutex::LockGuard sync(m_mutex);
+    Threading::Mutex::LockGuard sync(m_mutex);
 
     if (-1 == m_count)        
     {

@@ -9,9 +9,9 @@
 #ifndef UTIL_SCOPED_GUARD_H
 #define UTIL_SCOPED_GUARD_H
 
-#include <Util/Config.h>
+#include <Config.h>
 
-UTIL_BEGIN
+THREADING_BEGIN
 
 class ScopedGuard : public noncopyable
 {
@@ -66,7 +66,7 @@ private:
     std::function<void ()> m_func;
 };
 
-UTIL_END
+THREADING_END
 
 
 #endif  // UTIL_SCOPED_GUARD_H

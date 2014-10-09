@@ -9,12 +9,13 @@
 #ifndef UTIL_CONSOLE_COLOR_H
 #define UTIL_CONSOLE_COLOR_H
 
+#include <string>
 #include <ostream>
-#include <Util/Config.h>
+#include <Config.h>
 #include <Util/StringUtil.h>
 
 
-UTIL_BEGIN
+THREADING_BEGIN
 
 //
 // color console ostream
@@ -152,9 +153,9 @@ public:
     static void SetBackgroundConsoleTextColor(Color color);
 
 private:
+    std::basic_ostream<Elem, std::char_traits<Elem> >& m_ostream;
     std::string m_strcolorflag;
     unsigned short m_oldcolor;
-    std::basic_ostream<Elem, std::char_traits<Elem> >& m_ostream;
 };
 
 typedef colorostreamT<char> colorostream;
@@ -201,7 +202,7 @@ bool colorostreamT<Elem>::ShouldUseColor(bool stdout_is_tty, const std::string& 
 {
     const char* const color = colorflag.c_str();
 
-    if (Util::CaseInsensitiveCStringEquals(color, "auto"))
+    if (Threading::CaseInsensitiveCStringEquals(color, "auto"))
     {
 #if OS_WINDOWS
         // On Windows the TERM variable is usually not set, but the
@@ -211,21 +212,21 @@ bool colorostreamT<Elem>::ShouldUseColor(bool stdout_is_tty, const std::string& 
         // On non-Windows platforms, we rely on the TERM variable.
         const char* const term = Posix::GetEnv("TERM");
         const bool term_supports_color =
-            Util::CStringEquals(term, "xterm") ||
-            Util::CStringEquals(term, "xterm-color") ||
-            Util::CStringEquals(term, "xterm-256color") ||
-            Util::CStringEquals(term, "screen") ||
-            Util::CStringEquals(term, "linux") ||
-            Util::CStringEquals(term, "cygwin");
+            Threading::CStringEquals(term, "xterm") ||
+            Threading::CStringEquals(term, "xterm-color") ||
+            Threading::CStringEquals(term, "xterm-256color") ||
+            Threading::CStringEquals(term, "screen") ||
+            Threading::CStringEquals(term, "linux") ||
+            Threading::CStringEquals(term, "cygwin");
 
         return stdout_is_tty && term_supports_color;
 #endif  // OS_WINDOWS
     }
 
-    return Util::CaseInsensitiveCStringEquals(color, "yes") ||
-        Util::CaseInsensitiveCStringEquals(color, "true") ||
-        Util::CaseInsensitiveCStringEquals(color, "t") ||
-        Util::CStringEquals(color, "1");
+    return Threading::CaseInsensitiveCStringEquals(color, "yes") ||
+        Threading::CaseInsensitiveCStringEquals(color, "true") ||
+        Threading::CaseInsensitiveCStringEquals(color, "t") ||
+        Threading::CStringEquals(color, "1");
 }
 
 template<class Elem>
@@ -545,6 +546,6 @@ inline std::ostream& bggray(std::ostream &out)
 
 #endif
 
-UTIL_END
+THREADING_END
 
 #endif

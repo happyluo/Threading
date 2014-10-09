@@ -11,56 +11,56 @@
 
 #if defined(_WIN32)
 
-UtilInternal::Semaphore::Semaphore(long initialCount)
+Threading::Semaphore::Semaphore(long initialCount)
 {
     m_sem = CreateSemaphore(NULL, initialCount, 0x7fffffff, NULL);
     if (INVALID_HANDLE_VALUE == m_sem)
     {
-        throw Util::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
+        throw Threading::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
     }
 }
 
-UtilInternal::Semaphore::~Semaphore()
+Threading::Semaphore::~Semaphore()
 {
     CloseHandle(m_sem);
 }
 
 // P
-void UtilInternal::Semaphore::Wait() const
+void Threading::Semaphore::Wait() const
 {
     DWORD returnVal = WaitForSingleObject(m_sem, INFINITE);
     if (WAIT_OBJECT_0 != returnVal)
     {
-        throw Util::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
+        throw Threading::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
     }
 }
 
 // P
-bool UtilInternal::Semaphore::TimedWait(const Util::Time& timeout) const
+bool Threading::Semaphore::TimedWait(const Threading::Time& timeout) const
 {
-    Util::Int64 usTimeout = timeout.ToMilliSeconds();
+    Threading::Int64 usTimeout = timeout.ToMilliSeconds();
 
     if (usTimeout < 0 || usTimeout > 0x7fffffff)
     {
-        throw Util::InvalidTimeoutException(__FILE__, __LINE__, timeout);
+        throw Threading::InvalidTimeoutException(__FILE__, __LINE__, timeout);
     }
 
     DWORD returnVal = WaitForSingleObject(m_sem, static_cast<DWORD>(usTimeout));
     if (WAIT_TIMEOUT != returnVal && WAIT_OBJECT_0 != returnVal)
     {
-        throw Util::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
+        throw Threading::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
     }
 
     return (WAIT_OBJECT_0 == returnVal);
 }
 
 //V 
-void UtilInternal::Semaphore::Post(int releaseCount) const
+void Threading::Semaphore::Post(int releaseCount) const
 {
     int returnVal = ReleaseSemaphore(m_sem, releaseCount, 0);
     if (false == returnVal)
     {
-        throw Util::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
+        throw Threading::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
     }
 }
 

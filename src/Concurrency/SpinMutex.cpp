@@ -9,12 +9,12 @@
 #include <Concurrency/SpinMutex.h>
 #include <Concurrency/StaticMutex.h>
 #include <Concurrency/Thread.h>
-#include <Util/Config.h>
+#include <Config.h>
 
-CONCURRENCY_BEGIN
+THREADING_BEGIN
 
 static const std::size_t spinMutexCount = 16;
-static Util::StaticMutex mutexBackImp[spinMutexCount] =
+static Threading::StaticMutex mutexBackImp[spinMutexCount] =
 {
     STATIC_MUTEX_INITIALIZER, STATIC_MUTEX_INITIALIZER, STATIC_MUTEX_INITIALIZER, STATIC_MUTEX_INITIALIZER,
     STATIC_MUTEX_INITIALIZER, STATIC_MUTEX_INITIALIZER, STATIC_MUTEX_INITIALIZER, STATIC_MUTEX_INITIALIZER,
@@ -22,7 +22,7 @@ static Util::StaticMutex mutexBackImp[spinMutexCount] =
     STATIC_MUTEX_INITIALIZER, STATIC_MUTEX_INITIALIZER, STATIC_MUTEX_INITIALIZER, STATIC_MUTEX_INITIALIZER
 };
 
-static Util::StaticMutex* mutexBack = reinterpret_cast<Util::StaticMutex*>(mutexBackImp);
+static Threading::StaticMutex* mutexBack = reinterpret_cast<Threading::StaticMutex*>(mutexBackImp);
 
 UTIL_CONSTEXPR SpinMutex::SpinMutex(void* pmutex) UTIL_NOEXCEPT
     : m_pmutex(pmutex)
@@ -32,7 +32,7 @@ UTIL_CONSTEXPR SpinMutex::SpinMutex(void* pmutex) UTIL_NOEXCEPT
 void
 SpinMutex::Lock() UTIL_NOEXCEPT
 {
-    Util::StaticMutex& lock = *static_cast<Util::StaticMutex*>(m_pmutex);
+    Threading::StaticMutex& lock = *static_cast<Threading::StaticMutex*>(m_pmutex);
     unsigned count = 0;
     while (!lock.TryLock())
     {
@@ -42,14 +42,14 @@ SpinMutex::Lock() UTIL_NOEXCEPT
             break;
         }
 
-        Util::ThreadControl::Yield();
+        Threading::ThreadControl::Yield();
     }
 }
 
 void
 SpinMutex::Unlock() UTIL_NOEXCEPT
 {
-    static_cast<Util::StaticMutex*>(m_pmutex)->Unlock();
+    static_cast<Threading::StaticMutex*>(m_pmutex)->Unlock();
 }
 
 SpinMutex&
@@ -66,4 +66,4 @@ GetSpinMutex(const void* pmutex)
     return muts[std::hash<const void*>()(pmutex) & (spinMutexCount - 1)];
 }
 
-CONCURRENCY_END
+THREADING_END

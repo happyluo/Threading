@@ -13,7 +13,7 @@
 
 # ifdef USING_MONITOR
 #    include <set>
-#    include <ConcurrencyMonitor.h>
+#    include <Concurrency/Monitor.h>
 # else
 #    include <Concurrency/Mutex.h>
 #    include <Concurrency/Cond.h>
@@ -21,51 +21,51 @@
 #    include <Util/UniquePtr.h>
 # endif
 
-namespace Util
-{
-#    ifdef USING_MONITOR
+THREADING_BEGIN
+
+#ifdef USING_MONITOR
 
 template<class T> 
-class ThreadSafeSet : public Util::Monitor<Util::Mutex>
+class ThreadSafeSet : public Threading::Monitor<Threading::Mutex>
 {
 public:
     ThreadSafeSet() {}
     
     size_t Size() const
     {
-        Util::Monitor<Util::Mutex>::LockGuard lock(*this);
+        Threading::Monitor<Threading::Mutex>::LockGuard lock(*this);
         return m_set.size();
     }
 
     size_t Erase(const T& new_value)        
     {
         SharedPtr<T> new_data(new T(new_value));
-        Util::Monitor<Util::Mutex>::LockGuard lock(*this);
+        Threading::Monitor<Threading::Mutex>::LockGuard lock(*this);
         return m_set.erase(new_data);
     }
 
     size_t Erase(const SharedPtr<T>& new_value)        
     {
-        Util::Monitor<Util::Mutex>::LockGuard lock(*this);
+        Threading::Monitor<Threading::Mutex>::LockGuard lock(*this);
         return m_set.erase(new_value);
     }
 
     bool Insert(const T& new_value)        
     {
         SharedPtr<T> new_data(new T(new_value));
-        Util::Monitor<Util::Mutex>::LockGuard lock(*this);
+        Threading::Monitor<Threading::Mutex>::LockGuard lock(*this);
         return m_set.insert(new_data).second;
     }
 
     bool Insert(const SharedPtr<T>& new_value)
     {
-        Util::Monitor<Util::Mutex>::LockGuard lock(*this);
+        Threading::Monitor<Threading::Mutex>::LockGuard lock(*this);
         return m_set.insert(new_value).second;
     }
 
     bool Empty()
     {
-        Util::Monitor<Util::Mutex>::LockGuard lock(*this);
+        Threading::Monitor<Threading::Mutex>::LockGuard lock(*this);
         return 0 == m_set.size();
     }
 
@@ -75,6 +75,6 @@ private:
 
 #endif
 
-}
+THREADING_END
 
 #endif

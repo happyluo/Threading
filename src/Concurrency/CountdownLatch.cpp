@@ -6,12 +6,12 @@
 //
 // **********************************************************************
 
-#include <Concurrency/CountDownLatch.h>
+#include <Concurrency/CountdownLatch.h>
 #include <Concurrency/ThreadException.h>
 
 #if defined(_WIN32)
 
-Util::CountdownLatch::CountdownLatch(int count) : 
+Threading::CountdownLatch::CountdownLatch(int count) : 
     m_count(count)
 {
     if (m_count < 0)
@@ -31,13 +31,13 @@ Util::CountdownLatch::CountdownLatch(int count) :
     }
 }
 
-Util::CountdownLatch::~CountdownLatch(void)
+Threading::CountdownLatch::~CountdownLatch(void)
 {
     CloseHandle(m_event);
 }
 
 
-void Util::CountdownLatch::CountDown() const
+void Threading::CountdownLatch::CountDown() const
 {
     if (InterlockedDecrement(&m_count) == 0)
     {
@@ -48,7 +48,7 @@ void Util::CountdownLatch::CountDown() const
     }
 }
 
-void Util::CountdownLatch::Await() const
+void Threading::CountdownLatch::Await() const
 {
     while (InterlockedExchangeAdd(&m_count, 0) > 0)
     {
@@ -67,14 +67,14 @@ void Util::CountdownLatch::Await() const
     }
 }
 
-int Util::CountdownLatch::GetCount() const
+int Threading::CountdownLatch::GetCount() const
 {
     int result = InterlockedExchangeAdd(&m_count, 0);
 
     return result > 0 ? result : 0;
 }
 
-bool Util::CountdownLatch::Reset(int count)
+bool Threading::CountdownLatch::Reset(int count)
 {
     assert(0 >= InterlockedExchangeAdd(&m_count, 0));
     InterlockedExchange(&m_count, count);
@@ -83,7 +83,7 @@ bool Util::CountdownLatch::Reset(int count)
 
 #else
 
-Util::CountdownLatch::CountdownLatch(int count) :
+Threading::CountdownLatch::CountdownLatch(int count) :
     m_count(count)
 {
     int returnVal = pthread_mutex_init(&m_mutex, 0);
@@ -99,18 +99,18 @@ Util::CountdownLatch::CountdownLatch(int count) :
     }
 }
 
-Util::CountdownLatch::~CountdownLatch(void)
+Threading::CountdownLatch::~CountdownLatch(void)
 {
 #  ifndef NDEBUG
     int returnVal = pthread_mutex_destroy(&m_mutex);
-    assert (0 == returnVal)
+    assert (0 == returnVal);
     //if (0 != returnVal)
     //{
     //    throw ThreadSyscallException(__FILE__, __LINE__, returnVal);
     //}
 
     returnVal = pthread_cond_destroy(&m_cond);
-    assert (0 == returnVal)
+    assert (0 == returnVal);
     //if (0 != returnVal)
     //{
     //    throw ThreadSyscallException(__FILE__, __LINE__, returnVal);
@@ -122,9 +122,9 @@ Util::CountdownLatch::~CountdownLatch(void)
 }
 
 
-void Util::CountdownLatch::CountDown() const
+void Threading::CountdownLatch::CountDown() const
 {
-#if defined(__APPLE__)
+#  if defined(__APPLE__)
     lock();
 
     if (m_count > 0 && --m_count == 0)
@@ -141,7 +141,7 @@ void Util::CountdownLatch::CountDown() const
 
     unlock();
 
-#else
+#  else
 
     bool broadcast = false;
     lock();
@@ -162,10 +162,10 @@ void Util::CountdownLatch::CountDown() const
         }
     }
 
-#endif
+#  endif
 }
 
-void Util::CountdownLatch::Await() const
+void Threading::CountdownLatch::Await() const
 {
     lock();
 
@@ -182,7 +182,7 @@ void Util::CountdownLatch::Await() const
     unlock();
 }
 
-int Util::CountdownLatch::GetCount() const
+int Threading::CountdownLatch::GetCount() const
 {
     lock();
     int result = m_count;
@@ -191,7 +191,7 @@ int Util::CountdownLatch::GetCount() const
     return result;
 }
 
-bool Util::CountdownLatch::Reset(int count)
+bool Threading::CountdownLatch::Reset(int count)
 {
     lock();
     assert(0 >= m_count);
@@ -201,7 +201,7 @@ bool Util::CountdownLatch::Reset(int count)
     return true;
 }
 
-void Util::CountdownLatch::lock() const
+void Threading::CountdownLatch::lock() const
 {
     int returnVal = pthread_mutex_lock(&m_mutex);
     if (0 != returnVal)
@@ -210,7 +210,7 @@ void Util::CountdownLatch::lock() const
     }
 }
 
-void Util::CountdownLatch::unlock() const
+void Threading::CountdownLatch::unlock() const
 {
     int returnVal = pthread_mutex_unlock(&m_mutex);
     if (0 != returnVal)

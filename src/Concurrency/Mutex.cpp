@@ -9,19 +9,20 @@
 #include <Concurrency/Mutex.h>
 #include <Concurrency/ThreadException.h>
 
+THREADING_BEGIN
 
 #if defined(LANG_CPP11)
 
-void Util::Mutex::init(MutexProtocol)
+void Mutex::init(MutexProtocol)
 {
 }
 
-Util::Mutex::~Mutex(void)
+Mutex::~Mutex(void)
 {
     m_mutex.~mutex();
 }
 
-void Util::Mutex::Lock()    const
+void Mutex::Lock()    const
 {
     try
     {
@@ -33,7 +34,7 @@ void Util::Mutex::Lock()    const
     }
 }
 
-bool Util::Mutex::TryLock() const
+bool Mutex::TryLock() const
 {
     try
     {
@@ -45,7 +46,7 @@ bool Util::Mutex::TryLock() const
     }
 }
 
-void Util::Mutex::Unlock() const
+void Mutex::Unlock() const
 {    
     try
     {
@@ -60,32 +61,32 @@ void Util::Mutex::Unlock() const
 
 // LockState and the lock/unlock variations are for use by the
 // Condition variable implementation.
-void Util::Mutex::unlock(LockState& state) const
+void Mutex::unlock(LockState& state) const
 {
     state.m_pmutex = &m_mutex;
 }
 
-void Util::Mutex::lock(LockState&) const
+void Mutex::lock(LockState&) const
 {
 }
 
 #elif defined(_WIN32)
 
-void Util::Mutex::init(MutexProtocol)
+void Mutex::init(MutexProtocol)
 {
-#    ifdef HAS_WIN32_CONDVAR //OS_WINRT
+#  ifdef HAS_WIN32_CONDVAR //OS_WINRT
     InitializeCriticalSectionEx(&m_mutex, 0, 0);
-#    else
+#  else
     InitializeCriticalSection(&m_mutex);
-#    endif
+#  endif
 }
 
-Util::Mutex::~Mutex(void)
+Mutex::~Mutex(void)
 {
     DeleteCriticalSection(&m_mutex);
 }
 
-void Util::Mutex::Lock()    const
+void Mutex::Lock()    const
 {
     EnterCriticalSection(&m_mutex);
     if (1 < m_mutex.RecursionCount)
@@ -94,7 +95,7 @@ void Util::Mutex::Lock()    const
     }
 }
 
-bool Util::Mutex::TryLock() const
+bool Mutex::TryLock() const
 {
     if (!TryEnterCriticalSection(&m_mutex))
     {
@@ -110,7 +111,7 @@ bool Util::Mutex::TryLock() const
     return true;
 }
 
-void Util::Mutex::Unlock() const
+void Mutex::Unlock() const
 {
     assert(1 == m_mutex.RecursionCount);
     LeaveCriticalSection(&m_mutex);
@@ -119,23 +120,23 @@ void Util::Mutex::Unlock() const
 // LockState and the lock/unlock variations are for use by the
 // Condition variable implementation.
 #  ifdef HAS_WIN32_CONDVAR
-/*inline */void Util::Mutex::unlock(LockState& state) const
+void Mutex::unlock(LockState& state) const
 {
     state.m_pmutex = &m_mutex;
 }
 
-/*inline */void Util::Mutex::lock(LockState&) const
+void Mutex::lock(LockState&) const
 {
 }
 
 #  else
 
-void Util::Mutex::unlock(LockState&) const
+void Mutex::unlock(LockState&) const
 {
     LeaveCriticalSection(&m_mutex);
 }
 
-void Util::Mutex::lock(LockState&) const
+void Mutex::lock(LockState&) const
 {
     EnterCriticalSection(&m_mutex);
 }
@@ -143,7 +144,7 @@ void Util::Mutex::lock(LockState&) const
 
 #else
 
-void Util::Mutex::init(Util::MutexProtocol protocol)
+void Mutex::init(MutexProtocol protocol)
 {
     pthread_mutexattr_t mutexAttr;
     int returnVal = pthread_mutexattr_init(&mutexAttr);
@@ -158,12 +159,12 @@ void Util::Mutex::init(Util::MutexProtocol protocol)
     // Enable mutex error checking in debug builds
     //
 #ifndef NDEBUG
-#if defined(__linux) && !defined(__USE_UNIX98)
+#  if defined(__linux) && !defined(__USE_UNIX98)
     returnVal = pthread_mutexattr_settype(&mutexAttr, PTHREAD_MUTEX_ERRORCHECK_NP);
-#else
+#  else
     returnVal = pthread_mutexattr_settype(&mutexAttr, PTHREAD_MUTEX_ERRORCHECK);
-#endif
-    assert(0 == returnVal;
+#  endif
+    //assert(0 == returnVal);
     if (0 != returnVal)
     {
         pthread_mutexattr_destroy(&mutexAttr);
@@ -203,7 +204,7 @@ void Util::Mutex::init(Util::MutexProtocol protocol)
     }
 }
 
-Util::Mutex::~Mutex(void)
+Mutex::~Mutex(void)
 {
     int returnVal = pthread_mutex_destroy(&m_mutex);
     if (0 != returnVal)
@@ -212,7 +213,7 @@ Util::Mutex::~Mutex(void)
     }
 }
 
-void Util::Mutex::Lock()    const
+void Mutex::Lock()    const
 {
     int returnVal = pthread_mutex_lock(&m_mutex);
     if (0 != returnVal)
@@ -228,7 +229,7 @@ void Util::Mutex::Lock()    const
     }
 }
 
-bool Util::Mutex::TryLock() const
+bool Mutex::TryLock() const
 {
     int returnVal = pthread_mutex_trylock(&m_mutex);
     if (0 != returnVal && EBUSY != returnVal)
@@ -246,7 +247,7 @@ bool Util::Mutex::TryLock() const
     return (0 == returnVal);
 }
 
-void Util::Mutex::Unlock() const
+void Mutex::Unlock() const
 {
     int returnVal = pthread_mutex_unlock(&m_mutex);
     if (0 != returnVal)
@@ -257,18 +258,20 @@ void Util::Mutex::Unlock() const
 
 // LockState and the lock/unlock variations are for use by the
 // Condition variable implementation.
-void Util::Mutex::unlock(LockState& state) const
+void Mutex::unlock(LockState& state) const
 {
     state.m_pmutex = &m_mutex;
 }
 
-void Util::Mutex::lock(LockState&) const
+void Mutex::lock(LockState&) const
 {
 }
 
 #endif
 
-bool Util::Mutex::WillUnlock() const
+bool Mutex::WillUnlock() const
 {
     return true;
 }
+
+THREADING_END

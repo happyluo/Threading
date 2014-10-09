@@ -18,7 +18,7 @@
 
 using namespace std;
 
-namespace UtilInternal
+namespace Threading
 {
     bool DECLSPEC_EXPORT nullHandleAbort = false;
 }
@@ -26,7 +26,7 @@ namespace UtilInternal
 namespace
 {
 
-Util::Mutex* globalMutex = 0;
+Threading::Mutex* globalMutex = 0;
 
 
 class Init
@@ -35,7 +35,7 @@ public:
 
     Init()
     {
-        globalMutex = new Util::Mutex;
+        globalMutex = new Threading::Mutex;
     }
 
     ~Init()
@@ -49,32 +49,32 @@ Init init;
 
 }
 
-Util::Exception::Exception() :
+Threading::Exception::Exception() :
     m_fileName(0),
     m_line(0)
 {
 }
 
-Util::Exception::Exception(const char* file, int line) :
+Threading::Exception::Exception(const char* file, int line) :
     m_fileName(file),
     m_line(line)
 {
 }
 
-Util::Exception::~Exception() throw()
+Threading::Exception::~Exception() throw()
 {
 }
 
-const char* Util::Exception::ms_pcName = "Util::Exception";
+const char* Threading::Exception::ms_pcName = "Threading::Exception";
 
 string
-Util::Exception::Name() const
+Threading::Exception::Name() const
 {
     return ms_pcName;
 }
 
 void
-Util::Exception::Print(ostream &out) const
+Threading::Exception::Print(ostream &out) const
 {
     if (m_fileName && m_line > 0)
     {
@@ -84,11 +84,11 @@ Util::Exception::Print(ostream &out) const
 }
 
 const char*
-Util::Exception::what() const throw()
+Threading::Exception::what() const throw()
 {
     try
     {
-        Util::MutexPtrLock<Util::Mutex> lock(globalMutex);
+        Threading::MutexPtrLock<Threading::Mutex> lock(globalMutex);
         {
             if (m_strWhat.empty())
             {
@@ -106,32 +106,32 @@ Util::Exception::what() const throw()
     return "";
 }
 
-Util::Exception*
-Util::Exception::Clone() const
+Threading::Exception*
+Threading::Exception::Clone() const
 {
     return new Exception(*this);
 }
 
 void
-Util::Exception::Throw() const
+Threading::Exception::Throw() const
 {
     throw *this;
 }
 
 const char*
-Util::Exception::File() const
+Threading::Exception::File() const
 {
     return m_fileName;
 }
 
 int
-Util::Exception::Line() const
+Threading::Exception::Line() const
 {
     return m_line;
 }
 
 std::ostream&
-Util::operator<<(std::ostream &out, const Util::Exception &ex)
+Threading::operator<<(std::ostream &out, const Threading::Exception &ex)
 {
     ex.Print(out);
     return out;
@@ -139,351 +139,356 @@ Util::operator<<(std::ostream &out, const Util::Exception &ex)
 
 //////////////////////////////////////////////////////////////////////////
 /// NullSharedPtrException
-Util::NullSharedPtrException::NullSharedPtrException(const char *file, int line) :
+Threading::NullSharedPtrException::NullSharedPtrException(const char *file, int line) :
     Exception(file, line)
 {
-    if(UtilInternal::nullHandleAbort)
+    if(Threading::nullHandleAbort)
     {
         abort();
     }
 }
 
-Util::NullSharedPtrException::~NullSharedPtrException() throw()
+Threading::NullSharedPtrException::~NullSharedPtrException() throw()
 {
 }
 
-const char* Util::NullSharedPtrException::ms_pcName = "Util::NullSharedPtrException";
+const char* Threading::NullSharedPtrException::ms_pcName = "Threading::NullSharedPtrException";
 
 string
-Util::NullSharedPtrException::Name() const
+Threading::NullSharedPtrException::Name() const
 {
     return ms_pcName;
 }
 
-Util::Exception*
-Util::NullSharedPtrException::Clone() const
+Threading::Exception*
+Threading::NullSharedPtrException::Clone() const
 {
     return new NullSharedPtrException(*this);
 }
 
 void
-Util::NullSharedPtrException::Throw() const
+Threading::NullSharedPtrException::Throw() const
 {
     throw *this;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// IllegalArgumentException
-Util::IllegalArgumentException::IllegalArgumentException(const char *file, int line) :
+Threading::IllegalArgumentException::IllegalArgumentException(const char *file, int line) :
     Exception(file, line)
 {
 }
 
-Util::IllegalArgumentException::IllegalArgumentException(
+Threading::IllegalArgumentException::IllegalArgumentException(
     const char *file, int line, const std::string& reason) :
     Exception(file, line), m_reason(reason)
 {
 }
 
-Util::IllegalArgumentException::~IllegalArgumentException() throw()
+Threading::IllegalArgumentException::~IllegalArgumentException() throw()
 {
 }
 
-const char* Util::IllegalArgumentException::ms_pcName = "Util::IllegalArgumentException";
+const char* Threading::IllegalArgumentException::ms_pcName = "Threading::IllegalArgumentException";
 
 std::string
-Util::IllegalArgumentException::Name() const
+Threading::IllegalArgumentException::Name() const
 {
     return ms_pcName;
 }
 
 void 
-Util::IllegalArgumentException::Print(std::ostream& out) const
+Threading::IllegalArgumentException::Print(std::ostream& out) const
 {
     Exception::Print(out);
     out << ": " << m_reason;
 }
 
-Util::Exception*
-Util::IllegalArgumentException::Clone() const
+Threading::Exception*
+Threading::IllegalArgumentException::Clone() const
 {
     return new IllegalArgumentException(*this);
 }
 
 void
-Util::IllegalArgumentException::Throw() const
+Threading::IllegalArgumentException::Throw() const
 {
     throw *this;
 }
 
 const std::string&
-Util::IllegalArgumentException::Reason() const
+Threading::IllegalArgumentException::Reason() const
 {
     return m_reason;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// SyscallException
-Util::SyscallException::SyscallException(const char *file, int line, int syscallError) :
+Threading::SyscallException::SyscallException(const char *file, int line, int syscallError) :
     Exception(file, line), m_errorCode(syscallError)
 {
 }
 
-Util::SyscallException::~SyscallException() throw()
+Threading::SyscallException::~SyscallException() throw()
 {
 }
 
-const char* Util::SyscallException::ms_pcName = "Util::SyscallException";
+const char* Threading::SyscallException::ms_pcName = "Threading::SyscallException";
 
 std::string
-Util::SyscallException::Name() const
+Threading::SyscallException::Name() const
 {
     return ms_pcName;
 }
 
 void 
-Util::SyscallException::Print(std::ostream& out) const
+Threading::SyscallException::Print(std::ostream& out) const
 {
     Exception::Print(out);
     if (0 != m_errorCode)
     {
-        out << "\nsystem call exception: " << Util::ErrorToString(m_errorCode);
+        out << "\nsystem call exception: " << Threading::ErrorToString(m_errorCode);
     }
 }
 
-Util::Exception*
-Util::SyscallException::Clone() const
+Threading::Exception*
+Threading::SyscallException::Clone() const
 {
     return new SyscallException(*this);
 }
 
 void
-Util::SyscallException::Throw() const
+Threading::SyscallException::Throw() const
 {
     throw *this;
 }
 
 int 
-Util::SyscallException::Error() const
+Threading::SyscallException::Error() const
 {
     return m_errorCode;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// FileException
-Util::FileException::FileException(const char *file, int line, int err, const string& path) :
+Threading::FileException::FileException(const char *file, int line, int err, const string& path) :
     SyscallException(file, line, err), m_path(path)
 {
 }
 
-Util::FileException::~FileException() throw()
+Threading::FileException::~FileException() throw()
 {
 }
 
-const char* Util::FileException::ms_pcName = "Util::FileException";
+const char* Threading::FileException::ms_pcName = "Threading::FileException";
 
 std::string
-Util::FileException::Name() const
+Threading::FileException::Name() const
 {
     return ms_pcName;
 }
 
 void 
-Util::FileException::Print(std::ostream& out) const
+Threading::FileException::Print(std::ostream& out) const
 {
     SyscallException::Print(out);
     out << ":\ncould not open file: `" << m_path << "'"; 
 }
 
-Util::FileException*
-Util::FileException::Clone() const
+Threading::FileException*
+Threading::FileException::Clone() const
 {
     return new FileException(*this);
 }
 
 void
-Util::FileException::Throw() const
+Threading::FileException::Throw() const
 {
     throw *this;
 }
 
 const std::string& 
-Util::FileException::Path() const
+Threading::FileException::Path() const
 {
     return m_path;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// FileLockException
-Util::FileLockException::FileLockException(const char *file, int line, int err, const string& path) :
+Threading::FileLockException::FileLockException(const char *file, int line, int err, const string& path) :
     Exception(file, line), m_errorCode(err), m_path(path)
 {
 }
 
-Util::FileLockException::~FileLockException() throw()
+Threading::FileLockException::~FileLockException() throw()
 {
 }
 
-const char* Util::FileLockException::ms_pcName = "Util::FileLockException";
+const char* Threading::FileLockException::ms_pcName = "Threading::FileLockException";
 
 std::string
-Util::FileLockException::Name() const
+Threading::FileLockException::Name() const
 {
     return ms_pcName;
 }
 
 void 
-Util::FileLockException::Print(std::ostream& out) const
+Threading::FileLockException::Print(std::ostream& out) const
 {
     Exception::Print(out);
     out << ":\ncould not lock file: `" << m_path << "'"; 
     if (0 != m_errorCode)
     {
-        out << "\nsystem call exception: " << Util::ErrorToString(m_errorCode);
+        out << "\nsystem call exception: " << Threading::ErrorToString(m_errorCode);
     }
 }
 
-Util::FileLockException*
-Util::FileLockException::Clone() const
+Threading::FileLockException*
+Threading::FileLockException::Clone() const
 {
     return new FileLockException(*this);
 }
 
 void
-Util::FileLockException::Throw() const
+Threading::FileLockException::Throw() const
 {
     throw *this;
 }
 
 const std::string& 
-Util::FileLockException::Path() const
+Threading::FileLockException::Path() const
 {
     return m_path;
 }
 
 int 
-Util::FileLockException::Error() const
+Threading::FileLockException::Error() const
 {
     return m_errorCode;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// InitializationException
-Util::InitializationException::InitializationException(const char *file, int line) :
+Threading::InitializationException::InitializationException(const char *file, int line) :
 Exception(file, line)
 {
 }
 
-Util::InitializationException::InitializationException(
+Threading::InitializationException::InitializationException(
     const char *file, int line, const std::string& reason) :
 Exception(file, line), m_reason(reason)
 {
 }
-const char* Util::InitializationException::ms_pcName = "Util::InitializationException";
+
+Threading::InitializationException::~InitializationException() throw()
+{
+}
+
+const char* Threading::InitializationException::ms_pcName = "Threading::InitializationException";
 
 string
-Util::InitializationException::Name() const
+Threading::InitializationException::Name() const
 {
     return ms_pcName;
 }
 
 void
-Util::InitializationException::Print(ostream& out) const
+Threading::InitializationException::Print(ostream& out) const
 {
     Exception::Print(out);
     out << ": " << m_reason;
 }
 
-Util::InitializationException*
-Util::InitializationException::Clone() const
+Threading::InitializationException*
+Threading::InitializationException::Clone() const
 {
     return new InitializationException(*this);
 }
 
 void
-Util::InitializationException::Throw() const
+Threading::InitializationException::Throw() const
 {
     throw *this;
 }
 
 const std::string&
-Util::InitializationException::Reason() const
+Threading::InitializationException::Reason() const
 {
     return m_reason;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// VersionMismatchException
-Util::VersionMismatchException::VersionMismatchException(const char *file, int line) :
+Threading::VersionMismatchException::VersionMismatchException(const char *file, int line) :
     Exception(file, line)
 {
 }
 
-Util::VersionMismatchException::~VersionMismatchException() throw()
+Threading::VersionMismatchException::~VersionMismatchException() throw()
 {
 }
 
-const char* Util::VersionMismatchException::ms_pcName = "Util::VersionMismatchException";
+const char* Threading::VersionMismatchException::ms_pcName = "Threading::VersionMismatchException";
 
 string
-Util::VersionMismatchException::Name() const
+Threading::VersionMismatchException::Name() const
 {
     return ms_pcName;
 }
 
-Util::VersionMismatchException*
-Util::VersionMismatchException::Clone() const
+Threading::VersionMismatchException*
+Threading::VersionMismatchException::Clone() const
 {
     return new VersionMismatchException(*this);
 }
 
 void
-Util::VersionMismatchException::Throw() const
+Threading::VersionMismatchException::Throw() const
 {
     throw *this;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// FatalException
-Util::FatalException::FatalException(
+Threading::FatalException::FatalException(
     const char *file, int line, const std::string& reason) :
     Exception(file, line), m_reason(reason)
 {
 }
 
-Util::FatalException::~FatalException() throw()
+Threading::FatalException::~FatalException() throw()
 {
 }
 
-const char* Util::FatalException::ms_pcName = "Util::FatalException";
+const char* Threading::FatalException::ms_pcName = "Threading::FatalException";
 
 string
-Util::FatalException::Name() const
+Threading::FatalException::Name() const
 {
     return ms_pcName;
 }
 
 void
-Util::FatalException::Print(ostream& out) const
+Threading::FatalException::Print(ostream& out) const
 {
     Exception::Print(out);
     out << ": " << m_reason;
 }
 
-Util::FatalException*
-Util::FatalException::Clone() const
+Threading::FatalException*
+Threading::FatalException::Clone() const
 {
     return new FatalException(*this);
 }
 
 void
-Util::FatalException::Throw() const
+Threading::FatalException::Throw() const
 {
     throw *this;
 }
 
 const std::string&
-Util::FatalException::Reason() const
+Threading::FatalException::Reason() const
 {
     return m_reason;
 }

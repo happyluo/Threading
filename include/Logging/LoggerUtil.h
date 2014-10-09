@@ -11,10 +11,9 @@
 
 #include <Logging/Logger.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
-class UTIL_API LoggerOutputBase : private Util::noncopyable
+class THREADING_API LoggerOutputBase : private Threading::noncopyable
 {
 public:
 
@@ -35,9 +34,9 @@ operator <<(LoggerOutputBase& out, const T& val)
     return out;
 }
 
-UTIL_API LoggerOutputBase& operator <<(LoggerOutputBase&, std::ios_base& (*)(std::ios_base&));
-UTIL_API LoggerOutputBase& operator <<(LoggerOutputBase&, std::ostream& (*)(std::ostream&));        // for std::endl like io function
-UTIL_API LoggerOutputBase& operator <<(LoggerOutputBase&, const ::std::exception& ex);
+THREADING_API LoggerOutputBase& operator <<(LoggerOutputBase&, std::ios_base& (*)(std::ios_base&));
+THREADING_API LoggerOutputBase& operator <<(LoggerOutputBase&, std::ostream& (*)(std::ostream&));        // for std::endl like io function
+THREADING_API LoggerOutputBase& operator <<(LoggerOutputBase&, const ::std::exception& ex);
 
 template<class L, class LPtr, void (L::*output)(const std::string&)>
 class LoggerOutput : public LoggerOutputBase
@@ -72,7 +71,7 @@ typedef LoggerOutput<Logger, LoggerPtr, &Logger::Print> Print;
 typedef LoggerOutput<Logger, LoggerPtr, &Logger::Warning> Warning;
 typedef LoggerOutput<Logger, LoggerPtr, &Logger::Error> Error;
 
-class UTIL_API Trace : public LoggerOutputBase
+class THREADING_API Trace : public LoggerOutputBase
 {
 public:
     Trace(const LoggerPtr& logger, const std::string& category);
@@ -85,6 +84,6 @@ private:
     std::string m_category;
 };
 
-}
+THREADING_END
 
 #endif

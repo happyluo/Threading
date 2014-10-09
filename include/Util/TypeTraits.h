@@ -9,7 +9,7 @@
 #ifndef UTIL_TYPE_TRAIT_H
 #define UTIL_TYPE_TRAIT_H
 
-#include <Util/Config.h>
+#include <Config.h>
 #include <Build/UsefulMacros.h>
 #include <Logging/Logger.h>
 
@@ -23,7 +23,7 @@ namespace proto2
 }
 
 
-UTILINTERNAL_BEGIN
+THREADING_BEGIN
 
 // IsTrue() silences warnings: "Condition is always true",
 // "unreachable code".
@@ -204,22 +204,22 @@ struct IteratorTraits<const T*>
 // otherwise leaves it unchanged.  This is the same as
 // tr1::remove_reference, which is not widely available yet.
 template <typename T>
-struct RemoveReference { typedef T type; };  // NOLINT
+struct RemoveReference { typedef T type; };  
 template <typename T>
-struct RemoveReference<T&> { typedef T type; };  // NOLINT
+struct RemoveReference<T&> { typedef T type; };  
 
 // A handy wrapper around RemoveReference that works when the argument
 // T depends on template parameters.
 #define REMOVE_REFERENCE(T) \
-    typename Util::RemoveReference<T>::type
+    typename Threading::RemoveReference<T>::type
 
 // Removes const from a type if it is a const type, otherwise leaves
 // it unchanged.  This is the same as tr1::remove_const, which is not
 // widely available yet.
 template <typename T>
-struct RemoveConst { typedef T type; };  // NOLINT
+struct RemoveConst { typedef T type; };  
 template <typename T>
-struct RemoveConst<const T> { typedef T type; };  // NOLINT
+struct RemoveConst<const T> { typedef T type; };  
 
 // MSVC 8.0, Sun C++, and IBM XL C++ have a bug which causes the above
 // definition to fail to remove the const in 'const int[3]' and 'const
@@ -244,7 +244,7 @@ struct RemoveConst<T[N]>
 // A handy wrapper around RemoveConst that works when the argument
 // T depends on template parameters.
 #define REMOVE_CONST(T) \
-    typename Util::RemoveConst<T>::type
+    typename Threading::RemoveConst<T>::type
 
 // Turns const U&, U&, const U, and U all into U.
 #define REMOVE_REFERENCE_AND_CONST(T) \
@@ -254,14 +254,14 @@ struct RemoveConst<T[N]>
 // otherwise leaves it unchanged.  This is the same as
 // tr1::add_reference, which is not widely available yet.
 template <typename T>
-struct AddReference { typedef T& type; };  // NOLINT
+struct AddReference { typedef T& type; };  
 template <typename T>
-struct AddReference<T&> { typedef T& type; };  // NOLINT
+struct AddReference<T&> { typedef T& type; };  
 
 // A handy wrapper around AddReference that works when the argument T
 // depends on template parameters.
 #define ADD_REFERENCE(T) \
-    typename Util::AddReference<T>::type
+    typename Threading::AddReference<T>::type
 
 // Adds a reference to const on top of T as necessary.  For example,
 // it transforms
@@ -301,7 +301,7 @@ private:
     // which version of Helper() is used, and hence whether x can be
     // implicitly converted to type To.
     static char Helper(To);
-    static char (&Helper(...))[2];  // NOLINT
+    static char (&Helper(...))[2];  
 
     // We have to put the 'public' section after the 'private' section,
     // or MSVC refuses to compile the code.
@@ -395,7 +395,7 @@ struct StaticAssertTypeEqHelper<T, T>
 template <typename T1, typename T2>
 bool StaticAssertTypeEq()
 {
-    (void)Util::StaticAssertTypeEqHelper<T1, T2>();
+    (void)Threading::StaticAssertTypeEqHelper<T1, T2>();
     return true;
 }
 
@@ -482,7 +482,7 @@ Derived* CheckedDowncastToActualType(Base* base)
 {
 #if HAS_RTTI
     CHECK_SUCCESS(typeid(*base) == typeid(Derived));
-    return dynamic_cast<Derived*>(base);  // NOLINT
+    return dynamic_cast<Derived*>(base);  
 #else
     return static_cast<Derived*>(base);  // Poor man's downcast.
 #endif
@@ -493,24 +493,24 @@ Derived* CheckedDowncastToActualType(Base* base)
 #   define BOOL_C_BASE(bool_value) : public traits_helper::bool_constant<bool_value>
 #endif
 
-#define BOOL_TRAIT_VALUE_DECL(bool_value)                \
-    typedef traits_helper::bool_constant<bool_value> base;\
+#define BOOL_TRAIT_VALUE_DECL(bool_value)                  \
+    typedef traits_helper::bool_constant<bool_value> base; \
     using base::value;                        
 
-#define BOOL_TRAIT_DEF(trait, T, bool_value)        \
-    template<typename T> struct trait                \
-    BOOL_C_BASE(bool_value)                            \
-{                                                    \
-public:                                                \
-    BOOL_TRAIT_VALUE_DECL(bool_value)                \
+#define BOOL_TRAIT_DEF(trait, T, bool_value)          \
+    template<typename T> struct trait                 \
+    BOOL_C_BASE(bool_value)                           \
+{                                                     \
+public:                                               \
+    BOOL_TRAIT_VALUE_DECL(bool_value)                 \
 };                                            
 
 #define BOOL_TRAIT_SPEC(trait, sp, bool_value)        \
-    template<> struct trait<sp>                        \
-    BOOL_C_BASE(bool_value)                            \
-{                                                    \
-public:                                                \
-    BOOL_TRAIT_VALUE_DECL(bool_value)                \
+    template<> struct trait<sp>                       \
+    BOOL_C_BASE(bool_value)                           \
+{                                                     \
+public:                                               \
+    BOOL_TRAIT_VALUE_DECL(bool_value)                 \
 };                                            
 
 //
@@ -540,7 +540,7 @@ BOOL_TRAIT_SPEC(IsIntegral, signed char, true)
 BOOL_TRAIT_SPEC(IsIntegral, signed short, true)
 BOOL_TRAIT_SPEC(IsIntegral, signed int, true)
 BOOL_TRAIT_SPEC(IsIntegral, signed long, true)
-BOOL_TRAIT_SPEC(IsIntegral, Util::Int64, true)
+BOOL_TRAIT_SPEC(IsIntegral, Threading::Int64, true)
 
 BOOL_TRAIT_SPEC(IsIntegral, bool, true)
 BOOL_TRAIT_SPEC(IsIntegral, char, true)
@@ -627,6 +627,6 @@ struct NOT<true>
     STATIC_CONSTANT(bool, value = false);
 };
 
-UTILINTERNAL_END
+THREADING_END
 
 #endif // UTIL_TYPE_TRAIT_H

@@ -18,12 +18,16 @@
 #ifndef BUILD_CONFIG_H
 #define BUILD_CONFIG_H
 
+#include <stdarg.h>
 #include <Build/NonCopyable.h>
-//#include <Build/UndefSysMacros.h>
 #include <Build/UsefulMacros.h>
 
 #if defined(__APPLE__)
-#include <TargetConditionals.h>
+#  include <TargetConditionals.h>
+#endif
+
+#if defined(__CYGWIN__) 
+#     define __linux__
 #endif
 
 //
@@ -221,6 +225,7 @@
 #else
 #    include <pthread.h>
 #    include <errno.h>
+#    include <stdint.h>
 
 #    if defined(__sun__) || defined(__linux__) || defined(_AIX)
 #        include <unistd.h>
@@ -268,17 +273,19 @@
 # include <endian.h>
 #endif
 
-#if defined(__i386)     || defined(_M_IX86) || defined(__x86_64)  || \
+#if !defined(LITTLE_ENDIAN) && !defined(BIG_ENDIAN)
+# if defined(__i386)     || defined(_M_IX86) || defined(__x86_64)  || \
     defined(_M_X64)     || defined(_M_IA64) || defined(__alpha__) || \
     defined(__ARMEL__) || defined(_M_ARM_FP) || \
     defined(__MIPSEL__) || (defined(__BYTE_ORDER) && (__BYTE_ORDER == __LITTLE_ENDIAN))
 #   define LITTLE_ENDIAN
-#elif defined(__sparc) || defined(__sparc__) || defined(__hppa)      || \
+# elif defined(__sparc) || defined(__sparc__) || defined(__hppa)  || \
     defined(__ppc__) || defined(__powerpc) || defined(_ARCH_COM) || \
     defined(__MIPSEB__) || (defined(__BYTE_ORDER) && (__BYTE_ORDER == __BIG_ENDIAN))
 #   define BIG_ENDIAN
-#else
+# else
 #   error "Unknown architecture"
+# endif
 #endif
 
 //
@@ -409,9 +416,9 @@
 #   define UTIL_INT64(n)   n##L
 #   define UTIL_UINT64(n)  n##UL        
 #else
-#   define UTIL_INT64(n)   n##LL        // LL
+#   define UTIL_INT64(n)   n##LL         // LL
 #   define UTIL_UINT64(n)  n##ULL        // ULL
-#   define UTIL_64_FORMAT  "ll"            // As in "%lld". Note that "q" is poor form also.
+#   define UTIL_64_FORMAT  "ll"          // As in "%lld". Note that "q" is poor form also.
 #endif
 
 typedef unsigned int uint;
@@ -486,12 +493,10 @@ static const int64  kint64max  = (( int64) UTIL_UINT64(0x7FFFFFFFFFFFFFFF));
     // NAMESPACE 
     //
 #if defined(__cplusplus)
-#    define USING_STD(type)        using std::type;
+#    define USING_STD(type)       using std::type;
 
 #    define C_LIB_DECL            extern "C" {    // C has extern "C" linkage
 #    define END_C_LIB_DECL        }
-//#    define EXTERN_C                extern "C" {
-//#    define END_EXTERN_C            }
 
 #else // __cplusplus
 

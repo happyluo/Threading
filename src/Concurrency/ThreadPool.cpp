@@ -8,7 +8,7 @@
 
 #include <Concurrency/ThreadPool.h>
 
-void Util::ThreadJoiner(const ThreadPtr& thread)
+void Threading::ThreadJoiner(const ThreadPtr& thread)
 {
     if (thread && thread->IsAlive())
     {
@@ -16,7 +16,7 @@ void Util::ThreadJoiner(const ThreadPtr& thread)
     }
 }
 
-Util::ThreadPool::ThreadPool(int threadnum
+Threading::ThreadPool::ThreadPool(int threadnum
                              , const std::string& poolname
                              , const std::string& logger_file) : 
     m_destroyed(false), 
@@ -42,7 +42,7 @@ Util::ThreadPool::ThreadPool(int threadnum
             m_threads.insert(new TaskThread(*this));
         }
     }
-    catch(const Util::Exception& ex)
+    catch(const Threading::Exception& ex)
     {
         m_destroyed = true;     
         {
@@ -53,7 +53,7 @@ Util::ThreadPool::ThreadPool(int threadnum
     }
 }
 
-Util::ThreadPool::ThreadPool(const std::string& properties_file, 
+Threading::ThreadPool::ThreadPool(const std::string& properties_file, 
                              const std::string& logger_file, 
                              const std::string& poolname) :
     m_destroyed(false), 
@@ -134,7 +134,7 @@ Util::ThreadPool::ThreadPool(const std::string& properties_file,
     }
     const_cast<size_t&>(m_stacksize) = static_cast<size_t>(stackSize);
 
-    const_cast<bool&>(m_waitifnotask) = "true" == Util::String::ToLower(m_properties->GetProperty(m_poolname + ".WaitIfNoTask"));
+    const_cast<bool&>(m_waitifnotask) = "true" == Threading::ToLower(m_properties->GetProperty(m_poolname + ".WaitIfNoTask"));
     if (m_waitifnotask)
     {
         int threadIdleTime = m_properties->GetPropertyAsIntWithDefault(m_poolname + ".ThreadIdleTime", 6000);
@@ -163,7 +163,7 @@ Util::ThreadPool::ThreadPool(const std::string& properties_file,
             m_threads.insert(new TaskThread(*this));
         }
     }
-    catch(const Util::Exception& ex)
+    catch(const Threading::Exception& ex)
     {
         m_destroyed = true;     
         {
@@ -174,7 +174,7 @@ Util::ThreadPool::ThreadPool(const std::string& properties_file,
     }
 }
 
-Util::ThreadPool::~ThreadPool(void)
+Threading::ThreadPool::~ThreadPool(void)
 {
     LockGuard sync(*this);
     
@@ -183,7 +183,7 @@ Util::ThreadPool::~ThreadPool(void)
     assert(0 == m_inuse);
 }
 
-void Util::ThreadPool::Reset()
+void Threading::ThreadPool::Reset()
 {
     m_destroyed = false;
 
@@ -195,7 +195,7 @@ void Util::ThreadPool::Reset()
             m_threads.insert(new TaskThread(*this));
         }
     }
-    catch(const Util::Exception& ex)
+    catch(const Threading::Exception& ex)
     {
         m_destroyed = true;     
         {
@@ -206,7 +206,7 @@ void Util::ThreadPool::Reset()
     }
 }
 
-void Util::ThreadPool::SubmitTask(const TaskPtr& task)
+void Threading::ThreadPool::SubmitTask(const TaskPtr& task)
 {
     if (m_destroyed)
     {
@@ -239,8 +239,8 @@ void Util::ThreadPool::SubmitTask(const TaskPtr& task)
                 << "Size=" << m_size << ", " << "SizeMax=" << m_sizemax << ", " << "SizeWarn=" << m_sizewarn;
         }
 
-        assert(inuse <= static_cast<int>(m_threads.size()));
-        if (inuse <= m_sizemax && inuse == static_cast<int>(m_threads.size()))
+        assert(inuse <= m_threads.size());
+        if (inuse <= m_sizemax && inuse == m_threads.size())
         {
             {
                 Trace out(m_logger, "");
@@ -251,7 +251,7 @@ void Util::ThreadPool::SubmitTask(const TaskPtr& task)
             {
                 m_threads.insert(new TaskThread(*this));
             }
-            catch(const Util::Exception& ex)
+            catch(const Threading::Exception& ex)
             {
                 m_destroyed = true;     
                 {
@@ -264,7 +264,7 @@ void Util::ThreadPool::SubmitTask(const TaskPtr& task)
     }
 }
 
-Util::TaskPtr Util::ThreadPool::SubmitTask(void (*fun)(void *), void *param)
+Threading::TaskPtr Threading::ThreadPool::SubmitTask(void (*fun)(void *), void *param)
 {
     TaskPtr task(new CallbackTask(fun, param));
 
@@ -273,7 +273,7 @@ Util::TaskPtr Util::ThreadPool::SubmitTask(void (*fun)(void *), void *param)
     return task;
 }
 
-void Util::ThreadPool::JoinAll()
+void Threading::ThreadPool::JoinAll()
 {
     while (!m_tasksqueue.Empty()) {};
 
@@ -293,10 +293,10 @@ void Util::ThreadPool::JoinAll()
     }
 }
 
-void Util::ThreadPool::SetThreadIdleTime(const Time& idle_time)
+void Threading::ThreadPool::SetThreadIdleTime(const Time& idle_time)
 {
     const_cast<bool&>(m_waitifnotask) = true;
-    Util::Int64 threadIdleTime = idle_time.ToMilliSeconds();
+    Threading::Int64 threadIdleTime = idle_time.ToMilliSeconds();
     if (threadIdleTime < 0)
     {
         Warning out(m_logger);

@@ -9,17 +9,16 @@
 #ifndef CONCURRENCY_RECMUTEX_H
 #define CONCURRENCY_RECMUTEX_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Concurrency/Lock.h>
 
 #ifdef LANG_CPP11
 #   include <mutex>
 #endif
 
-namespace Util
-{
+THREADING_BEGIN
     
-class CONCURRENCY_API RecMutex : public Base::noncopyable
+class THREADING_API RecMutex : public noncopyable
 {
     friend class Cond;
 
@@ -69,9 +68,9 @@ private:
 #elif defined(_WIN32)
     struct LockState
     {
-#   ifdef HAS_WIN32_CONDVAR
+#  ifdef HAS_WIN32_CONDVAR
         CRITICAL_SECTION* m_pmutex;
-#   endif
+#  endif
         int m_count;
     };
 #else
@@ -103,6 +102,6 @@ private:
 #endif
 };
 
-}
+THREADING_END
 
 #endif

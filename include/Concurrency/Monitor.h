@@ -9,12 +9,11 @@
 #ifndef CONCURRENCY_MONITOR_H
 #define CONCURRENCY_MONITOR_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Concurrency/Lock.h>
 #include <Concurrency/Cond.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
 template <typename M>
 class Monitor : public noncopyable
@@ -58,21 +57,21 @@ private:
 
 };
 
-}
+THREADING_END
 
 template <typename M>
-inline Util::Monitor<M>::Monitor() : m_notifynum(0)
+inline Threading::Monitor<M>::Monitor() : m_notifynum(0)
 {
 }
 
 template <typename M>
-inline Util::Monitor<M>::~Monitor()
+inline Threading::Monitor<M>::~Monitor()
 {
     
 }
 
 template <typename M>
-inline void Util::Monitor<M>::Lock() const
+inline void Threading::Monitor<M>::Lock() const
 {
     m_mutex.Lock();
     if (m_mutex.WillUnlock())
@@ -83,7 +82,7 @@ inline void Util::Monitor<M>::Lock() const
 }
 
 template <typename M>
-inline bool Util::Monitor<M>::TryLock() const
+inline bool Threading::Monitor<M>::TryLock() const
 {
     bool locked = m_mutex.TryLock();
     if (locked && m_mutex.WillUnlock())
@@ -96,7 +95,7 @@ inline bool Util::Monitor<M>::TryLock() const
 }
 
 template <typename M>
-inline void Util::Monitor<M>::Unlock() const
+inline void Threading::Monitor<M>::Unlock() const
 {
     if (m_mutex.WillUnlock())
     {
@@ -107,7 +106,7 @@ inline void Util::Monitor<M>::Unlock() const
 }
 
 template <typename M>
-inline void Util::Monitor<M>::Wait() const
+inline void Threading::Monitor<M>::Wait() const
 {
     notifyImpl();
     
@@ -124,7 +123,7 @@ inline void Util::Monitor<M>::Wait() const
 }
 
 template <typename M>
-inline bool Util::Monitor<M>::TimedWait(const Time& timeout) const
+inline bool Threading::Monitor<M>::TimedWait(const Time& timeout) const
 {
     notifyImpl();
 
@@ -143,7 +142,7 @@ inline bool Util::Monitor<M>::TimedWait(const Time& timeout) const
 }
 
 template <typename M>
-inline void Util::Monitor<M>::Notify() const
+inline void Threading::Monitor<M>::Notify() const
 {
     if (-1 != m_notifynum)
     {
@@ -152,13 +151,13 @@ inline void Util::Monitor<M>::Notify() const
 }
 
 template <typename M>
-inline void Util::Monitor<M>::NotifyAll() const
+inline void Threading::Monitor<M>::NotifyAll() const
 {
     m_notifynum = -1;
 }
 
 template <typename M>
-inline void Util::Monitor<M>::notifyImpl() const
+inline void Threading::Monitor<M>::notifyImpl() const
 {
     if (0 != m_notifynum)            //> Zero indicates no notifies.
     {
@@ -179,5 +178,6 @@ inline void Util::Monitor<M>::notifyImpl() const
 
     return;
 }
+
 
 #endif

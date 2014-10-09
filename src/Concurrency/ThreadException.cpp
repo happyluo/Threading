@@ -11,258 +11,258 @@
 
 //////////////////////////////////////////////////////////////////////////
 /// ThreadSyscallException
-Util::ThreadSyscallException::ThreadSyscallException(const char *file, int line, int syscallError) :
+Threading::ThreadSyscallException::ThreadSyscallException(const char *file, int line, int syscallError) :
     SyscallException(file, line, syscallError)
 {
 }
 
-Util::ThreadSyscallException::~ThreadSyscallException() throw()
+Threading::ThreadSyscallException::~ThreadSyscallException() throw()
 {
 }
 
-const char* Util::ThreadSyscallException::ms_pcName = "Util::ThreadSyscallException";
+const char* Threading::ThreadSyscallException::ms_pcName = "Threading::ThreadSyscallException";
 
 std::string
-Util::ThreadSyscallException::Name() const
+Threading::ThreadSyscallException::Name() const
 {
     return ms_pcName;
 }
 
-Util::Exception*
-Util::ThreadSyscallException::Clone() const
+Threading::Exception*
+Threading::ThreadSyscallException::Clone() const
 {
     return new ThreadSyscallException(*this);
 }
 
 void
-Util::ThreadSyscallException::Throw() const
+Threading::ThreadSyscallException::Throw() const
 {
     throw *this;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// ThreadLockedException
-Util::ThreadLockedException::ThreadLockedException(const char *file, int line) :
+Threading::ThreadLockedException::ThreadLockedException(const char *file, int line) :
     Exception(file, line)
 {
 }
 
-Util::ThreadLockedException::~ThreadLockedException() throw()
+Threading::ThreadLockedException::~ThreadLockedException() throw()
 {
 }
 
-const char* Util::ThreadLockedException::ms_pcName = "Util::ThreadLockedException";
+const char* Threading::ThreadLockedException::ms_pcName = "Threading::ThreadLockedException";
 
 std::string
-Util::ThreadLockedException::Name() const
+Threading::ThreadLockedException::Name() const
 {
     return ms_pcName;
 }
 
-Util::Exception*
-Util::ThreadLockedException::Clone() const
+Threading::Exception*
+Threading::ThreadLockedException::Clone() const
 {
     return new ThreadLockedException(*this);
 }
 
 void
-Util::ThreadLockedException::Throw() const
+Threading::ThreadLockedException::Throw() const
 {
     throw *this;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// class ThreadStartedException
-Util::ThreadStartedException::ThreadStartedException(const char *file, int line) :
+Threading::ThreadStartedException::ThreadStartedException(const char *file, int line) :
     Exception(file, line)
 {
 }
 
-Util::ThreadStartedException::~ThreadStartedException() throw()
+Threading::ThreadStartedException::~ThreadStartedException() throw()
 {
 }
 
-const char* Util::ThreadStartedException::ms_pcName = "Util::ThreadStartedException";
+const char* Threading::ThreadStartedException::ms_pcName = "Threading::ThreadStartedException";
 
 std::string
-Util::ThreadStartedException::Name() const
+Threading::ThreadStartedException::Name() const
 {
     return ms_pcName;
 }
 
-Util::Exception*
-Util::ThreadStartedException::Clone() const
+Threading::Exception*
+Threading::ThreadStartedException::Clone() const
 {
     return new ThreadStartedException(*this);
 }
 
 void
-Util::ThreadStartedException::Throw() const
+Threading::ThreadStartedException::Throw() const
 {
     throw *this;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// class ThreadNotStartedException
-Util::ThreadNotStartedException::ThreadNotStartedException(const char *file, int line) :
+Threading::ThreadNotStartedException::ThreadNotStartedException(const char *file, int line) :
     Exception(file, line)
 {
 }
 
-Util::ThreadNotStartedException::~ThreadNotStartedException() throw()
+Threading::ThreadNotStartedException::~ThreadNotStartedException() throw()
 {
 }
 
-const char* Util::ThreadNotStartedException::ms_pcName = "Util::ThreadNotStartedException";
+const char* Threading::ThreadNotStartedException::ms_pcName = "Threading::ThreadNotStartedException";
 
 std::string
-Util::ThreadNotStartedException::Name() const
+Threading::ThreadNotStartedException::Name() const
 {
     return ms_pcName;
 }
 
-Util::Exception*
-Util::ThreadNotStartedException::Clone() const
+Threading::Exception*
+Threading::ThreadNotStartedException::Clone() const
 {
     return new ThreadNotStartedException(*this);
 }
 
 void
-Util::ThreadNotStartedException::Throw() const
+Threading::ThreadNotStartedException::Throw() const
 {
     throw *this;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// BadThreadControlException
-Util::BadThreadControlException::BadThreadControlException(const char *file, int line) :
+Threading::BadThreadControlException::BadThreadControlException(const char *file, int line) :
     Exception(file, line)
 {
 }
 
-Util::BadThreadControlException::~BadThreadControlException() throw()
+Threading::BadThreadControlException::~BadThreadControlException() throw()
 {
 }
 
-const char* Util::BadThreadControlException::ms_pcName = "Util::BadThreadControlException";
+const char* Threading::BadThreadControlException::ms_pcName = "Threading::BadThreadControlException";
 
 std::string
-Util::BadThreadControlException::Name() const
+Threading::BadThreadControlException::Name() const
 {
     return ms_pcName;
 }
 
-Util::Exception*
-Util::BadThreadControlException::Clone() const
+Threading::Exception*
+Threading::BadThreadControlException::Clone() const
 {
     return new BadThreadControlException(*this);
 }
 
 void
-Util::BadThreadControlException::Throw() const
+Threading::BadThreadControlException::Throw() const
 {
     throw *this;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// class InvalidTimeoutException
-Util::InvalidTimeoutException::InvalidTimeoutException(
+Threading::InvalidTimeoutException::InvalidTimeoutException(
     const char *file, int line, const Time& timeout) :
     Exception(file, line), m_uSec(timeout)
 {
 }
 
-Util::InvalidTimeoutException::~InvalidTimeoutException() throw()
+Threading::InvalidTimeoutException::~InvalidTimeoutException() throw()
 {
 }
 
-const char* Util::InvalidTimeoutException::ms_pcName = "Util::InvalidTimeoutException";
+const char* Threading::InvalidTimeoutException::ms_pcName = "Threading::InvalidTimeoutException";
 
 std::string
-Util::InvalidTimeoutException::Name() const
+Threading::InvalidTimeoutException::Name() const
 {
     return ms_pcName;
 }
 
 void 
-Util::InvalidTimeoutException::Print(std::ostream& out) const
+Threading::InvalidTimeoutException::Print(std::ostream& out) const
 {
     Exception::Print(out);
     out << ":\ninvalid timeout: " << m_uSec << " seconds";
 }
 
-Util::Exception*
-Util::InvalidTimeoutException::Clone() const
+Threading::Exception*
+Threading::InvalidTimeoutException::Clone() const
 {
     return new InvalidTimeoutException(*this);
 }
 
 void
-Util::InvalidTimeoutException::Throw() const
+Threading::InvalidTimeoutException::Throw() const
 {
     throw *this;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// class DeadlockException
-Util::DeadlockException::DeadlockException(
+Threading::DeadlockException::DeadlockException(
     const char *file, int line) :
     Exception(file, line)
 {
 }
 
-Util::DeadlockException::~DeadlockException() throw()
+Threading::DeadlockException::~DeadlockException() throw()
 {
 }
 
-const char* Util::DeadlockException::ms_pcName = "Util::DeadlockException";
+const char* Threading::DeadlockException::ms_pcName = "Threading::DeadlockException";
 
 std::string
-Util::DeadlockException::Name() const
+Threading::DeadlockException::Name() const
 {
     return ms_pcName;
 }
 
-Util::Exception*
-Util::DeadlockException::Clone() const
+Threading::Exception*
+Threading::DeadlockException::Clone() const
 {
     return new DeadlockException(*this);
 }
 
 void
-Util::DeadlockException::Throw() const
+Threading::DeadlockException::Throw() const
 {
     throw *this;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// class ThreadPoolDestroyedException
-Util::ThreadPoolDestroyedException::ThreadPoolDestroyedException(
+Threading::ThreadPoolDestroyedException::ThreadPoolDestroyedException(
     const char *file, int line) :
     Exception(file, line)
 {
 }
 
-Util::ThreadPoolDestroyedException::~ThreadPoolDestroyedException() throw()
+Threading::ThreadPoolDestroyedException::~ThreadPoolDestroyedException() throw()
 {
 }
 
-const char* Util::ThreadPoolDestroyedException::ms_pcName = "Util::ThreadPoolDestroyedException";
+const char* Threading::ThreadPoolDestroyedException::ms_pcName = "Threading::ThreadPoolDestroyedException";
 
 std::string
-Util::ThreadPoolDestroyedException::Name() const
+Threading::ThreadPoolDestroyedException::Name() const
 {
     return ms_pcName;
 }
 
-Util::Exception*
-Util::ThreadPoolDestroyedException::Clone() const
+Threading::Exception*
+Threading::ThreadPoolDestroyedException::Clone() const
 {
     return new ThreadPoolDestroyedException(*this);
 }
 
 void
-Util::ThreadPoolDestroyedException::Throw() const
+Threading::ThreadPoolDestroyedException::Throw() const
 {
     throw *this;
 }

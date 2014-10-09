@@ -9,7 +9,7 @@
 #include <Util/ErrorToString.h>
 #include <Unicoder/Unicode.h>
 
-UTIL_BEGIN
+THREADING_BEGIN
 
 using namespace std;
 
@@ -23,7 +23,7 @@ ErrorToString(int error, LPCVOID source)
 #ifdef OS_WINRT
 
         int size = 256;
-        Util::ScopedArray<wchar_t> lpMsgBuf(new wchar_t[size]);
+        Threading::ScopedArray<wchar_t> lpMsgBuf(new wchar_t[size]);
 
         DWORD stored = 0;
 
@@ -95,7 +95,7 @@ ErrorToString(int error, LPCVOID source)
                 LocalFree(msg);
             }
 #endif
-            return Util::WstringToString(result);
+            return Threading::WstringToString(result);
         }
         else
         {
@@ -297,4 +297,4 @@ LastErrorToString()
 
 #endif
 
-UTIL_END
+THREADING_END

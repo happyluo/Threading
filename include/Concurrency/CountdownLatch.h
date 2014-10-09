@@ -9,11 +9,11 @@
 #ifndef CONCURRENCY_COUNT_DOWN_LATCH_H
 #define CONCURRENCY_COUNT_DOWN_LATCH_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 
-namespace Util
-{
-class CONCURRENCY_API CountdownLatch
+THREADING_BEGIN
+
+class THREADING_API CountdownLatch
 {
 public:
     CountdownLatch(int count);
@@ -33,7 +33,7 @@ private:
     HANDLE        m_event;
     mutable long    m_count;
 #else
-    int                m_count;
+    mutable int      m_count;
     mutable pthread_mutex_t        m_mutex;
     mutable pthread_cond_t        m_cond;
 
@@ -42,6 +42,6 @@ private:
 #endif
 };
 
-}
+THREADING_END
 
 #endif

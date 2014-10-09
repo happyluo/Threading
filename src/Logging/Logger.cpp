@@ -15,15 +15,15 @@
 #include <Logging/Logger.h>
 
 using namespace std;
-using namespace Util;
-using namespace UtilInternal;
+using namespace Threading;
+
 
 namespace
 {
 
-Util::Mutex* outputMutex = 0;
-static Util::Mutex* sProcessLoggerMutex = 0;
-static Util::LoggerPtr sProcessLogger;
+Threading::Mutex* outputMutex = 0;
+static Threading::Mutex* sProcessLoggerMutex = 0;
+static Threading::LoggerPtr sProcessLogger;
 
 class Init
 {
@@ -31,8 +31,8 @@ public:
 
     Init()
     {
-        outputMutex = new Util::Mutex;
-        sProcessLoggerMutex = new Util::Mutex;
+        outputMutex = new Threading::Mutex;
+        sProcessLoggerMutex = new Threading::Mutex;
     }
 
     ~Init()
@@ -48,26 +48,26 @@ Init init;
 }
 
 LoggerPtr
-Util::GetProcessLogger()
+Threading::GetProcessLogger()
 {
-    Util::MutexPtrLock<Util::Mutex> lock(sProcessLoggerMutex);
+    Threading::MutexPtrLock<Threading::Mutex> lock(sProcessLoggerMutex);
 
     if (sProcessLogger == 0)
     {
-        sProcessLogger = new Util::Logger("", "");
+        sProcessLogger = new Threading::Logger("", "");
     }
     return sProcessLogger;
 }
 
 void
-Util::SetProcessLogger(const LoggerPtr& logger)
+Threading::SetProcessLogger(const LoggerPtr& logger)
 {
-    Util::MutexPtrLock<Util::Mutex> lock(sProcessLoggerMutex);
+    Threading::MutexPtrLock<Threading::Mutex> lock(sProcessLoggerMutex);
     sProcessLogger = logger;
 }
 
 
-Util::Logger::Logger(const string& prefix, const string& file)
+Threading::Logger::Logger(const string& prefix, const string& file)
 {
     if (!prefix.empty())
     {
@@ -86,7 +86,7 @@ Util::Logger::Logger(const string& prefix, const string& file)
 }
 
 
-Util::Logger::~Logger()
+Threading::Logger::~Logger()
 {
     if (m_out.is_open())
     {
@@ -95,15 +95,15 @@ Util::Logger::~Logger()
 }
 
 void
-Util::Logger::Print(const string& message)
+Threading::Logger::Print(const string& message)
 {
     Write(message, false);
 }
 
 void
-Util::Logger::Trace(const string& category, const string& message)
+Threading::Logger::Trace(const string& category, const string& message)
 {
-    string s = "--[  INFO ] " + Util::Time::Now().ToDateTime() + " " + m_prefix;
+    string s = "--[  INFO ] " + Threading::Time::Now().ToDateTime() + " " + m_prefix;
     if (!category.empty())
     {
         s += category + ": ";
@@ -114,27 +114,27 @@ Util::Logger::Trace(const string& category, const string& message)
 }
 
 void
-Util::Logger::Warning(const string& message)
+Threading::Logger::Warning(const string& message)
 {
-    Write("-![WARNING] " + Util::Time::Now().ToDateTime() + " " + m_prefix + "warning: " + message, true, fgyellow);
+    Write("-![WARNING] " + Threading::Time::Now().ToDateTime() + " " + m_prefix + "warning: " + message, true, fgyellow);
 }
 
 void
-Util::Logger::Error(const string& message)
+Threading::Logger::Error(const string& message)
 {
-    Write("!![ ERROR ] " + Util::Time::Now().ToDateTime() + " " + m_prefix + "error: " + message, true, fgred);
+    Write("!![ ERROR ] " + Threading::Time::Now().ToDateTime() + " " + m_prefix + "error: " + message, true, fgred);
 }
 
 LoggerPtr
-Util::Logger::CloneWithPrefix(const std::string& prefix)
+Threading::Logger::CloneWithPrefix(const std::string& prefix)
 {
     return new Logger(prefix, m_file);
 }
 
 void
-Util::Logger::Write(const string& message, bool indent, ostream& (*color)(ostream &out))
+Threading::Logger::Write(const string& message, bool indent, ostream& (*color)(ostream &out))
 {
-    Util::MutexPtrLock<Util::Mutex> sync(outputMutex);
+    Threading::MutexPtrLock<Threading::Mutex> sync(outputMutex);
 
     string s = message;
 
@@ -170,7 +170,7 @@ const char kUnknownFile[] = "unknown file";
 
 // Formats a source file path and a line number as they would appear
 // in an error message from the compiler used to compile this code.
-UTIL_API ::std::string Util::FormatFileLocation(const char* file, int line)
+THREADING_API ::std::string Threading::FormatFileLocation(const char* file, int line)
 {
     const char* const file_name = file == NULL ? kUnknownFile : file;
 
@@ -186,7 +186,7 @@ UTIL_API ::std::string Util::FormatFileLocation(const char* file, int line)
 }
 
 
-Util::StderrLog::StderrLog(LogSeverity severity, const char* file, int line) :
+Threading::StderrLog::StderrLog(LogSeverity severity, const char* file, int line) :
     m_severity(severity) 
     , m_outstream(cerr)
     , m_filename(file)
@@ -197,17 +197,27 @@ Util::StderrLog::StderrLog(LogSeverity severity, const char* file, int line) :
         severity == LOGLEVEL_WARNING ? "[WARNING]" :
         severity == LOGLEVEL_ERROR ?   "[ ERROR ]" : "[ FATAL ]";
 
-    ::std::ostream& (*color)(::std::ostream &) = 
-        severity == LOGLEVEL_INFO ? &dft<char> :
-        severity == LOGLEVEL_WARNING ? &fgyellow<char> :
-        severity == LOGLEVEL_ERROR ?   &fgred<char> : &fgred<char>;
+    //::std::ostream& (*color)(::std::ostream &) = 
+    //    severity == LOGLEVEL_INFO ? &dft<char> :
+    //    severity == LOGLEVEL_WARNING ? &fgyellow<char> :
+    //    severity == LOGLEVEL_ERROR ? &fgred<char> : &fgred<char>;
+
+    ::std::ostream& (*color)(::std::ostream &) = &dft<char>;
+    if (LOGLEVEL_WARNING == severity)
+    {
+        color = &fgyellow<char>;
+    }
+    else if (LOGLEVEL_ERROR == severity || LOGLEVEL_FATAL == severity)
+    {
+        color = &fgred<char>;
+    }
 
     GetStream() << ::std::endl << color << marker << " "
         << FormatFileLocation(file, line).c_str() << ": ";
 }
 
 // Flushes the buffers and, if severity is LOGLEVEL_FATAL, aborts the program.
-Util::StderrLog::~StderrLog() 
+Threading::StderrLog::~StderrLog() 
 {
     fflush(stderr);
     if (LOGLEVEL_FATAL == m_severity)
@@ -221,8 +231,8 @@ Util::StderrLog::~StderrLog()
 }
 
 
-namespace Util
-{
+THREADING_BEGIN
+
 namespace internal 
 {
 
@@ -235,7 +245,8 @@ void DefaultLogHandler(LogSeverity level
     static const char* slevelNames[] = { "[  INFO ]", "[WARNING]", "[ ERROR ]", "[ FATAL ]" };
     if (!logger)
     {
-        ::Util::StderrLog(level, filename, line) << message << "\n";
+        ::Threading::StderrLog log(level, filename, line);
+        log << message << "\n";
         fflush(stderr);  // Needed on MSVC.
     }
     else
@@ -323,7 +334,7 @@ void LogFinisher::operator=(LogMessage& other)
 
 }  // namespace internal
 
-Util::LoggerPtr SetLogger(Util::LoggerPtr newlogger)
+Threading::LoggerPtr SetLogger(Threading::LoggerPtr newlogger)
 {
     std::swap(internal::sLogger, newlogger);
     return newlogger;
@@ -347,4 +358,4 @@ LogHandler* SetLogHandler(LogHandler* newfunc)
     return old;
 }
 
-}
+THREADING_END

@@ -9,11 +9,11 @@
 #ifndef CONCURRENCY_THREAD_LOCAL_H
 #define CONCURRENCY_THREAD_LOCAL_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Util/TypeTraits.h>
 #include <Concurrency/ThreadException.h>
 
-CONCURRENCY_BEGIN
+THREADING_BEGIN
 
 // Helpers for ThreadLocal.
 
@@ -32,7 +32,7 @@ extern "C" inline void DeleteThreadLocalValue(void* value_holder)
 
 
 template <typename T>
-class ThreadLocal
+class ThreadLocal : public noncopyable
 {
 public:
     ThreadLocal() : m_key(CreateKey()), m_default() 
@@ -123,7 +123,7 @@ private:
     //
 #ifdef _WIN32
     static DWORD CreateKey()
-#else if HAS_PTHREAD
+#elif HAS_PTHREAD
     static pthread_key_t CreateKey()
 #endif
     {
@@ -132,25 +132,25 @@ private:
         DWORD key = TlsAlloc();
         if (TLS_OUT_OF_INDEXES == key)
         {
-            throw Util::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
+            throw Threading::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
         }
 
-#else if HAS_PTHREAD
+#elif HAS_PTHREAD
 
         pthread_key_t key;
         // When a thread exits, DeleteThreadLocalValue() will be called on
         // the object managed for that thread.
-#    ifdef __SUNPRO_CC
+#  ifdef __SUNPRO_CC
         int rs = pthread_key_create(&key, reinterpret_cast<PthreadKeyDestructor>(&DeleteThreadLocalValue));
-#    else
+#  else
         //CHECK_POSIX_SUCCESS(
         //    pthread_key_create(&key, &DeleteThreadLocalValue));
         int rs = pthread_key_create(&key, &DeleteThreadLocalValue);
-#    endif
+#  endif
 
         if (0 != rs)
         {
-            throw Util::ThreadSyscallException(__FILE__, __LINE__, rs);
+            throw Threading::ThreadSyscallException(__FILE__, __LINE__, rs);
         }
 #endif
         return key;
@@ -167,7 +167,7 @@ private:
 #endif
         if (NULL != holder) 
         {
-            return UtilInternal::CheckedDowncastToActualType<ValueHolder>(holder)->Pointer();
+            return Threading::CheckedDowncastToActualType<ValueHolder>(holder)->Pointer();
         }
 
         ValueHolder* const new_holder = new ValueHolder(m_default);
@@ -176,14 +176,14 @@ private:
 #ifdef _WIN32
         if (0 == TlsSetValue(m_key, holder_base))
         {
-            throw Util::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
+            throw Threading::ThreadSyscallException(__FILE__, __LINE__, GetLastError());
         }
 #elif HAS_PTHREAD
         //CHECK_POSIX_SUCCESS(pthread_setspecific(m_key, holder_base));
         int rs = pthread_setspecific(m_key, holder_base);
         if (0 != rs)
         {
-            throw Util::ThreadSyscallException(__FILE__, __LINE__, rs);
+            throw Threading::ThreadSyscallException(__FILE__, __LINE__, rs);
         }
 #endif
         return new_holder->Pointer();
@@ -191,17 +191,17 @@ private:
 
 #ifdef _WIN32
     DWORD m_key;
-#else if HAS_PTHREAD  
+#elif HAS_PTHREAD  
     // A key pthreads uses for looking up per-thread values.
     const pthread_key_t m_key;
 #endif
 
     const T m_default;  // The default value for each thread.
 
-    DISALLOW_COPY_AND_ASSIGN(ThreadLocal);
+    //DISALLOW_COPY_AND_ASSIGN(ThreadLocal);
 };
 
 
-CONCURRENCY_END
+THREADING_END
 
 #endif

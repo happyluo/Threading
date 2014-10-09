@@ -12,13 +12,12 @@
 #include <string>
 #include <exception>
 #include <sstream>
-#include <Util/Config.h>
+#include <Config.h>
 #include <Util/Exception.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
-class UTIL_API Exception : public std::exception
+class THREADING_API Exception : public std::exception
 {
 public:
     Exception();
@@ -48,10 +47,10 @@ private:
     mutable std::string    m_strWhat;        // Initialized lazily in what().
 };
 
-UTIL_API std::ostream& operator << (std::ostream &out, const Util::Exception &ex);
+THREADING_API std::ostream& operator << (std::ostream &out, const Threading::Exception &ex);
 
 /// 空共享指针异常类
-class UTIL_API NullSharedPtrException : public Exception
+class THREADING_API NullSharedPtrException : public Exception
 {
 public:
     NullSharedPtrException(const char* file, int line);
@@ -69,7 +68,7 @@ private:
     static const char *ms_pcName;
 };
     
-class UTIL_API IllegalArgumentException : public Exception
+class THREADING_API IllegalArgumentException : public Exception
 {
 public:
     IllegalArgumentException(const char* file, int line);
@@ -96,7 +95,7 @@ private:
 };
 
 /// 系统调用异常类
-class UTIL_API SyscallException : public Exception
+class THREADING_API SyscallException : public Exception
 {
 public:
     SyscallException(const char* file, int line, int syscallError);
@@ -121,7 +120,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 /// FileException
-class UTIL_API FileException : public SyscallException
+class THREADING_API FileException : public SyscallException
 {
 public:
     FileException(const char* file, int line, int syscallError, const std::string& path);
@@ -147,7 +146,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 /// FileLockException
-class UTIL_API FileLockException : public Exception
+class THREADING_API FileLockException : public Exception
 {
 public:
     FileLockException(const char* file, int line, int syscallError, const std::string& path);
@@ -175,7 +174,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 /// InitializationException
-class UTIL_API InitializationException : public Exception
+class THREADING_API InitializationException : public Exception
 {
     friend class Properties;
 
@@ -183,6 +182,8 @@ public:
 
     InitializationException(const char* file, int line);
     InitializationException(const char* file, int line, const std::string& reason);
+    virtual ~InitializationException() throw();
+
     virtual std::string Name() const;
     virtual void Print(std::ostream& out) const;
     virtual InitializationException* Clone() const;
@@ -199,7 +200,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 /// VersionMismatchException
-class UTIL_API VersionMismatchException : public Exception
+class THREADING_API VersionMismatchException : public Exception
 {
 public:
 
@@ -216,7 +217,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 /// FatalException
-class UTIL_API FatalException : public Exception
+class THREADING_API FatalException : public Exception
 {
 public:
     FatalException(const char* file, int line, const std::string& message);
@@ -235,6 +236,6 @@ private:
     static const char* ms_pcName;    
 };
 
-}
+THREADING_END
 
 #endif

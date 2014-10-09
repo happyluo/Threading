@@ -15,23 +15,22 @@
 #include <set>
 #include <map>
 
-namespace Util
-{
+THREADING_BEGIN
 typedef std::map<std::string, std::string> PropertyDict;
 
 class Properties;
 typedef SharedPtr<Properties> PropertiesPtr;
 
-class UTIL_API Properties : public Util::Mutex, public Shared
+class THREADING_API Properties : public Threading::Mutex, public Shared
 {
 public:
 
     virtual std::string GetProperty(const std::string& key);
     virtual std::string GetPropertyWithDefault(const std::string& key, const std::string& value);
-    virtual Util::Int GetPropertyAsInt(const std::string& key);
-    virtual Util::Int GetPropertyAsIntWithDefault(const std::string& key, Util::Int value);
-    virtual Util::StringSeq GetPropertyAsList(const std::string& key);
-    virtual Util::StringSeq GetPropertyAsListWithDefault(const std::string& key, const Util::StringSeq& value);
+    virtual Threading::Int GetPropertyAsInt(const std::string& key);
+    virtual Threading::Int GetPropertyAsIntWithDefault(const std::string& key, Threading::Int value);
+    virtual Threading::StringSeq GetPropertyAsList(const std::string& key);
+    virtual Threading::StringSeq GetPropertyAsListWithDefault(const std::string& key, const Threading::StringSeq& value);
 
     virtual PropertyDict GetPropertiesForPrefix(const std::string& prefix);
     virtual void SetProperty(const std::string& key, const std::string& value);
@@ -47,7 +46,7 @@ private:
     Properties(const StringConverterPtr& converter);
     Properties(const Properties* properties);
 
-    friend UTIL_API PropertiesPtr CreateProperties(const StringConverterPtr&);
+    friend THREADING_API PropertiesPtr CreateProperties(const StringConverterPtr&);
 
     void ParseLine(const std::string& line, const StringConverterPtr& converter);
 
@@ -70,9 +69,9 @@ private:
     const StringConverterPtr m_converter;
 };
 
-UTIL_API PropertiesPtr 
-CreateProperties(const Util::StringConverterPtr& converter= 0);
+THREADING_API PropertiesPtr 
+CreateProperties(const Threading::StringConverterPtr& converter= 0);
 
-}
+THREADING_END
 
 #endif

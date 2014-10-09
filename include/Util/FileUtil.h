@@ -10,7 +10,7 @@
 #ifndef UTIL_FILE_UTIL_INTERNAL_H
 #define UTIL_FILE_UTIL_INTERNAL_H
 
-#include <Util/Config.h>
+#include <Config.h>
 #include <Util/Shared.h>
 #include <Unicoder/StringConverter.h>
 
@@ -20,41 +20,40 @@
 #include <fstream>
 #include <vector>
 
-namespace UtilInternal
-{
+THREADING_BEGIN
 
 //
 // Detemine if path is an absolute path.
 //
-UTIL_API bool IsAbsolutePath(const std::string& path);
+THREADING_API bool IsAbsolutePath(const std::string& path);
 
 //
 // Determine if a file exists.
 //
-UTIL_API bool FileExists(const std::string& path);
+THREADING_API bool FileExists(const std::string& path);
 
 //
 // Determine if a directory exists.
 //
-UTIL_API bool DirectoryExists(const std::string& path);
+THREADING_API bool DirectoryExists(const std::string& path);
 
 //
 // Replace "/" by "\"
 //
-UTIL_API std::string FixDirSeparator(const std::string& path);
+THREADING_API std::string FixDirSeparator(const std::string& path);
 
 // Check if the file exists.
-UTIL_API  bool Exists(const std::string& name);
+THREADING_API  bool Exists(const std::string& name);
 
 // Read an entire file to a std::string.  Return true if successful, false
 // otherwise.
-UTIL_API  bool ReadFileToString(const std::string& name, std::string* output);
+THREADING_API  bool ReadFileToString(const std::string& name, std::string* output);
 
 // Same as above, but crash on failure.
-UTIL_API  void ReadFileToStringOrDie(const std::string& name, std::string* output);
+THREADING_API  void ReadFileToStringOrDie(const std::string& name, std::string* output);
 
 // Create a file and write a std::string to it.
-UTIL_API  void WriteStringToFileOrDie(const std::string& contents,
+THREADING_API  void WriteStringToFileOrDie(const std::string& contents,
                                    const std::string& name);
 
 #ifdef _WIN32
@@ -76,50 +75,55 @@ typedef struct _stat64i32 structstat;
 #else
 
 typedef struct stat structstat;
+#ifndef O_BINARY
 #   define O_BINARY 0
+#endif
 
 #endif
 
 //
 // OS stat
 //
-UTIL_API int stat(const std::string& path, structstat* buffer);
-UTIL_API int remove(const std::string& path);
-UTIL_API int rename(const std::string& from, const std::string& to);
-UTIL_API int rmdir(const std::string& path);
+THREADING_API int stat(const std::string& path, structstat* buffer);
+THREADING_API int remove(const std::string& path);
+THREADING_API int rename(const std::string& from, const std::string& to);
+THREADING_API int rmdir(const std::string& path);
 
-UTIL_API int mkdir(const std::string& path, int);
-UTIL_API FILE* fopen(const std::string& path, const std::string& mode);
-UTIL_API int open(const std::string& path, int flags);
+THREADING_API int mkdir(const std::string& path, int);
+THREADING_API FILE* fopen(const std::string& path, const std::string& mode);
+THREADING_API int open(const std::string& path, int flags);
 
 #ifndef OS_WINRT
-UTIL_API int getcwd(std::string& cwd);        // current work directory.
+THREADING_API int getcwd(std::string& cwd);        // current work directory.
 #endif
 
-UTIL_API int unlink(const std::string& path);
-UTIL_API int close(int fd);
+THREADING_API int unlink(const std::string& path);
+THREADING_API int close(int fd);
 
 // get file length.
-UTIL_API long length(const std::string& path);    
-UTIL_API long length(int fd);        // file handle
-UTIL_API long length(FILE* file);
+THREADING_API long length(const std::string& path);    
+THREADING_API long length(FILE* file);
 
 // load file contents.
-UTIL_API std::string fload(const std::string& path);
-UTIL_API std::string fload(int fd);
-UTIL_API std::string fload(FILE* file);
+THREADING_API std::string fload(const std::string& path);
+THREADING_API std::string fload(FILE* file);
 
-UTIL_API void redirection(const std::string& filename, 
-                          const Util::StringConverterPtr& converter, 
+#ifdef _WIN32
+THREADING_API long length(int fd);        // file handle
+THREADING_API std::string fload(int fd);
+#endif
+
+THREADING_API void redirection(const std::string& filename, 
+                          const Threading::StringConverterPtr& converter, 
                           FILE* oldfile = stdout/*stderr*/);
 
-UTIL_API std::vector<std::vector<std::string> > LoadCSVFile(const std::string& csvfile, const std::string& separator);
+THREADING_API std::vector<std::vector<std::string> > LoadCSVFile(const std::string& csvfile, const std::string& separator);
 
 //
 // This class is used to implement process file locking. This class
 // is not intended to do file locking within the same process.
 //
-class UTIL_API FileLock : public Util::Shared, public Util::noncopyable
+class THREADING_API FileLock : public Threading::Shared, public Threading::noncopyable
 {
 public:
     //
@@ -147,9 +151,9 @@ private:
     std::string m_path;
 };
 
-typedef Util::SharedPtr<FileLock> FileLockPtr;
+typedef Threading::SharedPtr<FileLock> FileLockPtr;
 
-class UTIL_API ifstream : public std::ifstream
+class THREADING_API ifstream : public std::ifstream
 {
 public:
 
@@ -171,7 +175,7 @@ private:
     void open(const char*, std::ios_base::openmode mode = std::ios_base::in);
 };
 
-class UTIL_API ofstream : public std::ofstream
+class THREADING_API ofstream : public std::ofstream
 {
 public:
 
@@ -190,5 +194,6 @@ private:
     void open(const char*, std::ios_base::openmode mode = std::ios_base::out);
 };
 
-}
+THREADING_END
+
 #endif

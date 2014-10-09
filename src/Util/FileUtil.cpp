@@ -8,7 +8,7 @@
 
 
 #include <Util/DisableWarnings.h>
-#include <Util/FileUtilInternal.h>
+#include <Util/FileUtil.h>
 #include <Util/StringUtil.h>
 #include <Unicoder/Unicode.h>
 #include <Util/Exception.h>
@@ -25,11 +25,13 @@
 
 using namespace std;
 
+//THREADING_BEGIN
+
 //
 // Determine if path is an absolute path
 //
 bool
-UtilInternal::IsAbsolutePath(const string& path)
+Threading::IsAbsolutePath(const string& path)
 {
     size_t i = 0;
     size_t size = path.size();
@@ -70,10 +72,10 @@ UtilInternal::IsAbsolutePath(const string& path)
 // Determine if a directory exists.
 //
 bool
-UtilInternal::DirectoryExists(const string& path)
+Threading::DirectoryExists(const string& path)
 {
-    UtilInternal::structstat st;
-    if (UtilInternal::stat(path, &st) != 0 || !S_ISDIR(st.st_mode))
+    Threading::structstat st;
+    if (Threading::stat(path, &st) != 0 || !S_ISDIR(st.st_mode))
     {
         return false;
     }
@@ -84,7 +86,7 @@ UtilInternal::DirectoryExists(const string& path)
 // Replace "/" by "\"
 //
 inline string
-UtilInternal::FixDirSeparator(const string& path)
+Threading::FixDirSeparator(const string& path)
 {
     string result = path;
     size_t pos = 0;
@@ -97,12 +99,12 @@ UtilInternal::FixDirSeparator(const string& path)
     return result;
 }
 
-bool UtilInternal::Exists(const string& name)
+bool Threading::Exists(const string& name)
 {
     return access(name.c_str(), 0/*F_OK*/) == 0;
 }
 
-bool UtilInternal::ReadFileToString(const string& name, string* output)
+bool Threading::ReadFileToString(const string& name, string* output)
 {
     char buffer[1024];
     FILE* file = fopen(name.c_str(), "rb");
@@ -120,12 +122,12 @@ bool UtilInternal::ReadFileToString(const string& name, string* output)
     return error == 0;
 }
 
-void UtilInternal::ReadFileToStringOrDie(const string& name, string* output)
+void Threading::ReadFileToStringOrDie(const string& name, string* output)
 {
     UTIL_CHECK(ReadFileToString(name, output)) << "Could not read: " << name;
 }
 
-void UtilInternal::WriteStringToFileOrDie(const string& contents, const string& name)
+void Threading::WriteStringToFileOrDie(const string& contents, const string& name)
 {
     FILE* file = fopen(name.c_str(), "wb");
     UTIL_CHECK(file != NULL)
@@ -141,10 +143,10 @@ void UtilInternal::WriteStringToFileOrDie(const string& contents, const string& 
 // Determine if a regular file exists.
 //
 bool
-UtilInternal::FileExists(const string& path)
+Threading::FileExists(const string& path)
 {
-    UtilInternal::structstat st;
-    if (UtilInternal::stat(path, &st) != 0 || !S_ISREG(st.st_mode))
+    Threading::structstat st;
+    if (Threading::stat(path, &st) != 0 || !S_ISREG(st.st_mode))
     {
         return false;
     }
@@ -157,76 +159,76 @@ UtilInternal::FileExists(const string& path)
 // Stat
 //
 int
-UtilInternal::stat(const string& path, structstat* buffer)
+Threading::stat(const string& path, structstat* buffer)
 {
-    return _wstat(Util::StringToWstring(path).c_str(), buffer);
+    return _wstat(Threading::StringToWstring(path).c_str(), buffer);
 }
 
 int
-UtilInternal::remove(const string& path)
+Threading::remove(const string& path)
 {
-    return ::_wremove(Util::StringToWstring(path).c_str());
+    return ::_wremove(Threading::StringToWstring(path).c_str());
 }
 
 int
-UtilInternal::rename(const string& from, const string& to)
+Threading::rename(const string& from, const string& to)
 {
-    return ::_wrename(Util::StringToWstring(from).c_str(), Util::StringToWstring(to).c_str());
+    return ::_wrename(Threading::StringToWstring(from).c_str(), Threading::StringToWstring(to).c_str());
 }
 
 int
-UtilInternal::rmdir(const string& path)
+Threading::rmdir(const string& path)
 {
-    return ::_wrmdir(Util::StringToWstring(path).c_str());
+    return ::_wrmdir(Threading::StringToWstring(path).c_str());
 }
 
 int
-UtilInternal::mkdir(const string& path, int)
+Threading::mkdir(const string& path, int)
 {
-    return ::_wmkdir(Util::StringToWstring(path).c_str());
+    return ::_wmkdir(Threading::StringToWstring(path).c_str());
 }
 
 FILE*
-UtilInternal::fopen(const string& path, const string& mode)
+Threading::fopen(const string& path, const string& mode)
 {
-    return ::_wfopen(Util::StringToWstring(path).c_str(), Util::StringToWstring(mode).c_str());
+    return ::_wfopen(Threading::StringToWstring(path).c_str(), Threading::StringToWstring(mode).c_str());
 }
 
 int
-UtilInternal::open(const string& path, int flags)
+Threading::open(const string& path, int flags)
 {
     if (flags & _O_CREAT)
     {
-        return ::_wopen(Util::StringToWstring(path).c_str(), flags, _S_IREAD | _S_IWRITE);
+        return ::_wopen(Threading::StringToWstring(path).c_str(), flags, _S_IREAD | _S_IWRITE);
     }
     else
     {
-        return ::_wopen(Util::StringToWstring(path).c_str(), flags);
+        return ::_wopen(Threading::StringToWstring(path).c_str(), flags);
     }
 }
 
 #ifndef OS_WINRT
 int
-UtilInternal::getcwd(string& cwd)
+Threading::getcwd(string& cwd)
 {
     wchar_t cwdbuf[_MAX_PATH];
     if (_wgetcwd(cwdbuf, _MAX_PATH) == NULL)
     {
         return -1;
     }
-    cwd = Util::WstringToString(cwdbuf);
+    cwd = Threading::WstringToString(cwdbuf);
     return 0;
 }
 #endif
 
 int
-UtilInternal::unlink(const string& path)
+Threading::unlink(const string& path)
 {
-    return _wunlink(Util::StringToWstring(path).c_str());
+    return _wunlink(Threading::StringToWstring(path).c_str());
 }
 
 int
-UtilInternal::close(int fd)
+Threading::close(int fd)
 {
 #ifdef __MINGW32__
         return _close(fd);
@@ -235,30 +237,30 @@ UtilInternal::close(int fd)
 #endif
 }
 
-UtilInternal::FileLock::FileLock(const std::string& path) :
+Threading::FileLock::FileLock(const std::string& path) :
     m_fd(INVALID_HANDLE_VALUE),
     m_path(path)
 {
 #ifndef OS_WINRT
-    m_fd = ::CreateFileW(Util::StringToWstring(path).c_str(), GENERIC_WRITE, 0, NULL,
+    m_fd = ::CreateFileW(Threading::StringToWstring(path).c_str(), GENERIC_WRITE, 0, NULL,
                         OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 #else
     CREATEFILE2_EXTENDED_PARAMETERS params;
     params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-    m_fd = ::CreateFile2(Util::StringToWstring(path).c_str(), GENERIC_WRITE, 0,
+    m_fd = ::CreateFile2(Threading::StringToWstring(path).c_str(), GENERIC_WRITE, 0,
                         OPEN_ALWAYS, &params);
 #endif
     m_path = path;
 
     if (m_fd == INVALID_HANDLE_VALUE)
     {
-        throw Util::FileLockException(__FILE__, __LINE__, GetLastError(), m_path);
+        throw Threading::FileLockException(__FILE__, __LINE__, GetLastError(), m_path);
     }
 
 #ifdef __MINGW32__
     if (::LockFile(m_fd, 0, 0, 0, 0) == 0)
     {
-        throw Util::FileLockException(__FILE__, __LINE__, GetLastError(), m_path);
+        throw Threading::FileLockException(__FILE__, __LINE__, GetLastError(), m_path);
     }
 #else
     OVERLAPPED overlaped;
@@ -276,7 +278,7 @@ UtilInternal::FileLock::FileLock(const std::string& path) :
     if (::LockFileEx(m_fd, LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY, 0, 0, 0, &overlaped) == 0)
     {
         ::CloseHandle(m_fd);
-        throw Util::FileLockException(__FILE__, __LINE__, GetLastError(), m_path);
+        throw Threading::FileLockException(__FILE__, __LINE__, GetLastError(), m_path);
     }
 #endif
     //
@@ -285,57 +287,57 @@ UtilInternal::FileLock::FileLock(const std::string& path) :
     //
 }
 
-UtilInternal::FileLock::~FileLock()
+Threading::FileLock::~FileLock()
 {
     assert(m_fd != INVALID_HANDLE_VALUE);
     CloseHandle(m_fd);
     unlink(m_path);
 }
 
-UtilInternal::ifstream::ifstream()
+Threading::ifstream::ifstream()
 {
 }
 
-UtilInternal::ifstream::ifstream(const string& path, ios_base::openmode mode) : 
+Threading::ifstream::ifstream(const string& path, ios_base::openmode mode) : 
 #ifdef  __MINGW32__
     std::ifstream(path.c_str(), mode)
 #else
-    std::ifstream(Util::StringToWstring(path).c_str(), mode)
+    std::ifstream(Threading::StringToWstring(path).c_str(), mode)
 #endif
 {
 }
 
 void
-UtilInternal::ifstream::open(const string& path, ios_base::openmode mode)
+Threading::ifstream::open(const string& path, ios_base::openmode mode)
 {
 #ifdef  __MINGW32__
     std::ifstream::open(path.c_str(), mode);
 #else
-    std::ifstream::open(Util::StringToWstring(path).c_str(), mode);
+    std::ifstream::open(Threading::StringToWstring(path).c_str(), mode);
 #endif
 }
 
 
-UtilInternal::ofstream::ofstream()
+Threading::ofstream::ofstream()
 {
 }
 
-UtilInternal::ofstream::ofstream(const string& path, ios_base::openmode mode) : 
+Threading::ofstream::ofstream(const string& path, ios_base::openmode mode) : 
 #ifdef __MINGW32__
     std::ofstream(path.c_str(), mode)
 #else
-    std::ofstream(Util::StringToWstring(path).c_str(), mode)
+    std::ofstream(Threading::StringToWstring(path).c_str(), mode)
 #endif
 {
 }
 
 void
-UtilInternal::ofstream::open(const string& path, ios_base::openmode mode)
+Threading::ofstream::open(const string& path, ios_base::openmode mode)
 {
 #ifdef __MINGW32__
     std::ofstream::open(path.c_str(), mode);
 #else
-    std::ofstream::open(Util::StringToWstring(path).c_str(), mode);
+    std::ofstream::open(Threading::StringToWstring(path).c_str(), mode);
 #endif
 }
 
@@ -346,43 +348,43 @@ UtilInternal::ofstream::open(const string& path, ios_base::openmode mode)
 // Stat
 //
 int
-UtilInternal::stat(const string& path, structstat* buffer)
+Threading::stat(const string& path, structstat* buffer)
 {
     return ::stat(path.c_str(), buffer);
 }
 
 int
-UtilInternal::remove(const string& path)
+Threading::remove(const string& path)
 {
     return ::remove(path.c_str());
 }
 
 int
-UtilInternal::rename(const string& from, const string& to)
+Threading::rename(const string& from, const string& to)
 {
     return ::rename(from.c_str(), to.c_str());
 }
 
 int
-UtilInternal::rmdir(const string& path)
+Threading::rmdir(const string& path)
 {
     return ::rmdir(path.c_str());
 }
 
 int
-UtilInternal::mkdir(const string& path, int perm)
+Threading::mkdir(const string& path, int perm)
 {
     return ::mkdir(path.c_str(), perm);
 }
 
 FILE*
-UtilInternal::fopen(const string& path, const string& mode)
+Threading::fopen(const string& path, const string& mode)
 {
     return ::fopen(path.c_str(), mode.c_str());
 }
 
 int
-UtilInternal::open(const string& path, int flags)
+Threading::open(const string& path, int flags)
 {
     if (flags & O_CREAT)
     {
@@ -396,7 +398,7 @@ UtilInternal::open(const string& path, int flags)
 }
 
 int
-UtilInternal::getcwd(string& cwd)
+Threading::getcwd(string& cwd)
 {
     char cwdbuf[PATH_MAX];
     if (::getcwd(cwdbuf, PATH_MAX) == NULL)
@@ -408,25 +410,25 @@ UtilInternal::getcwd(string& cwd)
 }
 
 int
-UtilInternal::unlink(const string& path)
+Threading::unlink(const string& path)
 {
     return ::unlink(path.c_str());
 }
 
 int
-UtilInternal::close(int fd)
+Threading::close(int fd)
 {
     return ::close(fd);
 }
 
-UtilInternal::FileLock::FileLock(const std::string& path) :
+Threading::FileLock::FileLock(const std::string& path) :
     m_fd(-1),
     m_path(path)
 {
     m_fd = ::open(path.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
     if (m_fd < 0)
     {
-        throw Util::FileLockException(__FILE__, __LINE__, errno, m_path);
+        throw Threading::FileLockException(__FILE__, __LINE__, errno, m_path);
     }
 
     struct ::flock lock;
@@ -442,7 +444,7 @@ UtilInternal::FileLock::FileLock(const std::string& path) :
     //
     if (::fcntl(m_fd, F_SETLK, &lock) == -1)
     {
-        Util::FileLockException ex(__FILE__, __LINE__, errno, m_path);
+        Threading::FileLockException ex(__FILE__, __LINE__, errno, m_path);
         close(m_fd);
         throw ex;
     }
@@ -461,42 +463,42 @@ UtilInternal::FileLock::FileLock(const std::string& path) :
     
     if (write(m_fd, os.str().c_str(), os.str().size()) == -1)
     {
-        Util::FileLockException ex(__FILE__, __LINE__, errno, m_path);
+        Threading::FileLockException ex(__FILE__, __LINE__, errno, m_path);
         close(m_fd);
         throw ex;
     }
 }
 
-UtilInternal::FileLock::~FileLock()
+Threading::FileLock::~FileLock()
 {
     assert(m_fd > -1);
     unlink(m_path);
 }
 
-UtilInternal::ifstream::ifstream()
+Threading::ifstream::ifstream()
 {
 }
 
-UtilInternal::ifstream::ifstream(const string& path, ios_base::openmode mode) : std::ifstream(path.c_str(), mode)
+Threading::ifstream::ifstream(const string& path, ios_base::openmode mode) : std::ifstream(path.c_str(), mode)
 {
 }
 
 void
-UtilInternal::ifstream::open(const string& path, ios_base::openmode mode)
+Threading::ifstream::open(const string& path, ios_base::openmode mode)
 {
     std::ifstream::open(path.c_str(), mode);
 }
 
-UtilInternal::ofstream::ofstream()
+Threading::ofstream::ofstream()
 {
 }
 
-UtilInternal::ofstream::ofstream(const string& path, ios_base::openmode mode) : std::ofstream(path.c_str(), mode)
+Threading::ofstream::ofstream(const string& path, ios_base::openmode mode) : std::ofstream(path.c_str(), mode)
 {
 }
 
 void
-UtilInternal::ofstream::open(const string& path, ios_base::openmode mode)
+Threading::ofstream::open(const string& path, ios_base::openmode mode)
 {
     std::ofstream::open(path.c_str(), mode);
 }
@@ -504,24 +506,24 @@ UtilInternal::ofstream::open(const string& path, ios_base::openmode mode)
 #endif
 
 long 
-UtilInternal::ifstream::length()
+Threading::ifstream::length()
 {
     if (is_open())
     {
-        long curpos = tellg();
+        ifstream::pos_type curpos = tellg();
         // get length of file:
         seekg(0, ios::end);
-        long flen = tellg() - curpos;
+        ifstream::pos_type flen = tellg() - curpos;
         seekg(curpos);
 
-        return flen;
+        return static_cast<long>(flen);
     }
 
     return -1;
 }
 
 std::string 
-UtilInternal::ifstream::load()
+Threading::ifstream::load()
 {
     long flength = length();
     if (0 != flength)
@@ -542,7 +544,7 @@ UtilInternal::ifstream::load()
 }
 
 void 
-UtilInternal::ifstream::reset()
+Threading::ifstream::reset()
 {
     if (is_open())
     {
@@ -551,33 +553,63 @@ UtilInternal::ifstream::reset()
     }
 }
 
-long UtilInternal::length(const std::string& path)
+long Threading::length(const std::string& path)
 {
-    UtilInternal::structstat st;
-    if (0 == UtilInternal::stat(path, &st) && S_ISREG(st.st_mode))
+    Threading::structstat st;
+    if (0 == Threading::stat(path, &st) && S_ISREG(st.st_mode))
     {
         return st.st_size;
     }
     return -1;
 }
 
-long UtilInternal::length(int fd)
+#ifdef _WIN32
+long Threading::length(int fd)
 {
     return ::filelength(fd);
 }
 
+std::string Threading::fload(int fd)
+{
+    long flength = length(fd);
+    if (flength <= 0)
+    {
+        return "";
+    }
+
+    string result;
+    result.resize(flength);
+
+    if (flength != read(fd, &result[0], flength))
+    {
+        return "";
+    }
+
+    return Threading::TranslatingCR2LF(result);
+}
+
+#endif
+
 // Get the file size, so we can pre-allocate the string. HUGE speed impact.
-long UtilInternal::length(FILE* file)
+long Threading::length(FILE* file)
 {
     if (NULL == file)
     {
         return -1;
     }
 
+#ifdef _WIN32
     return length(fileno(file));
+#else
+    int curpos = fseek(file, 0, SEEK_CUR);
+    fseek(file, 0, SEEK_END);
+    long flength = ftell(file) - curpos;
+    fseek(file, curpos, SEEK_SET);
+    return flength;
+#endif
 }
 
-std::string UtilInternal::fload(const std::string& path)
+std::string Threading::fload(const std::string& path)
 {
     FILE* file = fopen(path.c_str(), "rb");
     if (NULL == file)
@@ -602,29 +634,10 @@ std::string UtilInternal::fload(const std::string& path)
 
     fclose(file);
 
-    return Util::String::TranslatingCR2LF(content);
+    return Threading::TranslatingCR2LF(content);
 }
 
-std::string UtilInternal::fload(int fd)
-{
-    long flength = length(fd);
-    if (flength <= 0)
-    {
-        return "";
-    }
-
-    string result;
-    result.resize(flength);
-
-    if (flength != read(fd, &result[0], flength))
-    {
-        return "";
-    }
-
-    return Util::String::TranslatingCR2LF(result);
-}
-
-std::string UtilInternal::fload(FILE* file)
+std::string Threading::fload(FILE* file)
 {
     const size_t file_size = length(file);
     char* const buffer = new char[file_size];
@@ -643,40 +656,36 @@ std::string UtilInternal::fload(FILE* file)
     const std::string content(buffer, bytes_read);
     delete[] buffer;
 
-    return Util::String::TranslatingCR2LF(content);
+    return Threading::TranslatingCR2LF(content);
 }
 
-void  UtilInternal::redirection(const std::string& filename, 
-                                const Util::StringConverterPtr& converter, 
+void  Threading::redirection(const std::string& filename, 
+                                const Threading::StringConverterPtr& converter, 
                                 FILE* oldfile/* = stdout | stderr*/)
 {
     if ("" != filename)
     {
-#ifdef _LARGEFILE64_SOURCE
-        FILE* file = freopen64(filename.c_str(), "a", oldfile);
-#else
 #ifdef _WIN32
-        FILE* file = _wfreopen(Util::StringToWstring(
+        FILE* file = _wfreopen(Threading::StringToWstring(
             NativeToUTF8(converter, filename)).c_str(), L"a", oldfile);
 #else
         FILE* file = freopen(filename.c_str(), "a", oldfile);
 #endif
-#endif
         if (0 == file)
         {
-            Util::FileException ex(__FILE__, __LINE__, UtilInternal::GetSystemErrno(), filename);
+            Threading::FileException ex(__FILE__, __LINE__, Threading::GetSystemErrno(), filename);
             throw ex;
         }
     }
 }
 
 std::vector<std::vector<std::string> > 
-UtilInternal::LoadCSVFile(const string& csvfile, const string& separator)
+Threading::LoadCSVFile(const string& csvfile, const string& separator)
 {
-    UtilInternal::ifstream in(csvfile);
+    Threading::ifstream in(csvfile);
     if (!in)
     {
-        throw Util::FileException(__FILE__, __LINE__, UtilInternal::GetSystemErrno(), csvfile);
+        throw Threading::FileException(__FILE__, __LINE__, Threading::GetSystemErrno(), csvfile);
     }
 
     std::vector<std::vector<std::string> > retvec;
@@ -707,9 +716,11 @@ UtilInternal::LoadCSVFile(const string& csvfile, const string& separator)
         }
 
         vector<string> colms;
-        Util::String::SplitString(line, separator, colms, true);
+        Threading::SplitString(line, separator, colms, true);
         retvec.push_back(colms);
     }
 
     return retvec;
 }
+
+//THREADING_END

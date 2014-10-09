@@ -13,16 +13,16 @@
 #include <Concurrency/StaticMutex.h>
 #include <Concurrency/ThreadException.h>
 
+
 #ifdef _WIN32
 #   include <list>
 #   include <algorithm>
 
 using namespace std;
 
+namespace {
+    
 static CRITICAL_SECTION sCriticalSection;
-
-namespace Util
-{
 
 class Init
 {
@@ -40,7 +40,7 @@ Init::Init()
 
 }
 
-void Util::StaticMutex::Initialize() const
+void Threading::StaticMutex::Initialize() const
 {
     //
     // Double-check locking. 
@@ -56,7 +56,7 @@ void Util::StaticMutex::Initialize() const
         InitializeCriticalSection(newMutex);
 
         //
-        // m_mutex is written after the new initialized CRITICAL_SECTION/Util::Mutex
+        // m_mutex is written after the new initialized CRITICAL_SECTION/Threading::Mutex
         //
         void* oldVal = InterlockedCompareExchangePointer(reinterpret_cast<void**>(&m_mutex), newMutex, 0);
         assert(oldVal == 0);
@@ -66,14 +66,14 @@ void Util::StaticMutex::Initialize() const
 }
 
 bool 
-Util::StaticMutex::Initialized() const
+Threading::StaticMutex::Initialized() const
 {
     void* tmp = m_mutex;
     return InterlockedCompareExchangePointer(reinterpret_cast<void**>(&tmp), 0, 0) != 0;
 }
 
 void
-Util::StaticMutex::Lock() const
+Threading::StaticMutex::Lock() const
 {
     if (!Initialized())
     {
@@ -84,7 +84,7 @@ Util::StaticMutex::Lock() const
 }
 
 bool
-Util::StaticMutex::TryLock() const
+Threading::StaticMutex::TryLock() const
 {
     if (!Initialized())
     {
@@ -103,7 +103,7 @@ Util::StaticMutex::TryLock() const
 }
 
 void
-Util::StaticMutex::Unlock() const
+Threading::StaticMutex::Unlock() const
 {
     assert(m_mutex != 0);
     assert(m_mutex->RecursionCount == 1);
@@ -111,7 +111,7 @@ Util::StaticMutex::Unlock() const
 }
 
 void
-Util::StaticMutex::Unlock(LockState&) const
+Threading::StaticMutex::Unlock(LockState&) const
 {
     assert(m_mutex != 0);
     assert(m_mutex->RecursionCount == 1);
@@ -119,7 +119,7 @@ Util::StaticMutex::Unlock(LockState&) const
 }
 
 void
-Util::StaticMutex::Lock(LockState&) const
+Threading::StaticMutex::Lock(LockState&) const
 {
     if (!Initialized())
     {
@@ -131,7 +131,7 @@ Util::StaticMutex::Lock(LockState&) const
 #else
 
 void
-Util::StaticMutex::Lock() const
+Threading::StaticMutex::Lock() const
 {
     int rc = pthread_mutex_lock(&m_mutex);
     if (rc != 0)
@@ -148,7 +148,7 @@ Util::StaticMutex::Lock() const
 }
 
 bool
-Util::StaticMutex::TryLock() const
+Threading::StaticMutex::TryLock() const
 {
     int rc = pthread_mutex_trylock(&m_mutex);
     if (rc != 0 && rc != EBUSY)
@@ -166,7 +166,7 @@ Util::StaticMutex::TryLock() const
 }
 
 void
-Util::StaticMutex::Unlock() const
+Threading::StaticMutex::Unlock() const
 {
     int rc = pthread_mutex_unlock(&m_mutex);
     if (rc != 0)
@@ -176,13 +176,13 @@ Util::StaticMutex::Unlock() const
 }
 
 void
-Util::StaticMutex::unlock(LockState& state) const
+Threading::StaticMutex::Unlock(LockState& state) const
 {
-    state.mutex = &m_mutex;
+    state.m_pmutex = &m_mutex;
 }
 
 void
-Util::StaticMutex::lock(LockState&) const
+Threading::StaticMutex::Lock(LockState&) const
 {
 }
 

@@ -9,6 +9,8 @@
 #ifndef BUILD_UNDEF_SYS_MACROS_H
 #define BUILD_UNDEF_SYS_MACROS_H
 
+#include <Build/BuildConfig.h>
+
 //
 // This header includes macros that can end up being dragged into
 // the generated code from system headers, such as major() or NDEBUG.
@@ -23,49 +25,49 @@
 //
 
 #ifdef major
-#    undef major
+#  undef major
 #endif
 
 #ifdef minor
-#    undef minor
+#  undef minor
 #endif
 
 //#ifdef min
-//#    undef min
+//#  undef min
 //#endif
 //
 //#ifdef max
-//#    undef max
+//#  undef max
 //#endif
 
 #ifdef min
-#    if defined(_MSC_VER) && ! defined(__clang__)
+#  if defined(_MSC_VER) && ! defined(__clang__)
     UTIL_WARNING("macro min is incompatible with C++.  Try #define NOMINMAX "
                 "before any Windows header. #undefing min")
-#    else
+#  else
 #    warning: macro min is incompatible with C++.  #undefing min
-#    endif
+#  endif
 
-#    undef min
+#  undef min
 #endif
 
 #ifdef max
-#    if defined(_MSC_VER) && ! defined(__clang__)
+#  if defined(_MSC_VER) && ! defined(__clang__)
     UTIL_WARNING("macro max is incompatible with C++.  Try #define NOMINMAX "
                 "before any Windows header. #undefing max")
-#    else
+#  else
 #    warning: macro max is incompatible with C++.  #undefing max
-#    endif
+#  endif
 
-#    undef max
+#  undef max
 #endif
 
 #ifdef Yield
-#    undef Yield
+#  undef Yield
 #endif
 
 //#ifdef ERROR
-//#    undef ERROR
+//#  undef ERROR
 //#endif
 
 #endif

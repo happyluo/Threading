@@ -14,8 +14,7 @@
 #include <Util/Atomic.h>
 #include <Util/UniquePtr.h>
  
-namespace Util
-{
+THREADING_BEGIN
 
 template<typename T>
 class ThreadSafeList
@@ -42,7 +41,7 @@ public:
     void push_front(T const& value)
     {
         UniquePtr<Node> new_node(new Node(value));
-        Util::Mutex::LockGuard sync(m_head.m_mutex);
+        Threading::Mutex::LockGuard sync(m_head.m_mutex);
 #ifdef LANG_CPP11
         new_node->m_next = std::move(m_head.m_next);
         m_head.m_next = std::move(new_node);
@@ -56,7 +55,7 @@ public:
     void push_front(SharedPtr<T> const& value)
     {
         UniquePtr<Node> new_node(new Node(value));
-        Util::Mutex::LockGuard sync(m_head.m_mutex);
+        Threading::Mutex::LockGuard sync(m_head.m_mutex);
 #ifdef LANG_CPP11
         new_node->m_next = std::move(m_head.m_next);
         m_head.m_next = std::move(new_node);
@@ -71,12 +70,12 @@ public:
     void for_each(Function fun)
     {
         Node* current = &m_head;
-        Util::Mutex* sync = &m_head.m_mutex;
+        Threading::Mutex* sync = &m_head.m_mutex;
         sync->Lock();
 
         while (Node* const next = current->m_next.Get())
         {
-            Util::Mutex* next_sync = &next->m_mutex;
+            Threading::Mutex* next_sync = &next->m_mutex;
             next_sync->Lock();
             sync->Unlock();
             fun(next->m_data);
@@ -91,12 +90,12 @@ public:
     SharedPtr<T> find_first_if (Predicate p)
     {
         Node* current = &m_head;
-        Util::Mutex* sync = &m_head.m_mutex;
+        Threading::Mutex* sync = &m_head.m_mutex;
         sync->Lock();
 
         while (Node* const next = current->m_next.Get())
         {
-            Util::Mutex* next_sync = &next->m_mutex;
+            Threading::Mutex* next_sync = &next->m_mutex;
             next_sync->Lock();
             sync->Unlock();
             if (p(*next->m_data))
@@ -115,11 +114,11 @@ public:
     void remove_if (Predicate p)
     {
         Node* current = &m_head;
-        Util::Mutex* sync = &m_head.m_mutex;
+        Threading::Mutex* sync = &m_head.m_mutex;
         sync->Lock();
         while (Node* const next = current->m_next.Get())
         {
-            Util::Mutex* next_sync = &next->m_mutex;
+            Threading::Mutex* next_sync = &next->m_mutex;
             next_sync->Lock();
 
             if (p(*next->m_data))
@@ -148,11 +147,11 @@ public:
     void remove(const T* data)
     {
         Node* current = &m_head;
-        Util::Mutex* sync = &m_head.m_mutex;
+        Threading::Mutex* sync = &m_head.m_mutex;
         sync->Lock();
         while (Node* const next = current->m_next.Get())
         {
-            Util::Mutex* next_sync = &next->m_mutex;
+            Threading::Mutex* next_sync = &next->m_mutex;
             next_sync->Lock();
 
             if (data == next->m_data.Get())
@@ -181,11 +180,11 @@ public:
     void remove_all()
     {
         Node* current = &m_head;
-        Util::Mutex* sync = &m_head.m_mutex;
+        Threading::Mutex* sync = &m_head.m_mutex;
         sync->Lock();
         while (Node* const next = current->m_next.Get())
         {
-            Util::Mutex* next_sync = &next->m_mutex;
+            Threading::Mutex* next_sync = &next->m_mutex;
             next_sync->Lock();
 #ifdef LANG_CPP11
             UniquePtr<Node> old_next = std::move(current->m_next);
@@ -212,7 +211,7 @@ private:
 
     struct Node
     {
-        Util::Mutex            m_mutex;
+        Threading::Mutex            m_mutex;
         SharedPtr<T>    m_data;
         UniquePtr<Node> m_next;
 
@@ -230,6 +229,6 @@ private:
     AtomicInt    m_size;
 };
 
-}
+THREADING_END
 
 #endif

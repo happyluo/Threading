@@ -9,12 +9,12 @@
 #ifndef CONCURRENCY_LOCK_H
 #define CONCURRENCY_LOCK_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
+#include <Concurrency/ThreadException.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
-#    ifdef LANG_CPP11
+#  ifdef LANG_CPP11
 #    include <Concurrency/Mutex.h>
 
 template <typename T>        //    T= std::mutex || std::recursive_mutex
@@ -110,7 +110,7 @@ private:
     const std::unique_lock<T::mutex_type>&    m_mutex;        //  Mutex::mutex_type || RecMutex::mutex_type
 };
 
-#    else
+#  else
 
 template <typename T>
 class LockT : public noncopyable
@@ -183,7 +183,7 @@ private:
     mutable bool    m_acquired;
 };
 
-#    endif
+#  endif
 
 template <typename T>
 class TryLockT : public LockT<T>
@@ -194,6 +194,6 @@ public:
     }
 };
 
-}
+THREADING_END
 
 #endif

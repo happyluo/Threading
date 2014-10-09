@@ -9,7 +9,7 @@
 #ifndef CONCURRENCY_THREAD_POOL_H
 #define CONCURRENCY_THREAD_POOL_H
 
-#include <Concurrency/Config.h>
+#include <Config.h>
 #include <Concurrency/Runnable.h>
 #include <Concurrency/Thread.h>
 #include <Concurrency/ThreadSafeQueue.h>
@@ -19,16 +19,15 @@
 #include <Util/Properties.h>
 #include <Logging/LoggerUtil.h>
 
-namespace Util
-{
+THREADING_BEGIN
 
 void ThreadJoiner(const ThreadPtr& thread);
 
 //////////////////////////////////////////////////////////////////////////
 /// class TaskBase
-class CONCURRENCY_API TaskBase : public Util::Runnable
-    , virtual public Util::Shared
-    , public Util::Monitor<Util::Mutex>
+class THREADING_API TaskBase : public Threading::Runnable
+    , virtual public Threading::Shared
+    , public Threading::Monitor<Threading::Mutex>
 {
 public:
     TaskBase(const std::string& name) : m_name(name)
@@ -45,20 +44,20 @@ public:
 
     void Reset()
     {
-        Util::Monitor<Util::Mutex>::LockGuard lock(*this);
+        Threading::Monitor<Threading::Mutex>::LockGuard lock(*this);
         m_done = false;
         m_waiters = 0;
     }
 
     void WaitDone() const
     {
-        Util::Monitor<Util::Mutex>::LockGuard lock(*this);
+        Threading::Monitor<Threading::Mutex>::LockGuard lock(*this);
         while (!m_done)
         {
             try 
             {
                 ++m_waiters;
-                Monitor::Wait();
+                Wait();
                 --m_waiters;
             } 
             catch (...) 
@@ -71,7 +70,7 @@ public:
 
     bool TimedWaitDone(const Time& timeout) const
     {
-        Util::Monitor<Util::Mutex>::LockGuard lock(*this);
+        Threading::Monitor<Threading::Mutex>::LockGuard lock(*this);
 
         if (m_done)
         {
@@ -83,7 +82,7 @@ public:
         try 
         {
             ++m_waiters;
-            returnVal = Monitor::TimedWait(timeout);
+            returnVal = TimedWait(timeout);
             --m_waiters;
         } 
         catch (...) 
@@ -97,13 +96,13 @@ public:
 
     void NotifyDone() const
     {
-        Util::Monitor<Util::Mutex>::LockGuard lock(*this);
+        Threading::Monitor<Threading::Mutex>::LockGuard lock(*this);
         m_done = true;
 
         if (0 != m_waiters)
         {
-            //Monitor::Notify();
-            Monitor::NotifyAll();
+            //Notify();
+            NotifyAll();
         }
     }
 
@@ -149,7 +148,7 @@ protected:
 
 //////////////////////////////////////////////////////////////////////////
 /// class JoinThreads
-class CONCURRENCY_API JoinThreads
+class THREADING_API JoinThreads
 {
 public:
     explicit JoinThreads(std::set<ThreadPtr>& threads) : m_threads(threads)
@@ -158,7 +157,7 @@ public:
 
     ~JoinThreads()
     {
-        size_t joinedsize = m_threads.size();
+        //size_t joinedsize = m_threads.size();
         std::set<ThreadPtr>::const_iterator iter = m_threads.begin(); 
         while (iter != m_threads.end())
         {
@@ -172,7 +171,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 /// class ThreadPool
-class CONCURRENCY_API ThreadPool : public Util::Shared, public Util::Monitor<Util::Mutex>
+class THREADING_API ThreadPool : public Threading::Shared, public Threading::Monitor<Threading::Mutex>
 {
     friend class TaskThread;
 public:
@@ -220,7 +219,7 @@ private:
     std::string m_poolname;
 };
 
-typedef Util::SharedPtr<ThreadPool> ThreadPoolPtr;
+typedef Threading::SharedPtr<ThreadPool> ThreadPoolPtr;
 
 //////////////////////////////////////////////////////////////////////////
 /// class TaskThread
@@ -251,10 +250,10 @@ protected:
     {
         while (!m_destroyed && !m_threadpool.m_destroyed)
         {
-            Util::SharedPtr<TaskBase> task;
+            Threading::SharedPtr<TaskBase> task;
             if (m_threadpool.m_waitifnotask)
             {
-                task = m_threadpool.m_tasksqueue.TimedPop(Util::Time::MilliSeconds(m_threadpool.m_threadidletime));
+                task = m_threadpool.m_tasksqueue.TimedPop(Threading::Time::MilliSeconds(m_threadpool.m_threadidletime));
             }
             else
             {
@@ -298,6 +297,6 @@ private:
     ThreadPool& m_threadpool;
 };
 
-}
+THREADING_END
 
 #endif

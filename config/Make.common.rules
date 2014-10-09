@@ -1,0 +1,131 @@
+# **********************************************************************
+#
+# Copyright (c) 2010-2014 Bernard Luo. All rights reserved.
+#
+# <Email: luo (dot) xiaowei (at) hotmail (dot) com>
+#
+# **********************************************************************
+
+# ----------------------------------------------------------------------
+# Don't change anything below this line!
+# ----------------------------------------------------------------------
+
+SHELL			= /bin/sh
+VERSION_MAJOR   = 1
+VERSION_MINOR   = 0
+VERSION_PATCH   = 0
+VERSION         = 1.0.0
+SHORT_VERSION   = 1.0
+SOVERSION       = 10
+
+INSTALL         = cp -fp
+INSTALL_PROGRAM = ${INSTALL}
+INSTALL_LIBRARY	= ${INSTALL}
+INSTALL_DATA    = ${INSTALL}
+
+OBJEXT			= .o
+
+UNAME           := $(shell uname)
+MACHINE_TYPE    := $(shell uname -m)
+
+
+libsubdir		:= lib
+binsubdir		:= bin
+
+#
+# Default functions for shared library names
+#
+
+ifeq ($(mklibfilename),)
+    ifeq ($(UNAME),Darwin)
+	mklibfilename	= $(if $(2),lib$(1).$(2).dylib,lib$(1).dylib)
+    else
+	mklibfilename	= $(if $(2),lib$(1).so.$(2),lib$(1).so)
+    endif
+endif
+
+ifeq ($(mksoname),)
+    mksoname	= $(if $(2),lib$(1).so.$(2),lib$(1).so)
+endif
+
+ifeq ($(mklibname),)
+    ifeq ($(STATICLIBS),yes)
+	mklibname	= lib$(1).a
+    else
+	mklibname	= lib$(1).so
+    endif
+endif
+
+ifndef mklibtargets
+    ifeq ($(STATICLIBS),yes)
+	mklibtargets	= $(3)
+    else
+	mklibtargets	= $(1) $(2) $(3)
+    endif
+endif
+
+ifeq ($(installlib),)
+    ifeq ($(STATICLIBS),yes)
+	installlib	= $(INSTALL) $(2)/$(5) $(1); \
+			  chmod a+rx $(1)/$(5) 
+    else
+	installlib	= $(INSTALL) $(2)/$(3) $(1); \
+			  rm -f $(1)/$(4); ln -s $(3) $(1)/$(4); \
+			  rm -f $(1)/$(5); ln -s $(4) $(1)/$(5); \
+			  chmod a+rx $(1)/$(3) 
+    endif
+endif
+
+ifeq ($(installdata),)
+    installdata		= $(INSTALL_DATA) $(1) $(2); \
+			  chmod a+r $(2)/$(notdir $(1))
+endif
+
+ifeq ($(installprogram),)
+    installprogram	= $(INSTALL_PROGRAM) $(1) $(2); \
+			  chmod a+rx $(2)/$(notdir $(1))
+endif
+
+ifeq ($(mkdir),)
+    mkdir		= $(if $(2),mkdir $(2) $(1),mkdir $(1)); \
+			  chmod a+rx $(1)
+endif
+
+all::
+
+ifeq ($(wildcard $(top_srcdir)/LICENSE.txt),) 
+    TEXT_EXTENSION =
+else 
+    TEXT_EXTENSION = .txt 
+endif
+
+install-common::
+	@if test ! -d $(prefix) ; \
+	then \
+	    echo "Creating $(prefix)..." ; \
+	    $(call mkdir,$(prefix), -p) ; \
+	fi
+
+	#@if test ! -f $(DESTDIR)$(prefix)/LICENSE$(TEXT_EXTENSION) ; 
+	@if test -f $(DESTDIR)$(prefix)/LICENSE$(TEXT_EXTENSION) ; \
+	then \
+	    $(call installdata,$(top_srcdir)/LICENSE$(TEXT_EXTENSION),$(DESTDIR)$(prefix)) ; \
+	fi
+
+	#@if test ! -f $(DESTDIR)$(prefix)/LICENSE$(TEXT_EXTENSION) ; 
+	@if test -f $(DESTDIR)$(prefix)/LICENSE$(TEXT_EXTENSION) ; \
+    then \
+        $(call installdata,$(top_srcdir)/LICENSE$(TEXT_EXTENSION),$(DESTDIR)$(prefix)) ; \
+    fi
+
+	#@if test ! -f $(DESTDIR)$(prefix)/CHANGES$(TEXT_EXTENSION) ; 
+	@if test -f $(DESTDIR)$(prefix)/CHANGES$(TEXT_EXTENSION) ; \
+	then \
+		$(call installdata,$(top_srcdir)/CHANGES$(TEXT_EXTENSION),$(DESTDIR)$(prefix)) ; \
+	fi
+
+	#@if test ! -f $(DESTDIR)$(prefix)/RELEASE_NOTES$(TEXT_EXTENSION) ; 
+	@if test -f $(DESTDIR)$(prefix)/RELEASE_NOTES$(TEXT_EXTENSION) ; \
+	then \
+		$(call installdata,$(top_srcdir)/RELEASE_NOTES$(TEXT_EXTENSION),$(DESTDIR)$(prefix)) ; \
+	fi

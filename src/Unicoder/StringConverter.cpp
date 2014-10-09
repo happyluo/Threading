@@ -11,21 +11,20 @@
 #include <Util/ScopedArray.h>
 
 #ifndef _WIN32
-#include <Util/IconvStringConverter.h>
+#include <Unicoder/IconvStringConverter.h>
 #endif
 
 #ifdef __MINGW32__
 #  include <limits.h>
 #endif
 
-using namespace Util;
-using namespace UtilInternal;
 using namespace std;
+using namespace Threading;
 
 namespace
 {
 
-class UTF8BufferI : public Util::UTF8Buffer
+class UTF8BufferI : public Threading::UTF8Buffer
 {
 public:
 
@@ -40,7 +39,7 @@ public:
         free(m_buffer);
     }
 
-    Util::Byte* GetMoreBytes(size_t howMany, Byte* firstUnused)
+    Threading::Byte* GetMoreBytes(size_t howMany, Byte* firstUnused)
     {
         if (m_buffer == 0)
         {
@@ -60,7 +59,7 @@ public:
         return m_buffer + m_offset;
     }
     
-    Util::Byte* GetBuffer()
+    Threading::Byte* GetBuffer()
     {
         return m_buffer;
     }
@@ -74,15 +73,14 @@ public:
 
 private:
 
-    Util::Byte* m_buffer;
+    Threading::Byte* m_buffer;
     size_t m_offset;
 };
 }
 
 
 
-namespace Util
-{
+THREADING_BEGIN
 
 UnicodeWstringConverter::UnicodeWstringConverter(ConversionFlags flags) :
     m_conversionFlags(flags)
@@ -168,14 +166,14 @@ UnicodeWstringConverter::FromUTF8(const Byte* sourceStart,
 /// WindowsStringConverter
 int WindowsStringConverter::getCodePage(const std::string& internalCode)
 {
-    std::string codeName = Util::String::ToUpper(internalCode);
-    if (Util::String::Match(codeName, "GB*", true))
+    std::string codeName = Threading::ToUpper(internalCode);
+    if (Threading::Match(codeName, "GB*", true))
     {
         codeName = "WINDOWS-936";
     }
     
     static const string prefix("WINDOWS-");
-    if (!Util::String::Match(codeName, "WINDOWS-*", false))
+    if (!Threading::Match(codeName, "WINDOWS-*", false))
     {
         return -1;
     }
@@ -243,7 +241,7 @@ WindowsStringConverter::ToUTF8(const char* sourceStart,
 
     if (writtenWchar == 0)
     {
-        throw StringConversionException(__FILE__, __LINE__, Util::LastErrorToString());
+        throw StringConversionException(__FILE__, __LINE__, Threading::LastErrorToString());
     }
 
     //
@@ -284,7 +282,7 @@ WindowsStringConverter::FromUTF8(const Byte* sourceStart, const Byte* sourceEnd,
 
     if (writtenChar == 0)
     {
-        throw StringConversionException(__FILE__, __LINE__, Util::LastErrorToString());
+        throw StringConversionException(__FILE__, __LINE__, Threading::LastErrorToString());
     }
 
     target.assign(buffer.Get(), writtenChar);
@@ -292,8 +290,8 @@ WindowsStringConverter::FromUTF8(const Byte* sourceStart, const Byte* sourceEnd,
 
 #endif
 
-string
-Util::NativeToUTF8(const Util::StringConverterPtr& converter, const string& str)
+std::string
+NativeToUTF8(const Threading::StringConverterPtr& converter, const std::string& str)
 {
     if (!converter)
     {
@@ -304,12 +302,12 @@ Util::NativeToUTF8(const Util::StringConverterPtr& converter, const string& str)
         return str;
     }
     UTF8BufferI buffer;
-    Util::Byte* last = converter->ToUTF8(str.data(), str.data() + str.size(), buffer);
+    Threading::Byte* last = converter->ToUTF8(str.data(), str.data() + str.size(), buffer);
     return string(reinterpret_cast<const char*>(buffer.GetBuffer()), last - buffer.GetBuffer());
 }
 
 string
-Util::UTF8ToNative(const Util::StringConverterPtr& converter, const string& str)
+UTF8ToNative(const Threading::StringConverterPtr& converter, const string& str)
 {
     if (!converter)
     {
@@ -320,54 +318,59 @@ Util::UTF8ToNative(const Util::StringConverterPtr& converter, const string& str)
         return str;
     }
     string tmp;
-    converter->FromUTF8(reinterpret_cast<const Util::Byte*>(str.data()),
-                        reinterpret_cast<const Util::Byte*>(str.data() + str.size()), tmp);
+    converter->FromUTF8(reinterpret_cast<const Threading::Byte*>(str.data()),
+                        reinterpret_cast<const Threading::Byte*>(str.data() + str.size()), tmp);
     return tmp;
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// StringConversionException
-Util::StringConversionException::StringConversionException(const char *file, int line) :
+StringConversionException::StringConversionException(const char *file, int line) :
     Exception(file, line)
 {
 }
 
-Util::StringConversionException::StringConversionException(
+StringConversionException::StringConversionException(
     const char *file, int line, const std::string& reason) :
     Exception(file, line), m_reason(reason)
 {
 }
-const char* Util::StringConversionException::m_name = "Util::StringConversionException";
+
+StringConversionException::~StringConversionException() throw()
+{
+}
+
+const char* StringConversionException::m_name = "Threading::StringConversionException";
 
 string
-Util::StringConversionException::Name() const
+StringConversionException::Name() const
 {
     return m_name;
 }
 
 void
-Util::StringConversionException::Print(ostream& out) const
+StringConversionException::Print(ostream& out) const
 {
     Exception::Print(out);
     out << ": " << m_reason;
 }
 
-Util::StringConversionException*
-Util::StringConversionException::Clone() const
+StringConversionException*
+StringConversionException::Clone() const
 {
     return new StringConversionException(*this);
 }
 
 void
-Util::StringConversionException::Throw() const
+StringConversionException::Throw() const
 {
     throw *this;
 }
 
 const std::string&
-Util::StringConversionException::Reason() const
+StringConversionException::Reason() const
 {
     return m_reason;
 }
 
-}
+THREADING_END

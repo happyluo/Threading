@@ -1,0 +1,94 @@
+# **********************************************************************
+#
+# Copyright (c) 2010-2014 Bernard Luo. All rights reserved.
+#
+# <Email: luo (dot) xiaowei (at) hotmail (dot) com>
+#
+# **********************************************************************
+
+#
+# This file is included by Make.rules when uname is Linux.
+#
+
+USE_SPARC_ASM   = irrelevant
+MACHINE         = $(shell uname -m)
+SUSE_i586		= $(shell grep i586 /etc/SuSE-release 2>/dev/null)
+
+ifneq ($(shell grep 'release 4' /etc/redhat-release 2>/dev/null),)
+   NPTL_LIB		= -L/usr/$(libsubdir)/nptl
+   NPTL_FLAGS	= -I/usr/include/nptl
+endif
+
+#
+# Default compiler is c++ (aka g++).
+#
+ifeq ($(CXX),)
+   CXX			= g++
+endif
+
+ifeq ($(CXX),c++)
+   CXX			= g++
+endif
+
+ifeq ($(CXX),g++)
+
+    ifneq ($(SUSE_i586),)
+        CXXARCHFLAGS	+= -march=i586
+    endif
+
+    ifeq ($(CPP11), yes)
+        CPPFLAGS += -std=c++0x
+    endif
+
+   ifeq ($(MACHINE),x86_64)
+      ifeq ($(LP64),yes)
+         CXXARCHFLAGS	+= -m64
+      else
+         CXXARCHFLAGS	+= -m32
+      endif
+   endif
+
+   CXXFLAGS		= $(CXXARCHFLAGS) -Wall -Werror -lpthread
+
+#   ifneq ($(GENPIC),no)
+#      CXXFLAGS		+= -fPIC
+#   endif
+
+   ifeq ($(OPTIMIZE),yes)
+      CXXFLAGS		+= -O2 -DNDEBUG
+   else
+      CXXFLAGS		+= -g 
+   endif
+
+   #
+   # C++ run-time libraries, necessary for linking some shared libraries.
+   #
+   CXXLIBS		=
+
+   mkshlib		= $(CXX) -shared $(LDFLAGS) -o $(1) -Wl,-h,$(2) $(3) $(4)
+
+   mklib		= ar cr $(1) $(2)
+
+   rpathlink    = -Wl,-rpath-link,$(1) 
+
+   ifneq ($(embedded_runpath_prefix),)
+      LDPLATFORMFLAGS      = -Wl,--enable-new-dtags -Wl,-rpath,$(runpath_libdir)
+   else
+      LDPLATFORMFLAGS      = -Wl,--enable-new-dtags
+   endif
+
+   LDPLATFORMFLAGS	+= -rdynamic
+
+endif
+
+#BASELIBS		= -lUtil
+#ifneq ($(NPTL_LIB),)
+#    CXXFLAGS		+= $(NPTL_FLAGS)
+#    BASELIBS		:= $(NPTL_LIB) $(BASELIBS)
+#endif
+#
+#LIBS			= $(BZIP2_RPATH_LINK) $(BASELIBS)
+
+UTIL_OS_LIBS         = -lrt -ldl
+
+#PLATFORM_HAS_READLINE   = yes
